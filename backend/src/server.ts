@@ -1,7 +1,13 @@
 import express, { Request, Response } from "express";
+import { createServer } from "node:http";
+import { Server } from "socket.io";
+
+import mongoose from "mongoose"
+
 import cors from "cors";
 import dotenv from "dotenv"
 dotenv.config();
+
 
 const app = express();
 app.use(
