@@ -1,38 +1,48 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, urlencoded } from "express";
+const app = express();
 import { createServer } from "node:http";
-import { Server } from "socket.io";
-
 import mongoose from "mongoose"
-
 import cors from "cors";
 import dotenv from "dotenv"
 dotenv.config();
 
+//mongo setup
+main().then(() => console.log("MongoDB connected"));
+async function main(): Promise<void> {
+  await mongoose.connect(process.env.MONGODB_URI!)
+}
 
-const app = express();
+//uses
 app.use(
   cors({
     origin: process.env.ORIGIN,
     credentials: true,
   }),
 );
+app.use(express.json({"limit":"40kb"}));
+app.use(urlencoded({extended:true,"limit":"40kb"}));
 
+
+//controllers
+import { setSocketConnection } from "./controllers/socketManger";
+
+//routes
+import userRoutes from "./routes/user.routes"
 //types
 import type {Test} from "./types/test"
 
 
+//sockets setup
+const server=createServer(app);
+const io=setSocketConnection(server);
+
+//all routes
+
+app.use("/users", userRoutes);
+
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "this is backend code" });
 });
-app.get("/test",(req:Request,res:Response)=>{
-    const testData:Test={
-        name:"thejas",
-        email:"thejasbk1@gamil.com",
-        phoneNumber:908909898098
-    }
-    res.json(testData)
-})
-
-app.listen(8080, () => {
+server.listen(8080, () => {
   console.log("server started on port 8080");
 });
