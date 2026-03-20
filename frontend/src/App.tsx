@@ -1,15 +1,10 @@
-import { useEffect } from "react"
-import axios from "axios"
+import Register from "./components/auth/Register"
+
 
 function App() {
-  useEffect(()=>{
-      axios.get("http://localhost:8080/users/test")
-      .then((data)=>console.log(data))
-
-  },[])
   return (
     <>
-     <h1>Hello Starting will zoom clone</h1>
+    <Register/>
     </>
   )
 }
