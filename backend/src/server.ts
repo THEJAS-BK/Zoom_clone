@@ -28,9 +28,6 @@ import { setSocketConnection } from "./controllers/socketManger";
 
 //routes
 import userRoutes from "./routes/user.routes"
-//types
-import type {Test} from "./types/test"
-
 
 //sockets setup
 const server=createServer(app);
@@ -38,7 +35,7 @@ const io=setSocketConnection(server);
 
 //all routes
 
-app.use("/users", userRoutes);
+app.use("/auth", userRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "this is backend code" });
