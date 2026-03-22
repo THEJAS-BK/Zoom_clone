@@ -3,3 +3,8 @@ export type Formdata={
     email:string;
     password:string;
 }
+
+export type LoginFormData={
+    email:string;
+    password:string
+}

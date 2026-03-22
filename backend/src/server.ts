@@ -27,7 +27,7 @@ app.use(urlencoded({extended:true,"limit":"40kb"}));
 import { setSocketConnection } from "./controllers/socketManger";
 
 //routes
-import userRoutes from "./routes/user.routes"
+import userRoutes from "./routes/auth.routes"
 
 //sockets setup
 const server=createServer(app);

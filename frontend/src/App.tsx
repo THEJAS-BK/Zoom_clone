@@ -1,12 +1,12 @@
-import Register from "./components/auth/Register"
-
+import AllRoutes from "./routes/AllRoutes";
+import { BrowserRouter } from "react-router-dom";
 
 function App() {
   return (
-    <>
-    <Register/>
-    </>
-  )
+    <BrowserRouter>
+      <AllRoutes />
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;

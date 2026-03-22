@@ -1,18 +1,17 @@
 import React, { useState, type JSX } from "react";
-import type {Formdata} from "../../types/Auth"
+import type {LoginFormData} from "../../types/Auth"
 import "./Register.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-export default function Register():JSX.Element {
-    const [formData,setFormData]=useState<Formdata>(
+export default function Login():JSX.Element {
+    const [formData,setFormData]=useState<LoginFormData>(
         {
-            name:"",
             email:"",
             password:"",
         }
     )
     const handleChange=(e:React.ChangeEvent<HTMLInputElement>)=>{
-        let fieldName=e.target.name as keyof Formdata;
+        let fieldName=e.target.name as keyof LoginFormData;
         let fieldValue=e.target.value
 
         setFormData((curData)=>{
@@ -25,7 +24,7 @@ export default function Register():JSX.Element {
     //send inputs to backend
     const handleSubmit=async (e:React.SubmitEvent<HTMLFormElement>)=>{
       e.preventDefault();
-      const res = await axios.post("http://localhost:8080/auth/register",
+      const res = await axios.post("http://localhost:8080/auth/login",
         formData,
         {
         headers:{
@@ -34,9 +33,7 @@ export default function Register():JSX.Element {
       })
 
      if(res.status===200){
-      localStorage.setItem("accessToken", res.data.accessToken);
-      localStorage.setItem("refreshToken", res.data.refreshToken);
-      navigate("/login");
+      console.log("success")
      }
       
     }
@@ -44,13 +41,12 @@ export default function Register():JSX.Element {
   return (
     <form className="container" onSubmit={handleSubmit}>
       <div className="signup">
-        <h1>Signup</h1>
+        <h1>Login</h1>
         <div className="content">
-          <input onChange={handleChange} placeholder="Name" type="text" name="name" id="" />
           <input onChange={handleChange} placeholder="Email" type="text" name="email" id="" />
           <input onChange={handleChange} placeholder="Password" type="password" name="password" id="" />
         </div>
-        <button className="send">Register</button>
+        <button className="send">Login</button>
       </div>
     </form>
   );
