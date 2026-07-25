@@ -120,27 +120,27 @@ export function useSelection(
         const selectedText = textBoxesRef.current.find(
           (t) => t.id === selectedId.current,
         );
-       if (selectedText) {
-  const { width, height } = measureTextBox(
-    selectedText.text,
-    selectedText.fontSize,
-    selectedText.fontFamily,
-  );
-  if (
-    hitTestTextBoxRotationHandle(
-      selectedText,
-      x,
-      y,
-      width,
-      height,
-      camera.current.scale,
-    )
-  ) {
-    isRotating.current = true;
-    dragType.current = "textbox";
-    return;
-  }
-}
+        if (selectedText) {
+          const { width, height } = measureTextBox(
+            selectedText.text,
+            selectedText.fontSize,
+            selectedText.fontFamily,
+          );
+          if (
+            hitTestTextBoxRotationHandle(
+              selectedText,
+              x,
+              y,
+              width,
+              height,
+              camera.current.scale,
+            )
+          ) {
+            isRotating.current = true;
+            dragType.current = "textbox";
+            return;
+          }
+        }
 
         const selectedShape = shapesRef.current.find(
           (s) => s.id === selectedId.current,
@@ -340,23 +340,22 @@ export function useSelection(
       doRedraw();
     };
 
+    const onDblClick = (e: MouseEvent) => {
+      if (activeTool !== "mouse") return;
+      const { x, y } = toCanvas(e.clientX, e.clientY);
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
 
- const onDblClick = (e: MouseEvent) => {
-  if (activeTool !== "mouse") return;
-  const { x, y } = toCanvas(e.clientX, e.clientY);
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
+      const hitText = [...(textBoxesRef?.current ?? [])]
+        .reverse()
+        .find((t) => hitTestTextBox(t, x, y, ctx));
 
-  const hitText = [...(textBoxesRef?.current ?? [])]
-    .reverse()
-    .find((t) => hitTestTextBox(t, x, y,ctx));
-
-  if (hitText) {
-    activeTextBox.current = { ...hitText };
-    onEditTextBox?.();
-    doRedraw();
-  }
-};
+      if (hitText) {
+        activeTextBox.current = { ...hitText };
+        onEditTextBox?.();
+        doRedraw();
+      }
+    };
 
     const onKeyDown = (e: KeyboardEvent) => {
       handleElementDelete(
