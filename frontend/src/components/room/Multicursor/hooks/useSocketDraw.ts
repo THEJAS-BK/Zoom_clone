@@ -21,7 +21,7 @@ export function useSocketDraw(
   strokeColor: string,
   doRedraw: () => void,
 ) {
-  const { strokeWidth,opacity } = useToolSettings();
+  const { strokeWidth,opacity,selectedEle } = useToolSettings();
 
   useEffect(() => {
     //handle drawing
@@ -58,7 +58,8 @@ export function useSocketDraw(
         x: e.clientX,
         y: e.clientY,
       });
-      if (!isDrawing.current) return;
+      if (!isDrawing.current||selectedEle) return;
+    
       const { x, y } = getCanvasPoint(e, canvas, camera);
       currentStroke.current.push({ x, y });
 

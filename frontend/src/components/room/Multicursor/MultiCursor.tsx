@@ -115,6 +115,20 @@ export default function MultiCursor({
     }
   }, [roomId]);
 
+  useEffect(() => {
+    const families = ["hand-drawn", "normal", "code"].map((f) =>
+      resolveFontFamily(f),
+    );
+
+    Promise.all(families.map((f) => document.fonts.load(`16px ${f}`))).then(
+      () => {
+        document.fonts.ready.then(() => {
+          doRedraw();
+        });
+      },
+    );
+  }, []);
+
   const doRedraw = useCallback(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
@@ -327,22 +341,17 @@ export default function MultiCursor({
   }) {
     const scale = camera.current.scale;
 
-    const resizeTextarea = (el: HTMLTextAreaElement) => {
-      const { width, height } = measureTextBox(
-        el.value,
-        box.fontSize,
-        box.fontFamily,
-      );
-      const leftPos = box.x * scale + camera.current.x;
-      const maxAllowed = window.innerWidth - leftPos - 20;
+   const resizeTextarea = (el: HTMLTextAreaElement) => {
+  const { width, height } = measureTextBox(el.value, box.fontSize, box.fontFamily);
 
-      el.style.width =
-        Math.min(width * scale + 20, Math.max(maxAllowed, 20)) + "px";
-      el.style.height = height * scale + 6 + "px";
+  el.style.width = width * scale + 20 + "px";
+  el.style.height = height * scale + 6 + "px";
+  el.style.transformOrigin = `${(width * scale) / 2}px ${(height * scale) / 2}px`;
 
-      // pivot must match drawTextBox's cx/cy exactly: box center, in local px from top-left
-      el.style.transformOrigin = `${(width * scale) / 2}px ${(height * scale) / 2}px`;
-    };
+  // keep textarea position synced to the same centering the ref undergoes
+  el.style.left = box.x * scale + camera.current.x + "px";
+  el.style.top = box.y * scale + camera.current.y + "px";
+};
 
     useLayoutEffect(() => {
       const el = textareaRef.current;
@@ -377,8 +386,6 @@ export default function MultiCursor({
           fontWeight: "normal",
           resize: "none",
           overflow: "hidden",
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
           padding: 0,
           margin: 0,
           boxSizing: "border-box",
@@ -388,8 +395,8 @@ export default function MultiCursor({
         }}
         onInput={(e) => {
           const el = e.currentTarget;
-          resizeTextarea(el);
           onInput(el.value);
+          resizeTextarea(el);
         }}
         onBlur={(e) => onBlur(e.target.value)}
       />
@@ -458,6 +465,7 @@ export default function MultiCursor({
               () => setPanTick((t) => t + 1),
               doRedraw,
             );
+            doRedraw();
           }}
           onBlur={(text) => {
             finalizeTextBox(text);

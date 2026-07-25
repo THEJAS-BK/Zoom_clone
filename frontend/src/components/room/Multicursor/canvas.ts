@@ -343,14 +343,13 @@ function drawTextBox(ctx: CanvasRenderingContext2D, tb: TextBox) {
   ctx.globalAlpha = (tb.opacity ?? 100) / 100;
   ctx.globalCompositeOperation = "source-over";
 
-  const lines = tb.text.split("\n");
-  const lineHeight = tb.fontSize * 1.4;
+  const { width, height, lineHeight, lines } = measureTextBox(
+    tb.text,
+    tb.fontSize,
+    tb.fontFamily,
+  );
   const fontStr = `normal ${tb.fontSize}px ${resolveFontFamily(tb.fontFamily)}`;
   ctx.font = fontStr;
-
-  const lineWidths = lines.map((l) => ctx.measureText(l).width);
-  const width = Math.max(...lineWidths);
-  const height = lines.length * lineHeight;
 
   const cx = tb.x + width / 2;
   const cy = tb.y + height / 2;
@@ -358,14 +357,12 @@ function drawTextBox(ctx: CanvasRenderingContext2D, tb: TextBox) {
   ctx.rotate(tb.rotation || 0);
   ctx.translate(-cx, -cy);
 
-  ctx.font = fontStr;
   ctx.fillStyle = tb.color;
-
   const align = tb.textAlign || "left";
 
   lines.forEach((line, i) => {
+    const lineWidth = ctx.measureText(line).width;
     let drawX = tb.x;
-    const lineWidth = lineWidths[i];
     if (align === "center") drawX = tb.x + (width - lineWidth) / 2;
     else if (align === "right") drawX = tb.x + (width - lineWidth);
     ctx.fillText(line, drawX, tb.y + tb.fontSize + i * lineHeight);
