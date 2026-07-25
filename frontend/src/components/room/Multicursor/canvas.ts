@@ -203,7 +203,6 @@ const redraw = (
   rotation = 0,
   cx = (left + right) / 2,
   cy = (top + bottom) / 2,
-  showCorners = true,
 ) => {
   const w = right - left;
   const h = bottom - top;
@@ -229,7 +228,7 @@ const redraw = (
   ctx.stroke();
 
   // corner handles
-  if (showCorners) {
+
     const corners = [
       { x: -w / 2 - PAD, y: -h / 2 - PAD },
       { x: w / 2 + PAD, y: -h / 2 - PAD },
@@ -245,7 +244,7 @@ const redraw = (
       ctx.strokeStyle = "#C4B5FD";
       ctx.stroke();
     });
-  }
+  
 
   ctx.restore();
 };
@@ -325,9 +324,6 @@ if (selectedText) {
     selectedText.x + width,
     selectedText.y + height,
     selectedText.rotation || 0,
-    undefined,
-    undefined,
-    false, // no resize handles for textboxes
   );
 }
   }
