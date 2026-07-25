@@ -327,33 +327,37 @@ export default function MultiCursor({
   }) {
     const scale = camera.current.scale;
 
-   const resizeTextarea = (el: HTMLTextAreaElement) => {
-  const { width, height } = measureTextBox(el.value, box.fontSize, box.fontFamily);
-  const leftPos = box.x * scale + camera.current.x;
-  const maxAllowed = window.innerWidth - leftPos - 20;
+    const resizeTextarea = (el: HTMLTextAreaElement) => {
+      const { width, height } = measureTextBox(
+        el.value,
+        box.fontSize,
+        box.fontFamily,
+      );
+      const leftPos = box.x * scale + camera.current.x;
+      const maxAllowed = window.innerWidth - leftPos - 20;
 
-  el.style.width = Math.min(width * scale + 20, Math.max(maxAllowed, 20)) + "px";
-  el.style.height = height * scale + 6 + "px";
+      el.style.width =
+        Math.min(width * scale + 20, Math.max(maxAllowed, 20)) + "px";
+      el.style.height = height * scale + 6 + "px";
 
-  // pivot must match drawTextBox's cx/cy exactly: box center, in local px from top-left
-  el.style.transformOrigin = `${(width * scale) / 2}px ${(height * scale) / 2}px`;
-};
+      // pivot must match drawTextBox's cx/cy exactly: box center, in local px from top-left
+      el.style.transformOrigin = `${(width * scale) / 2}px ${(height * scale) / 2}px`;
+    };
 
-  useLayoutEffect(() => {
-  const el = textareaRef.current;
-  if (!el) return;
-  resizeTextarea(el);
-  const len = el.value.length;
-  el.focus();
-  el.setSelectionRange(len, len);
-}, [box.id]);// re-run when switching to a different box (key already remounts, this covers first paint)
+    useLayoutEffect(() => {
+      const el = textareaRef.current;
+      if (!el) return;
+      resizeTextarea(el);
+      const len = el.value.length;
+      el.focus();
+      el.setSelectionRange(len, len);
+    }, [box.id]); // re-run when switching to a different box (key already remounts, this covers first paint)
 
     return (
       <textarea
         ref={textareaRef}
         key={box.id}
         defaultValue={box.text}
-        
         rows={1}
         spellCheck={false}
         style={{
@@ -365,7 +369,7 @@ export default function MultiCursor({
           transform: `rotate(${box.rotation ?? 0}rad)`,
 
           border: "none",
-         
+          outline:"none",
           boxShadow: "none",
           fontSize: box.fontSize * scale,
           fontFamily: resolveFontFamily(box.fontFamily),

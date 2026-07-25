@@ -8,6 +8,8 @@ import { hitTestCorner, hitTestRotationHandle } from "../tools/hitTests";
 import { useToolSettings } from "../../../../context/ToolBarLeftContext";
 //tools
 
+import { measureTextBox } from "../canvas";
+
 //mousedown
 import {
   computeDragPosition,
@@ -118,20 +120,27 @@ export function useSelection(
         const selectedText = textBoxesRef.current.find(
           (t) => t.id === selectedId.current,
         );
-        if (
-          selectedText &&
-          hitTestTextBoxRotationHandle(
-            selectedText,
-            x,
-            y,
-            ctx,
-            camera.current.scale,
-          )
-        ) {
-          isRotating.current = true;
-          dragType.current = "textbox";
-          return;
-        }
+       if (selectedText) {
+  const { width, height } = measureTextBox(
+    selectedText.text,
+    selectedText.fontSize,
+    selectedText.fontFamily,
+  );
+  if (
+    hitTestTextBoxRotationHandle(
+      selectedText,
+      x,
+      y,
+      width,
+      height,
+      camera.current.scale,
+    )
+  ) {
+    isRotating.current = true;
+    dragType.current = "textbox";
+    return;
+  }
+}
 
         const selectedShape = shapesRef.current.find(
           (s) => s.id === selectedId.current,
@@ -224,7 +233,7 @@ export function useSelection(
           const ctx = canvasRef.current?.getContext("2d");
           if (!tb || !ctx) return;
 
-          tb.rotation = computeTextBoxRotation(tb, x, y, ctx);
+          tb.rotation = computeTextBoxRotation(tb, x, y);
           emitElementUpdate(roomId, tb.id, { rotation: tb.rotation });
           doRedraw();
           return;

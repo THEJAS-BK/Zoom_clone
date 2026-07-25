@@ -4,6 +4,7 @@ import type { RefObject } from "react";
 import type { TextBox, CanvasElement,Shape,Line } from "../types";
 import { useToolSettings } from "../../../../context/ToolBarLeftContext";
 import { getNextZIndex } from "../tools/zIndex";
+import { measureTextBox } from "../canvas";
 export function useTextBox(
   roomId: string,
   camera: RefObject<{ x: number; y: number; scale: number }>,
@@ -59,25 +60,31 @@ export function useTextBox(
   };
 
   const updateTextBoxContent = (text: string) => {
-    if (!activeTextBox.current) return;
+  if (!activeTextBox.current) return;
+  const tb = activeTextBox.current;
 
-    activeTextBox.current.text = text;
-    const id = activeTextBox.current.id;
-    const exists = textBoxesRef.current.some((b) => b.id === id);
+  const before = measureTextBox(tb.text, tb.fontSize, tb.fontFamily);
+  const after = measureTextBox(text, tb.fontSize, tb.fontFamily);
+  tb.x += (before.width - after.width) / 2;
+  tb.y += (before.height - after.height) / 2;
+  tb.text = text;
 
-    if (!exists) {
-      const box: TextBox = { ...activeTextBox.current, text };
-      textBoxesRef.current = [...textBoxesRef.current, box];
-      socket.emit("element-add", { roomId, element: box });
-    } else {
-      textBoxesRef.current = textBoxesRef.current.map((b) =>
-        b.id === id ? { ...b, text } : b,
-      );
-      socket.emit("element-update", { roomId, id, changes: { text } });
-    }
+  const id = tb.id;
+  const exists = textBoxesRef.current.some((b) => b.id === id);
 
-    doRedraw();
-  };
+  if (!exists) {
+    const box: TextBox = { ...tb };
+    textBoxesRef.current = [...textBoxesRef.current, box];
+    socket.emit("element-add", { roomId, element: box });
+  } else {
+    textBoxesRef.current = textBoxesRef.current.map((b) =>
+      b.id === id ? { ...b, text: tb.text, x: tb.x, y: tb.y } : b,
+    );
+    socket.emit("element-update", { roomId, id, changes: { text: tb.text, x: tb.x, y: tb.y } });
+  }
+
+  doRedraw();
+};
 
   const finalizeTextBox = (text: string) => {
     if (!activeTextBox.current) return;

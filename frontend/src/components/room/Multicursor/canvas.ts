@@ -309,34 +309,22 @@ const redraw = (
       ctx.restore();
     }
 
-   const selectedText = textBoxesRef?.current?.find((t) => t.id === id);
-if (selectedText) {
-  const { width, height } = measureTextBox(
-    selectedText.text,
-    selectedText.fontSize,
-    selectedText.fontFamily,
-  );
-  drawSelectionBox(
-    selectedText.x,
-    selectedText.y,
-    selectedText.x + width,
-    selectedText.y + height,
-    selectedText.rotation || 0,
-  );
-}
+    const selectedText = textBoxesRef?.current?.find((t) => t.id === id);
+    if (selectedText) {
+      const { width, height } = measureTextBox(
+        selectedText.text,
+        selectedText.fontSize,
+        selectedText.fontFamily,
+      );
+      drawSelectionBox(
+        selectedText.x,
+        selectedText.y,
+        selectedText.x + width,
+        selectedText.y + height,
+        selectedText.rotation || 0,
+      );
+    }
   }
-};
-
-const resizeTextarea = (el: HTMLTextAreaElement) => {
-  const { width, height } = measureTextBox(el.value, box.fontSize, box.fontFamily);
-  const leftPos = box.x * scale + camera.current.x;
-  const maxAllowed = window.innerWidth - leftPos - 20;
-
-  el.style.width = Math.min(width * scale + 20, Math.max(maxAllowed, 20)) + "px";
-  el.style.height = height * scale + 6 + "px";
-
-  // pivot must match drawTextBox's cx/cy exactly: box center, in local px from top-left
-  el.style.transformOrigin = `${(width * scale) / 2}px ${(height * scale) / 2}px`;
 };
 
 const FONT_FAMILY_MAP: Record<FontFamily, string> = {
@@ -633,7 +621,7 @@ function drawRoundedPolygon(
 
 function drawLine(ctx: CanvasRenderingContext2D, line: Line) {
   ctx.save();
-    ctx.globalAlpha = (line.opacity ?? 100) / 100;
+  ctx.globalAlpha = (line.opacity ?? 100) / 100;
   ctx.strokeStyle = line.color;
   ctx.lineWidth = line.strokeWidth;
 
@@ -704,7 +692,6 @@ function drawLine(ctx: CanvasRenderingContext2D, line: Line) {
   }
 }
 
-
 let measureCtx: CanvasRenderingContext2D | null = null;
 function getMeasureCtx(): CanvasRenderingContext2D {
   if (!measureCtx) {
@@ -721,7 +708,7 @@ export interface TextBoxMetrics {
 }
 
 // All values are in WORLD units (unscaled) — same space as tb.fontSize, tb.x, tb.y.
- function measureTextBox(
+function measureTextBox(
   text: string,
   fontSize: number,
   fontFamily: string,
@@ -740,16 +727,11 @@ function hitTestTextBoxRotationHandle(
   tb: TextBox,
   x: number,
   y: number,
-  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
   scale: number,
 ): boolean {
-  ctx.font = `normal ${tb.fontSize}px ${resolveFontFamily(tb.fontFamily)}`;
-  const lines = tb.text.split("\n");
-  const lineHeight = tb.fontSize * 1.4;
-  const width = Math.max(...lines.map((l) => ctx.measureText(l).width));
-  const height = lines.length * lineHeight;
   const PAD = 6 / scale;
-
   const centerX = tb.x + width / 2;
   const centerY = tb.y + height / 2;
   const rotation = tb.rotation || 0;
@@ -760,7 +742,7 @@ function hitTestTextBoxRotationHandle(
   const localX = dx * Math.cos(-rotation) - dy * Math.sin(-rotation);
   const localY = dx * Math.sin(-rotation) + dy * Math.cos(-rotation);
 
-  const ddx = localX - 0;
+  const ddx = localX;
   const ddy = localY - (-hh - 20 / scale);
   return ddx * ddx + ddy * ddy <= (10 / scale) * (10 / scale);
 }
@@ -776,5 +758,5 @@ export {
   drawLine,
   hitTestTextBoxRotationHandle,
   resolveFontFamily,
-  measureTextBox
+  measureTextBox,
 };

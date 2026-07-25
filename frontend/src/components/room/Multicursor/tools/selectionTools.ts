@@ -1,6 +1,7 @@
 import type { RefObject } from "react";
 import type { Line, Shape, TextBox, ToolSetters } from "../types";
 import { socket } from "../../../../services/socket";
+import { measureTextBox } from "../canvas";
 const handleElementDelete = (
   e: KeyboardEvent,
   selectedId: React.RefObject<string | null>,
@@ -223,16 +224,8 @@ function emitElementUpdate(roomId: string, id: string, changes: Record<string, u
 }
 
 // ---- rotation math ----
-function computeTextBoxRotation(
-  tb: TextBox,
-  x: number,
-  y: number,
-  ctx: CanvasRenderingContext2D,
-): number {
-  ctx.font = `normal ${tb.fontSize}px monospace`;
-  const lines = tb.text.split("\n");
-  const width = Math.max(...lines.map((l) => ctx.measureText(l).width));
-  const height = lines.length * tb.fontSize * 1.4;
+function computeTextBoxRotation(tb: TextBox, x: number, y: number): number {
+  const { width, height } = measureTextBox(tb.text, tb.fontSize, tb.fontFamily);
   const centerX = tb.x + width / 2;
   const centerY = tb.y + height / 2;
   return Math.atan2(y - centerY, x - centerX) + Math.PI / 2;
