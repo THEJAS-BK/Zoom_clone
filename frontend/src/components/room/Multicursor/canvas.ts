@@ -196,134 +196,140 @@ const redraw = (
     const scale = camera.current.scale;
 
     const drawSelectionBox = (
-      left: number,
-      top: number,
-      right: number,
-      bottom: number,
-      rotation = 0,
-      cx = (left + right) / 2,
-      cy = (top + bottom) / 2,
-    ) => {
-      const w = right - left;
-      const h = bottom - top;
-      const PAD = 6 / scale;
+  left: number,
+  top: number,
+  right: number,
+  bottom: number,
+  rotation = 0,
+  cx = (left + right) / 2,
+  cy = (top + bottom) / 2,
+  showCorners = true,
+) => {
+  const w = right - left;
+  const h = bottom - top;
+  const PAD = 6 / scale;
 
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(rotation);
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rotation);
 
-      // outline
-      ctx.strokeStyle = "blue";
-      ctx.lineWidth = 2 / scale;
-      ctx.setLineDash([]);
-      ctx.strokeRect(-w / 2 - PAD, -h / 2 - PAD, w + PAD * 2, h + PAD * 2);
+  // outline
+  ctx.strokeStyle = "#7C6FF0";
+  ctx.lineWidth = 2 / scale;
+  ctx.setLineDash([]);
+  ctx.strokeRect(-w / 2 - PAD, -h / 2 - PAD, w + PAD * 2, h + PAD * 2);
 
-      // rotation handle
+  // rotation handle
+  ctx.beginPath();
+  ctx.arc(0, -h / 2 - PAD - 20 / scale, 8 / scale, 0, Math.PI * 2);
+  ctx.fillStyle = "#7C6FF0";
+  ctx.fill();
+  ctx.strokeStyle = "#C4B5FD";
+  ctx.lineWidth = 2 / scale;
+  ctx.stroke();
+
+  // corner handles
+  if (showCorners) {
+    const corners = [
+      { x: -w / 2 - PAD, y: -h / 2 - PAD },
+      { x: w / 2 + PAD, y: -h / 2 - PAD },
+      { x: -w / 2 - PAD, y: h / 2 + PAD },
+      { x: w / 2 + PAD, y: h / 2 + PAD },
+    ];
+    const hs = 5 / scale;
+    corners.forEach((c) => {
       ctx.beginPath();
-      ctx.arc(0, -h / 2 - PAD - 20 / scale, 8 / scale, 0, Math.PI * 2);
-      ctx.fillStyle = "white";
+      ctx.rect(c.x - hs, c.y - hs, hs * 2, hs * 2);
+      ctx.fillStyle = "#7C6FF0";
       ctx.fill();
-      ctx.strokeStyle = "blue";
-      ctx.lineWidth = 2 / scale;
+      ctx.strokeStyle = "#C4B5FD";
       ctx.stroke();
+    });
+  }
 
-      // corner handles
-      const corners = [
-        { x: -w / 2 - PAD, y: -h / 2 - PAD },
-        { x: w / 2 + PAD, y: -h / 2 - PAD },
-        { x: -w / 2 - PAD, y: h / 2 + PAD },
-        { x: w / 2 + PAD, y: h / 2 + PAD },
-      ];
-      const hs = 5 / scale;
-      corners.forEach((c) => {
-        ctx.beginPath();
-        ctx.rect(c.x - hs, c.y - hs, hs * 2, hs * 2);
-        ctx.fillStyle = "white";
-        ctx.fill();
-        ctx.strokeStyle = "blue";
-        ctx.stroke();
-      });
+  ctx.restore();
+};
 
-      ctx.restore();
-    };
+const selectedShape = shapesRef?.current?.find((s) => s.id === id);
+if (selectedShape) {
+  const left = Math.min(
+    selectedShape.x,
+    selectedShape.x + selectedShape.width,
+  );
+  const top = Math.min(
+    selectedShape.y,
+    selectedShape.y + selectedShape.height,
+  );
+  const right = Math.max(
+    selectedShape.x,
+    selectedShape.x + selectedShape.width,
+  );
+  const bottom = Math.max(
+    selectedShape.y,
+    selectedShape.y + selectedShape.height,
+  );
+  drawSelectionBox(left, top, right, bottom, selectedShape.rotation || 0);
+}
 
-    const selectedShape = shapesRef?.current?.find((s) => s.id === id);
-    if (selectedShape) {
-      const left = Math.min(
-        selectedShape.x,
-        selectedShape.x + selectedShape.width,
-      );
-      const top = Math.min(
-        selectedShape.y,
-        selectedShape.y + selectedShape.height,
-      );
-      const right = Math.max(
-        selectedShape.x,
-        selectedShape.x + selectedShape.width,
-      );
-      const bottom = Math.max(
-        selectedShape.y,
-        selectedShape.y + selectedShape.height,
-      );
-      drawSelectionBox(left, top, right, bottom, selectedShape.rotation || 0);
-    }
+const selectedLine = linesRef?.current?.find((l) => l.id === id);
+if (selectedLine) {
+  ctx.save();
+  ctx.strokeStyle = "blue";
+  ctx.lineWidth = 2 / scale;
+  ctx.setLineDash([]);
 
-    const selectedLine = linesRef?.current?.find((l) => l.id === id);
-    if (selectedLine) {
-      ctx.save();
-      ctx.strokeStyle = "blue";
-      ctx.lineWidth = 2 / scale;
-      ctx.setLineDash([]);
+  // endpoint handles
+  for (const pt of [
+    { x: selectedLine.x1, y: selectedLine.y1 },
+    { x: selectedLine.x2, y: selectedLine.y2 },
+  ]) {
+    ctx.beginPath();
+    ctx.arc(pt.x, pt.y, 5 / scale, 0, Math.PI * 2);
+    ctx.fillStyle = "white";
+    ctx.fill();
+    ctx.stroke();
+  }
 
-      // endpoint handles
-      for (const pt of [
-        { x: selectedLine.x1, y: selectedLine.y1 },
-        { x: selectedLine.x2, y: selectedLine.y2 },
-      ]) {
-        ctx.beginPath();
-        ctx.arc(pt.x, pt.y, 5 / scale, 0, Math.PI * 2);
-        ctx.fillStyle = "white";
-        ctx.fill();
-        ctx.stroke();
-      }
+  // center handle — sits on the curve at t=0.5
+  const handleX =
+    selectedLine.cpx !== undefined
+      ? 0.25 * selectedLine.x1 +
+        0.5 * selectedLine.cpx +
+        0.25 * selectedLine.x2
+      : (selectedLine.x1 + selectedLine.x2) / 2;
+  const handleY =
+    selectedLine.cpy !== undefined
+      ? 0.25 * selectedLine.y1 +
+        0.5 * selectedLine.cpy +
+        0.25 * selectedLine.y2
+      : (selectedLine.y1 + selectedLine.y2) / 2;
+  ctx.beginPath();
+  ctx.arc(handleX, handleY, 5 / scale, 0, Math.PI * 2);
+  ctx.fillStyle = "white";
+  ctx.fill();
+  ctx.stroke();
 
-      // center handle — sits on the curve at t=0.5
-      const handleX =
-        selectedLine.cpx !== undefined
-          ? 0.25 * selectedLine.x1 +
-            0.5 * selectedLine.cpx +
-            0.25 * selectedLine.x2
-          : (selectedLine.x1 + selectedLine.x2) / 2;
-      const handleY =
-        selectedLine.cpy !== undefined
-          ? 0.25 * selectedLine.y1 +
-            0.5 * selectedLine.cpy +
-            0.25 * selectedLine.y2
-          : (selectedLine.y1 + selectedLine.y2) / 2;
-      ctx.beginPath();
-      ctx.arc(handleX, handleY, 5 / scale, 0, Math.PI * 2);
-      ctx.fillStyle = "white";
-      ctx.fill();
-      ctx.stroke();
+  ctx.restore();
+}
 
-      ctx.restore();
-    }
-
-    const selectedText = textBoxesRef?.current?.find((t) => t.id === id);
-    if (selectedText) {
-      const { width, height } = measureTextBox(
-        selectedText.text,
-        selectedText.fontSize,
-        selectedText.fontFamily,
-      );
-      drawSelectionBox(
-        selectedText.x,
-        selectedText.y,
-        selectedText.x + width,
-        selectedText.y + height,
-        selectedText.rotation || 0,
-      );
-    }
+const selectedText = textBoxesRef?.current?.find((t) => t.id === id);
+if (selectedText) {
+  const { width, height } = measureTextBox(
+    selectedText.text,
+    selectedText.fontSize,
+    selectedText.fontFamily,
+  );
+  drawSelectionBox(
+    selectedText.x,
+    selectedText.y,
+    selectedText.x + width,
+    selectedText.y + height,
+    selectedText.rotation || 0,
+    undefined,
+    undefined,
+    false, // no resize handles for textboxes
+  );
+}
   }
 };
 
