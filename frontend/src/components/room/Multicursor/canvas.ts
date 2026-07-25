@@ -309,23 +309,36 @@ const redraw = (
       ctx.restore();
     }
 
-    const selectedText = textBoxesRef?.current?.find((t) => t.id === id);
-    if (selectedText) {
-      ctx.font = `${selectedText.fontSize}px monospace`;
-      const lines = selectedText.text.split("\n");
-      const lineHeight = selectedText.fontSize * 1.4;
-      const width = Math.max(...lines.map((l) => ctx.measureText(l).width));
-      const height = lines.length * lineHeight;
-      drawSelectionBox(
-        selectedText.x,
-        selectedText.y,
-        selectedText.x + width,
-        selectedText.y + height,
-        selectedText.rotation || 0,
-      );
-    }
+   const selectedText = textBoxesRef?.current?.find((t) => t.id === id);
+if (selectedText) {
+  const { width, height } = measureTextBox(
+    selectedText.text,
+    selectedText.fontSize,
+    selectedText.fontFamily,
+  );
+  drawSelectionBox(
+    selectedText.x,
+    selectedText.y,
+    selectedText.x + width,
+    selectedText.y + height,
+    selectedText.rotation || 0,
+  );
+}
   }
 };
+
+const resizeTextarea = (el: HTMLTextAreaElement) => {
+  const { width, height } = measureTextBox(el.value, box.fontSize, box.fontFamily);
+  const leftPos = box.x * scale + camera.current.x;
+  const maxAllowed = window.innerWidth - leftPos - 20;
+
+  el.style.width = Math.min(width * scale + 20, Math.max(maxAllowed, 20)) + "px";
+  el.style.height = height * scale + 6 + "px";
+
+  // pivot must match drawTextBox's cx/cy exactly: box center, in local px from top-left
+  el.style.transformOrigin = `${(width * scale) / 2}px ${(height * scale) / 2}px`;
+};
+
 const FONT_FAMILY_MAP: Record<FontFamily, string> = {
   "hand-drawn": "'Caveat', cursive",
   normal: "'Inter', sans-serif",
@@ -692,7 +705,36 @@ function drawLine(ctx: CanvasRenderingContext2D, line: Line) {
 }
 
 
+let measureCtx: CanvasRenderingContext2D | null = null;
+function getMeasureCtx(): CanvasRenderingContext2D {
+  if (!measureCtx) {
+    measureCtx = document.createElement("canvas").getContext("2d")!;
+  }
+  return measureCtx;
+}
 
+export interface TextBoxMetrics {
+  width: number;
+  height: number;
+  lineHeight: number;
+  lines: string[];
+}
+
+// All values are in WORLD units (unscaled) — same space as tb.fontSize, tb.x, tb.y.
+ function measureTextBox(
+  text: string,
+  fontSize: number,
+  fontFamily: string,
+): TextBoxMetrics {
+  const ctx = getMeasureCtx();
+  ctx.font = `${fontSize}px ${resolveFontFamily(fontFamily)}`;
+  const lines = text.length ? text.split("\n") : [""];
+  const lineHeight = fontSize * 1.4;
+  const rawWidth = Math.max(...lines.map((l) => ctx.measureText(l).width));
+  const width = Math.max(rawWidth, fontSize * 0.5); // floor so empty/new box has caret room
+  const height = lines.length * lineHeight;
+  return { width, height, lineHeight, lines };
+}
 
 function hitTestTextBoxRotationHandle(
   tb: TextBox,
@@ -701,7 +743,7 @@ function hitTestTextBoxRotationHandle(
   ctx: CanvasRenderingContext2D,
   scale: number,
 ): boolean {
-  ctx.font = `normal ${tb.fontSize}px monospace`;
+  ctx.font = `normal ${tb.fontSize}px ${resolveFontFamily(tb.fontFamily)}`;
   const lines = tb.text.split("\n");
   const lineHeight = tb.fontSize * 1.4;
   const width = Math.max(...lines.map((l) => ctx.measureText(l).width));
@@ -733,5 +775,6 @@ export {
   drawShape,
   drawLine,
   hitTestTextBoxRotationHandle,
-  resolveFontFamily
+  resolveFontFamily,
+  measureTextBox
 };

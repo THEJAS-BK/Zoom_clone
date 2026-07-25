@@ -1,5 +1,6 @@
 // ---- hit tests ----
 
+import { resolveFontFamily } from "../canvas";
 import type { Shape, TextBox,Line } from "../types";
 
 function hitTestShape(shape: Shape, x: number, y: number): boolean {
@@ -65,7 +66,7 @@ function hitTestTextBox(
   y: number,
   ctx: CanvasRenderingContext2D,
 ): boolean {
-  ctx.font = `${tb.fontSize}px monospace`;
+  ctx.font = `${tb.fontSize}px ${resolveFontFamily(tb.fontFamily)}`;
   const lines = tb.text.split("\n");
   const lineHeight = tb.fontSize * 1.2;
   const width = Math.max(...lines.map((l) => ctx.measureText(l).width));

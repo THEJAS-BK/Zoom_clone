@@ -332,29 +332,22 @@ export function useSelection(
     };
 
 
-    const onDblClick = (e: MouseEvent) => {
-      if (activeTool !== "mouse") return;
-      const { x, y } = toCanvas(e.clientX, e.clientY);
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+ const onDblClick = (e: MouseEvent) => {
+  if (activeTool !== "mouse") return;
+  const { x, y } = toCanvas(e.clientX, e.clientY);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
 
-      const hitText = [...(textBoxesRef?.current ?? [])]
-        .reverse()
-        .find((t) => hitTestTextBox(t, x, y, ctx));
+  const hitText = [...(textBoxesRef?.current ?? [])]
+    .reverse()
+    .find((t) => hitTestTextBox(t, x, y,ctx));
 
-      if (hitText) {
-        activeTextBox.current = { ...hitText };
-        onEditTextBox?.();
-        doRedraw();
-        setTimeout(() => {
-          const textarea = document.querySelector("textarea");
-          if (textarea) {
-            textarea.value = hitText.text;
-            textarea.dispatchEvent(new Event("input", { bubbles: true }));
-          }
-        }, 0);
-      }
-    };
+  if (hitText) {
+    activeTextBox.current = { ...hitText };
+    onEditTextBox?.();
+    doRedraw();
+  }
+};
 
     const onKeyDown = (e: KeyboardEvent) => {
       handleElementDelete(

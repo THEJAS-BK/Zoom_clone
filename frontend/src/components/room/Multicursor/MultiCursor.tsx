@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useLayoutEffect,
+  useEffect,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import { socket } from "../../../services/socket";
 import { useNavigate } from "react-router-dom";
 const COLORS = ["#1f2937", "#f87171", "#22c55e", "#3b82f6", "#d97706"];
@@ -7,7 +14,7 @@ import { redraw, resolveFontFamily } from "./canvas";
 
 import VideoTab from "../VideoTab";
 //types
-import type { BoardImage, Stroke, Point, ActiveStroke } from "./types";
+import type { BoardImage, TextBox, Stroke, Point, ActiveStroke } from "./types";
 import { useSocketBoard } from "./hooks/useSocketBoard";
 import { useSocketDraw } from "./hooks/useSocketDraw";
 import { useCanvasZoom } from "./hooks/useCanvasZoom";
@@ -21,6 +28,7 @@ import { useShapes } from "./hooks/useShape";
 import { useLines } from "./hooks/useLines";
 import { useSelection } from "./hooks/useSelection";
 import { useDeleteElement } from "./hooks/useDeleteElement";
+import { measureTextBox } from "./canvas";
 
 //leftSide tools
 import { useToolSettings } from "../../../context/ToolBarLeftContext";
@@ -304,6 +312,86 @@ export default function MultiCursor({
     large: "w-[20%]",
   };
 
+  function TextBoxEditor({
+    box,
+    camera,
+    onInput,
+    onBlur,
+    textareaRef,
+  }: {
+    box: TextBox;
+    camera: React.RefObject<{ x: number; y: number; scale: number }>;
+    onInput: (text: string) => void;
+    onBlur: (text: string) => void;
+    textareaRef: RefObject<HTMLTextAreaElement | null>;
+  }) {
+    const scale = camera.current.scale;
+
+   const resizeTextarea = (el: HTMLTextAreaElement) => {
+  const { width, height } = measureTextBox(el.value, box.fontSize, box.fontFamily);
+  const leftPos = box.x * scale + camera.current.x;
+  const maxAllowed = window.innerWidth - leftPos - 20;
+
+  el.style.width = Math.min(width * scale + 20, Math.max(maxAllowed, 20)) + "px";
+  el.style.height = height * scale + 6 + "px";
+
+  // pivot must match drawTextBox's cx/cy exactly: box center, in local px from top-left
+  el.style.transformOrigin = `${(width * scale) / 2}px ${(height * scale) / 2}px`;
+};
+
+  useLayoutEffect(() => {
+  const el = textareaRef.current;
+  if (!el) return;
+  resizeTextarea(el);
+  const len = el.value.length;
+  el.focus();
+  el.setSelectionRange(len, len);
+}, [box.id]);// re-run when switching to a different box (key already remounts, this covers first paint)
+
+    return (
+      <textarea
+        ref={textareaRef}
+        key={box.id}
+        defaultValue={box.text}
+        
+        rows={1}
+        spellCheck={false}
+        style={{
+          color: "transparent",
+          caretColor: box.color,
+          position: "absolute",
+          left: box.x * scale + camera.current.x,
+          top: box.y * scale + camera.current.y,
+          transform: `rotate(${box.rotation ?? 0}rad)`,
+
+          border: "none",
+         
+          boxShadow: "none",
+          fontSize: box.fontSize * scale,
+          fontFamily: resolveFontFamily(box.fontFamily),
+          textAlign: box.textAlign as CanvasTextAlign,
+          fontWeight: "normal",
+          resize: "none",
+          overflow: "hidden",
+          whiteSpace: "pre-wrap",
+          wordBreak: "break-word",
+          padding: 0,
+          margin: 0,
+          boxSizing: "border-box",
+          lineHeight: `${box.fontSize * scale * 1.4}px`,
+          verticalAlign: "top",
+          background: "transparent",
+        }}
+        onInput={(e) => {
+          const el = e.currentTarget;
+          resizeTextarea(el);
+          onInput(el.value);
+        }}
+        onBlur={(e) => onBlur(e.target.value)}
+      />
+    );
+  }
+
   return (
     <div
       ref={wrapperRef}
@@ -348,107 +436,32 @@ export default function MultiCursor({
           overscrollBehavior: "none",
           overflow: "hidden",
         }}
-        defaultValue={activeTextBox.current?.text ?? ""}
         onClick={handleCanvasClick}
       />
 
-      {/* active textarea overlay */}
       {activeTextBox.current && (
-        <>
-          <span
-            ref={measureRef}
-            style={{
-              position: "absolute",
-              visibility: "hidden",
-              whiteSpace: "pre",
-              fontSize: activeTextBox.current.fontSize * camera.current.scale,
-              fontFamily: resolveFontFamily(activeTextBox.current.fontFamily),
-              top: -9999,
-            }}
-          />
-          <textarea
-            ref={textareaRef}
-            autoFocus
-            rows={1}
-            spellCheck={false}
-            style={{
-              color: "transparent",
-              caretColor: activeTextBox.current.color,
-              position: "absolute",
-              left:
-                activeTextBox.current.x * camera.current.scale +
-                camera.current.x,
-              top:
-                activeTextBox.current.y * camera.current.scale +
-                camera.current.y,
-              transform: `rotate(${activeTextBox.current.rotation ?? 0}rad)`,
-
-              border: "none",
-              outline: "none",
-
-              fontSize: activeTextBox.current.fontSize * camera.current.scale,
-              fontFamily: resolveFontFamily(activeTextBox.current.fontFamily),
-              fontWeight: "normal",
-              resize: "none",
-              overflow: "hidden",
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-              width: "20px",
-              height: `${activeTextBox.current.fontSize * camera.current.scale + 6}px`,
-              padding: 0,
-              margin: 0,
-              boxSizing: "border-box" as const,
-              lineHeight: `${activeTextBox.current.fontSize * camera.current.scale * 1.4}px`,
-              verticalAlign: "top",
-
-              background: "transparent",
-            }}
-            onInput={(e) => {
-              const el = e.currentTarget;
-              updateTextBoxContent(el.value);
-
-              const measure = measureRef.current!;
-              const scale = camera.current.scale;
-
-              const lines = el.value.split("\n");
-              const longest = lines.reduce(
-                (a, b) => (a.length > b.length ? a : b),
-                "",
-              );
-              measure.textContent = longest || " ";
-              measure.style.fontSize = `${activeTextBox.current!.fontSize * scale}px`;
-              if (!activeTextBox.current) return;
-              const fontFamily = resolveFontFamily(
-                activeTextBox.current.fontFamily,
-              );
-              measure.style.fontFamily = fontFamily;
-
-              const naturalWidth = measure.offsetWidth + 20;
-              const leftPos =
-                activeTextBox.current!.x * scale + camera.current.x;
-              const maxAllowed = window.innerWidth - leftPos - 20;
-
-              el.style.width =
-                Math.min(naturalWidth, Math.max(maxAllowed, 20)) + "px";
-              el.style.height = "auto";
-              el.style.height = el.scrollHeight + "px";
-
-              const rect = el.getBoundingClientRect();
-              autoPanIfNeeded(
-                camera,
-                rect.right,
-                rect.bottom,
-                () => setPanTick((t) => t + 1),
-                doRedraw,
-              );
-            }}
-            onBlur={(e) => {
-              finalizeTextBox(e.target.value);
-              editingExistingRef.current = false;
-              triggerUpdate();
-            }}
-          />
-        </>
+        <TextBoxEditor
+          key={activeTextBox.current.id}
+          box={activeTextBox.current}
+          camera={camera}
+          onInput={(text) => {
+            updateTextBoxContent(text);
+            const rect = textareaRef.current!.getBoundingClientRect();
+            autoPanIfNeeded(
+              camera,
+              rect.right,
+              rect.bottom,
+              () => setPanTick((t) => t + 1),
+              doRedraw,
+            );
+          }}
+          onBlur={(text) => {
+            finalizeTextBox(text);
+            editingExistingRef.current = false;
+            triggerUpdate();
+          }}
+          textareaRef={textareaRef}
+        />
       )}
     </div>
   );
