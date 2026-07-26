@@ -635,47 +635,88 @@ function drawLine(ctx: CanvasRenderingContext2D, line: Line) {
       ctx.setLineDash([]);
   }
 
-const pts = line.points;
+  const pts = line.points;
+  const dx = line.x2 - line.x1;
+  const dy = line.y2 - line.y1;
 
-ctx.beginPath();
-if (pts && pts.length > 2) {
-  ctx.moveTo(pts[0].x, pts[0].y);
+  ctx.beginPath();
 
-  if (line.arrowType === "curve") {
-    // smooth through each point using quadratic curves to segment midpoints
-    for (let i = 1; i < pts.length - 1; i++) {
-      const midX = (pts[i].x + pts[i + 1].x) / 2;
-      const midY = (pts[i].y + pts[i + 1].y) / 2;
-      ctx.quadraticCurveTo(pts[i].x, pts[i].y, midX, midY);
+  if (line.arrowType === "elbow") {
+    const r = Math.min(20, Math.abs(dx) / 2 || 20, Math.abs(dy) / 2 || 20);
+    const sx = dx >= 0 ? 1 : -1;
+    const sy = dy >= 0 ? 1 : -1;
+
+    ctx.moveTo(line.x1, line.y1);
+
+    if (Math.abs(dx) >= Math.abs(dy)) {
+      // horizontal -> vertical -> horizontal, bend column at the midpoint x
+      const midX = (line.x1 + line.x2) / 2;
+      ctx.lineTo(midX - sx * r, line.y1);
+      ctx.quadraticCurveTo(midX, line.y1, midX, line.y1 + sy * r);
+      ctx.lineTo(midX, line.y2 - sy * r);
+      ctx.quadraticCurveTo(midX, line.y2, midX + sx * r, line.y2);
+      ctx.lineTo(line.x2, line.y2);
+    } else {
+      // vertical -> horizontal -> vertical, bend row at the midpoint y
+      const midY = (line.y1 + line.y2) / 2;
+      ctx.lineTo(line.x1, midY - sy * r);
+      ctx.quadraticCurveTo(line.x1, midY, line.x1 + sx * r, midY);
+      ctx.lineTo(line.x2 - sx * r, midY);
+      ctx.quadraticCurveTo(line.x2, midY, line.x2, midY + sy * r);
+      ctx.lineTo(line.x2, line.y2);
     }
-    ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+  } else if (pts && pts.length > 2) {
+    ctx.moveTo(pts[0].x, pts[0].y);
+
+    if (line.arrowType === "curve") {
+      // smooth through each point using quadratic curves to segment midpoints
+      for (let i = 1; i < pts.length - 1; i++) {
+        const midX = (pts[i].x + pts[i + 1].x) / 2;
+        const midY = (pts[i].y + pts[i + 1].y) / 2;
+        ctx.quadraticCurveTo(pts[i].x, pts[i].y, midX, midY);
+      }
+      ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+    } else {
+      // sharp — unchanged, hard corners
+      for (let i = 1; i < pts.length; i++) {
+        ctx.lineTo(pts[i].x, pts[i].y);
+      }
+    }
   } else {
-    // sharp — unchanged, hard corners
-    for (let i = 1; i < pts.length; i++) {
-      ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.moveTo(line.x1, line.y1);
+    if (line.cpx !== undefined && line.cpy !== undefined) {
+      ctx.quadraticCurveTo(line.cpx, line.cpy, line.x2, line.y2);
+    } else {
+      ctx.lineTo(line.x2, line.y2);
     }
   }
-} else {
-  ctx.moveTo(line.x1, line.y1);
-  if (line.cpx !== undefined && line.cpy !== undefined) {
-    ctx.quadraticCurveTo(line.cpx, line.cpy, line.x2, line.y2);
-  } else {
-    ctx.lineTo(line.x2, line.y2);
-  }
-}
-ctx.stroke();
+  ctx.stroke();
 
   if (line.lineType === "arrow") {
-    // end-angle now uses the last real segment when points exist
-    const angle =
-      pts && pts.length > 2
-        ? Math.atan2(
-            pts[pts.length - 1].y - pts[pts.length - 2].y,
-            pts[pts.length - 1].x - pts[pts.length - 2].x,
-          )
-        : line.cpx !== undefined && line.cpy !== undefined
-          ? Math.atan2(line.y2 - line.cpy, line.x2 - line.cpx)
-          : Math.atan2(line.y2 - line.y1, line.x2 - line.x1);
+    let angle: number;
+    let startAngle: number;
+
+    if (line.arrowType === "elbow") {
+      if (Math.abs(dx) >= Math.abs(dy)) {
+        angle = dx >= 0 ? 0 : Math.PI;
+        startAngle = dx >= 0 ? Math.PI : 0;
+      } else {
+        angle = dy >= 0 ? Math.PI / 2 : -Math.PI / 2;
+        startAngle = dy >= 0 ? -Math.PI / 2 : Math.PI / 2;
+      }
+    } else if (pts && pts.length > 2) {
+      angle = Math.atan2(
+        pts[pts.length - 1].y - pts[pts.length - 2].y,
+        pts[pts.length - 1].x - pts[pts.length - 2].x,
+      );
+      startAngle = Math.atan2(pts[0].y - pts[1].y, pts[0].x - pts[1].x);
+    } else if (line.cpx !== undefined && line.cpy !== undefined) {
+      angle = Math.atan2(line.y2 - line.cpy, line.x2 - line.cpx);
+      startAngle = Math.atan2(line.y1 - line.cpy, line.x1 - line.cpx);
+    } else {
+      angle = Math.atan2(dy, dx);
+      startAngle = Math.atan2(line.y1 - line.y2, line.x1 - line.x2);
+    }
 
     const headLength = 12;
     ctx.setLineDash([]);
@@ -694,14 +735,6 @@ ctx.stroke();
     ctx.stroke();
 
     if (line.arrowHead === "classic") {
-      // start-angle now uses the first real segment when points exist
-      const startAngle =
-        pts && pts.length > 2
-          ? Math.atan2(pts[0].y - pts[1].y, pts[0].x - pts[1].x)
-          : line.cpx !== undefined && line.cpy !== undefined
-            ? Math.atan2(line.y1 - line.cpy, line.x1 - line.cpx)
-            : Math.atan2(line.y1 - line.y2, line.x1 - line.x2);
-
       ctx.beginPath();
       ctx.moveTo(line.x1, line.y1);
       ctx.lineTo(
@@ -715,6 +748,9 @@ ctx.stroke();
       );
       ctx.stroke();
     }
+
+    ctx.restore();
+    return;
   }
 
   ctx.restore();
