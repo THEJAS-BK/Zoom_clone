@@ -642,6 +642,10 @@ function drawLine(ctx: CanvasRenderingContext2D, line: Line) {
   ctx.beginPath();
 
   if (line.arrowType === "elbow") {
+     if (dx === 0 && dy === 0) {
+    ctx.restore();
+    return;
+  }
     const r = Math.min(20, Math.abs(dx) / 2 || 20, Math.abs(dy) / 2 || 20);
     const sx = dx >= 0 ? 1 : -1;
     const sy = dy >= 0 ? 1 : -1;

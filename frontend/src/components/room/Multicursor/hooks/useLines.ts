@@ -97,6 +97,10 @@ export function useLines(
     };
 
     const onMouseDown = (e: MouseEvent) => {
+      if(activeTool!== "line" && activeTool !== "arrow"&&activeLine){
+        finalizeLine();
+        return;
+      }
       if (isPlacing.current && activeLine.current) {
         const { x, y } = toCanvas(e.clientX, e.clientY);
 
