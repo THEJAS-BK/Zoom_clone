@@ -15,9 +15,9 @@ import { transparentPattern } from "../tools/colors";
 import { useRef } from "react";
 
 export default function CompactToolBar({
-  activeTool,
+  displayTool,
 }: {
-  activeTool: string | null;
+  displayTool: string | null;
 }) {
   const [panel, setPanel] = useState<string | null>(null);
 
@@ -34,7 +34,7 @@ export default function CompactToolBar({
       ? transparentPattern
       : { backgroundColor: fillColor };
 
-  const tools = ["pen", "text", "arrow", "line", "square", "diamond", "circle"];
+  const tools = ["pen", "text","straight", "arrow", "line", "square", "diamond", "circle"];
 
   useEffect(() => {
     if (panel === "") return;
@@ -54,7 +54,7 @@ export default function CompactToolBar({
   return (
     <div
       ref={containerRef}
-      className={`absolute text-white rounded-2xl bg-[#1f1f2b] p-3 shadow-xl left-3 top-1/4 flex flex-col z-20 ${tools.includes(activeTool ?? "") ? "p-2" : "hidden"}  gap-3`}
+      className={`absolute text-white rounded-2xl bg-[#1f1f2b] p-3 shadow-xl left-3 top-1/4 flex flex-col z-20 ${tools.includes(displayTool ?? "") ? "p-2" : "hidden"}  gap-3`}
     >
       <div
         className={`
@@ -86,7 +86,7 @@ export default function CompactToolBar({
         >
           {panel === "settings" && (
             <>
-              {activeTool === "pen" && (
+              {displayTool === "pen" && (
                 <>
                   <StrokeWidth />
                   <OpacitySlider />
@@ -94,7 +94,7 @@ export default function CompactToolBar({
                 </>
               )}
 
-              {activeTool === "text" && (
+              {displayTool === "text" && (
                 <>
                   <FontSetting />
                   <OpacitySlider />
@@ -102,28 +102,28 @@ export default function CompactToolBar({
                 </>
               )}
 
-              {activeTool === "arrow" && (
+              {displayTool === "arrow" && (
                 <>
                   <StrokeWidth />
                   <StrokeStyle />
-                  <ArrowSetting activeTool={activeTool} />
+                  <ArrowSetting activeTool={displayTool} />
                   <OpacitySlider />
                   <LayerControls />
                 </>
               )}
 
-              {activeTool === "line" && (
-                <>
+              {(displayTool === "line" || displayTool === "straight") && (
+                <>               
                   <StrokeWidth />
                   <StrokeStyle />
-                  <ArrowSetting activeTool={activeTool} />
+                  <ArrowSetting activeTool={displayTool} />
                   <EdgeSetting />
                   <OpacitySlider />
                   <LayerControls />
                 </>
               )}
 
-              {(activeTool === "square" || activeTool === "diamond") && (
+              {(displayTool === "square" || displayTool === "diamond") && (
                 <>
                   <StrokeWidth />
                   <StrokeStyle />
@@ -133,7 +133,7 @@ export default function CompactToolBar({
                 </>
               )}
 
-              {activeTool === "circle" && (
+              {displayTool === "circle" && (
                 <>
                   <StrokeWidth />
                   <StrokeStyle />

@@ -38,10 +38,11 @@ export default function ToolBarContainer() {
   const displayTool = lastTool.current || activeTool  ;
 
 
+
   return (
     <div >
       {isCompactView ? (
-        <CompactToolBar activeTool={displayTool} />
+        <CompactToolBar displayTool={displayTool} />
       ) : (
         <FullToolBar displayTool={displayTool} />
       )}

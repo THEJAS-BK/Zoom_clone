@@ -8,11 +8,11 @@ import {
 import { useToolSettings } from "../../../../context/ToolBarLeftContext";
 
 export default function ArrowSetting({ activeTool }: { activeTool: string }) {
-  const {  arrowType, setArrowType, arrowHead, setArrowHead } = useToolSettings();
+  const { arrowType, setArrowType, arrowHead, setArrowHead } =
+    useToolSettings();
   return (
     <div>
-
-      {activeTool !== "square" && activeTool !== "diamond" && activeTool !== "circle"&& activeTool!=="line"  && (
+      {activeTool !== "line" && activeTool !== "straight" && (
         <div className="mt-2">
           <span className="mb-2 text-sm  text-gray-300 ">Arrow type</span>
           <div className="flex gap-4">
@@ -38,7 +38,7 @@ export default function ArrowSetting({ activeTool }: { activeTool: string }) {
         </div>
       )}
 
-      {activeTool !== "square" && activeTool !== "diamond"&& activeTool !== "circle"&& activeTool!=="line" && (
+      {activeTool !== "line" && activeTool !== "straight" && (
         <div className="mt-2">
           <span className="mb-2 text-sm  text-gray-300 ">Arrowheads</span>
           <div className="flex gap-4">
