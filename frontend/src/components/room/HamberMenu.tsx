@@ -24,7 +24,7 @@ export default function HamberMenu({
 
   const [isOtherMembers, setIsOtherMembers] = useState(true);
 
-    const [openSubmenu, setOpenSubmenu] = useState<
+  const [openSubmenu, setOpenSubmenu] = useState<
     "video" | "follow" | "boardColor" | null
   >(null);
 
@@ -32,11 +32,10 @@ export default function HamberMenu({
     setOpenSubmenu((prev) => (prev === menu ? null : menu));
   };
 
-    const handleFollowUser = (socketId: string) => {
+  const handleFollowUser = (socketId: string) => {
     setFollowUserCamera((prev) => (prev === socketId ? "" : socketId));
     setSelectedMemId((prev) => (prev === socketId ? "" : socketId));
   };
-
 
   useEffect(() => {
     socket.emit("get-participants", roomId);
@@ -87,10 +86,6 @@ export default function HamberMenu({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [setIsHambergerMenuOpen]);
-
-
-
-
 
   return (
     <div
@@ -185,7 +180,7 @@ export default function HamberMenu({
               Follow user camera
             </div>
 
-            {openSubmenu==="follow" && (
+            {openSubmenu === "follow" && (
               <div className="absolute top-0 left-full ml-1 flex flex-col bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl min-w-[160px] z-40">
                 {isOtherMembers && (
                   <>
@@ -229,12 +224,12 @@ export default function HamberMenu({
             className="w-full flex items-center gap-2 px-4 py-2 text-sm text-left text-gray-200 hover:bg-white/10 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
-             toggleSubmenu("boardColor")
+              toggleSubmenu("boardColor");
             }}
           >
             Board colors
           </button>
-          {openSubmenu==="boardColor" && (
+          {openSubmenu === "boardColor" && (
             <div className="absolute top-0 left-full ml-1 flex p-1 justify-between bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl min-w-[140px] z-40">
               {boardColors.map((color) => (
                 <>
@@ -244,7 +239,13 @@ export default function HamberMenu({
                     className={`h-7 w-7 border rounded
                    ${color.value === boardColor ? `border-2 border-blue-300 ` : " border border-transparent"}
                     `}
-                    onClick={() => setBoardColor(color.value)}
+                    onClick={() => {
+                      setBoardColor(color.value);
+                      socket.emit("board-color-change", {
+                        roomId,
+                        color: color.value,
+                      });
+                    }}
                   ></div>
                 </>
               ))}

@@ -11,11 +11,7 @@ export function useSocketBoard(
   strokes: React.RefObject<Stroke[]>,
   doRedraw: () => void,
 ) {
-  const { setBoardColor, boardColor } = useToolSettings();
-
-  useEffect(() => {
-    socket.emit("board-color", { roomId, boardColor });
-  }, [boardColor]);
+  const {setBoardColor}=useToolSettings();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -42,11 +38,10 @@ export function useSocketBoard(
     });
 
     //board background color
+   socket.emit("board-color-request",roomId)
     socket.on("board-color", (color) => {
-      if(!color)
-        color="#27272A"
-      setBoardColor(color);
-    });
+    setBoardColor(color || "#27272A");
+  });
 
     return () => {
       socket.off("board-state");

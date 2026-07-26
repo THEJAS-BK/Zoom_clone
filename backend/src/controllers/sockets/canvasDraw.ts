@@ -13,12 +13,16 @@ export function registerCanvasHandler(
     socket.emit("board-state", roomBoards[roomId] ?? []);
     socket.emit("image-state", roomImages[roomId] ?? []);
     socket.emit("element-state", roomElements[roomId] ?? []);
-    socket.emit("board-color",roomBoardColors[roomId])
+    socket.emit("board-color-change",roomBoardColors[roomId]??"#27272A")
   });
   
-  socket.on("board-color",(roomId,color)=>{
+  socket.on("board-color-change",({roomId,color})=>{
     roomBoardColors[roomId]=color;
-    socket.to(roomId).emit(color)
+    socket.to(roomId).emit("board-color",color)
+  })
+
+  socket.on("board-color-request",(roomId)=>{
+     socket.emit("board-color", roomBoardColors[roomId] ?? "#27272A");
   })
 
 

@@ -90,6 +90,9 @@ export default function MultiCursor({
 
   
 
+  useEffect(()=>{
+       socket.emit("board-color-request",roomId)
+  },[])
   //view mode
   useEffect(() => {
     setIsViewMode(viewMode);
