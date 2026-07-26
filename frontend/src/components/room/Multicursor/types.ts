@@ -82,6 +82,7 @@ interface Line {
   userId: string;
   zIndex:number;
   opacity:number;
+   points?: { x: number; y: number }[];
 }
 
 type CanvasElement = TextBox | Shape | Line;

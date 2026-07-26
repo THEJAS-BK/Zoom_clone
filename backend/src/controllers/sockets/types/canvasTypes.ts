@@ -66,6 +66,7 @@ type CanvasElement =
   zIndex:number;
   opacity:number;
   userId: string;
+   points?: { x: number; y: number }[];
     };
 
 export type { Stroke, ImageElement, CanvasElement };

@@ -196,136 +196,135 @@ const redraw = (
     const scale = camera.current.scale;
 
     const drawSelectionBox = (
-  left: number,
-  top: number,
-  right: number,
-  bottom: number,
-  rotation = 0,
-  cx = (left + right) / 2,
-  cy = (top + bottom) / 2,
-) => {
-  const w = right - left;
-  const h = bottom - top;
-  const PAD = 6 / scale;
+      left: number,
+      top: number,
+      right: number,
+      bottom: number,
+      rotation = 0,
+      cx = (left + right) / 2,
+      cy = (top + bottom) / 2,
+    ) => {
+      const w = right - left;
+      const h = bottom - top;
+      const PAD = 6 / scale;
 
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.rotate(rotation);
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(rotation);
 
-  // outline
-  ctx.strokeStyle = "#7C6FF0";
-  ctx.lineWidth = 2 / scale;
-  ctx.setLineDash([]);
-  ctx.strokeRect(-w / 2 - PAD, -h / 2 - PAD, w + PAD * 2, h + PAD * 2);
+      // outline
+      ctx.strokeStyle = "#7C6FF0";
+      ctx.lineWidth = 2 / scale;
+      ctx.setLineDash([]);
+      ctx.strokeRect(-w / 2 - PAD, -h / 2 - PAD, w + PAD * 2, h + PAD * 2);
 
-  // rotation handle
-  ctx.beginPath();
-  ctx.arc(0, -h / 2 - PAD - 20 / scale, 8 / scale, 0, Math.PI * 2);
-  ctx.fillStyle = "#7C6FF0";
-  ctx.fill();
-  ctx.strokeStyle = "#C4B5FD";
-  ctx.lineWidth = 2 / scale;
-  ctx.stroke();
-
-  // corner handles
-
-    const corners = [
-      { x: -w / 2 - PAD, y: -h / 2 - PAD },
-      { x: w / 2 + PAD, y: -h / 2 - PAD },
-      { x: -w / 2 - PAD, y: h / 2 + PAD },
-      { x: w / 2 + PAD, y: h / 2 + PAD },
-    ];
-    const hs = 5 / scale;
-    corners.forEach((c) => {
+      // rotation handle
       ctx.beginPath();
-      ctx.rect(c.x - hs, c.y - hs, hs * 2, hs * 2);
+      ctx.arc(0, -h / 2 - PAD - 20 / scale, 8 / scale, 0, Math.PI * 2);
       ctx.fillStyle = "#7C6FF0";
       ctx.fill();
       ctx.strokeStyle = "#C4B5FD";
+      ctx.lineWidth = 2 / scale;
       ctx.stroke();
-    });
-  
 
-  ctx.restore();
-};
+      // corner handles
 
-const selectedShape = shapesRef?.current?.find((s) => s.id === id);
-if (selectedShape) {
-  const left = Math.min(
-    selectedShape.x,
-    selectedShape.x + selectedShape.width,
-  );
-  const top = Math.min(
-    selectedShape.y,
-    selectedShape.y + selectedShape.height,
-  );
-  const right = Math.max(
-    selectedShape.x,
-    selectedShape.x + selectedShape.width,
-  );
-  const bottom = Math.max(
-    selectedShape.y,
-    selectedShape.y + selectedShape.height,
-  );
-  drawSelectionBox(left, top, right, bottom, selectedShape.rotation || 0);
-}
+      const corners = [
+        { x: -w / 2 - PAD, y: -h / 2 - PAD },
+        { x: w / 2 + PAD, y: -h / 2 - PAD },
+        { x: -w / 2 - PAD, y: h / 2 + PAD },
+        { x: w / 2 + PAD, y: h / 2 + PAD },
+      ];
+      const hs = 5 / scale;
+      corners.forEach((c) => {
+        ctx.beginPath();
+        ctx.rect(c.x - hs, c.y - hs, hs * 2, hs * 2);
+        ctx.fillStyle = "#7C6FF0";
+        ctx.fill();
+        ctx.strokeStyle = "#C4B5FD";
+        ctx.stroke();
+      });
 
-const selectedLine = linesRef?.current?.find((l) => l.id === id);
-if (selectedLine) {
-  ctx.save();
-  ctx.strokeStyle = "blue";
-  ctx.lineWidth = 2 / scale;
-  ctx.setLineDash([]);
+      ctx.restore();
+    };
 
-  // endpoint handles
-  for (const pt of [
-    { x: selectedLine.x1, y: selectedLine.y1 },
-    { x: selectedLine.x2, y: selectedLine.y2 },
-  ]) {
-    ctx.beginPath();
-    ctx.arc(pt.x, pt.y, 5 / scale, 0, Math.PI * 2);
-    ctx.fillStyle = "white";
-    ctx.fill();
-    ctx.stroke();
-  }
+    const selectedShape = shapesRef?.current?.find((s) => s.id === id);
+    if (selectedShape) {
+      const left = Math.min(
+        selectedShape.x,
+        selectedShape.x + selectedShape.width,
+      );
+      const top = Math.min(
+        selectedShape.y,
+        selectedShape.y + selectedShape.height,
+      );
+      const right = Math.max(
+        selectedShape.x,
+        selectedShape.x + selectedShape.width,
+      );
+      const bottom = Math.max(
+        selectedShape.y,
+        selectedShape.y + selectedShape.height,
+      );
+      drawSelectionBox(left, top, right, bottom, selectedShape.rotation || 0);
+    }
 
-  // center handle — sits on the curve at t=0.5
-  const handleX =
-    selectedLine.cpx !== undefined
-      ? 0.25 * selectedLine.x1 +
-        0.5 * selectedLine.cpx +
-        0.25 * selectedLine.x2
-      : (selectedLine.x1 + selectedLine.x2) / 2;
-  const handleY =
-    selectedLine.cpy !== undefined
-      ? 0.25 * selectedLine.y1 +
-        0.5 * selectedLine.cpy +
-        0.25 * selectedLine.y2
-      : (selectedLine.y1 + selectedLine.y2) / 2;
-  ctx.beginPath();
-  ctx.arc(handleX, handleY, 5 / scale, 0, Math.PI * 2);
-  ctx.fillStyle = "white";
-  ctx.fill();
-  ctx.stroke();
+    const selectedLine = linesRef?.current?.find((l) => l.id === id);
+    if (selectedLine) {
+      ctx.save();
+      ctx.strokeStyle = "blue";
+      ctx.lineWidth = 2 / scale;
+      ctx.setLineDash([]);
 
-  ctx.restore();
-}
+      // endpoint handles
+      for (const pt of [
+        { x: selectedLine.x1, y: selectedLine.y1 },
+        { x: selectedLine.x2, y: selectedLine.y2 },
+      ]) {
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 5 / scale, 0, Math.PI * 2);
+        ctx.fillStyle = "white";
+        ctx.fill();
+        ctx.stroke();
+      }
 
-const selectedText = textBoxesRef?.current?.find((t) => t.id === id);
-if (selectedText) {
-  const { width, height } = measureTextBox(
-    selectedText.text,
-    selectedText.fontSize,
-    selectedText.fontFamily,
-  );
-  drawSelectionBox(
-    selectedText.x,
-    selectedText.y,
-    selectedText.x + width,
-    selectedText.y + height,
-    selectedText.rotation || 0,
-  );
-}
+      // center handle — sits on the curve at t=0.5
+      const handleX =
+        selectedLine.cpx !== undefined
+          ? 0.25 * selectedLine.x1 +
+            0.5 * selectedLine.cpx +
+            0.25 * selectedLine.x2
+          : (selectedLine.x1 + selectedLine.x2) / 2;
+      const handleY =
+        selectedLine.cpy !== undefined
+          ? 0.25 * selectedLine.y1 +
+            0.5 * selectedLine.cpy +
+            0.25 * selectedLine.y2
+          : (selectedLine.y1 + selectedLine.y2) / 2;
+      ctx.beginPath();
+      ctx.arc(handleX, handleY, 5 / scale, 0, Math.PI * 2);
+      ctx.fillStyle = "white";
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    const selectedText = textBoxesRef?.current?.find((t) => t.id === id);
+    if (selectedText) {
+      const { width, height } = measureTextBox(
+        selectedText.text,
+        selectedText.fontSize,
+        selectedText.fontFamily,
+      );
+      drawSelectionBox(
+        selectedText.x,
+        selectedText.y,
+        selectedText.x + width,
+        selectedText.y + height,
+        selectedText.rotation || 0,
+      );
+    }
   }
 };
 
@@ -630,31 +629,56 @@ function drawLine(ctx: CanvasRenderingContext2D, line: Line) {
       break;
     case "dotted":
       ctx.setLineDash([2, 6]);
-      ctx.lineCap = "round"; // makes dots look like dots, not tiny dashes
+      ctx.lineCap = "round";
       break;
     default:
       ctx.setLineDash([]);
   }
 
-  ctx.beginPath();
-  ctx.moveTo(line.x1, line.y1);
+const pts = line.points;
 
+ctx.beginPath();
+if (pts && pts.length > 2) {
+  ctx.moveTo(pts[0].x, pts[0].y);
+
+  if (line.arrowType === "curve") {
+    // smooth through each point using quadratic curves to segment midpoints
+    for (let i = 1; i < pts.length - 1; i++) {
+      const midX = (pts[i].x + pts[i + 1].x) / 2;
+      const midY = (pts[i].y + pts[i + 1].y) / 2;
+      ctx.quadraticCurveTo(pts[i].x, pts[i].y, midX, midY);
+    }
+    ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+  } else {
+    // sharp — unchanged, hard corners
+    for (let i = 1; i < pts.length; i++) {
+      ctx.lineTo(pts[i].x, pts[i].y);
+    }
+  }
+} else {
+  ctx.moveTo(line.x1, line.y1);
   if (line.cpx !== undefined && line.cpy !== undefined) {
     ctx.quadraticCurveTo(line.cpx, line.cpy, line.x2, line.y2);
   } else {
     ctx.lineTo(line.x2, line.y2);
   }
-  ctx.stroke();
+}
+ctx.stroke();
 
   if (line.lineType === "arrow") {
+    // end-angle now uses the last real segment when points exist
     const angle =
-      line.cpx !== undefined && line.cpy !== undefined
-        ? Math.atan2(line.y2 - line.cpy, line.x2 - line.cpx)
-        : Math.atan2(line.y2 - line.y1, line.x2 - line.x1);
+      pts && pts.length > 2
+        ? Math.atan2(
+            pts[pts.length - 1].y - pts[pts.length - 2].y,
+            pts[pts.length - 1].x - pts[pts.length - 2].x,
+          )
+        : line.cpx !== undefined && line.cpy !== undefined
+          ? Math.atan2(line.y2 - line.cpy, line.x2 - line.cpx)
+          : Math.atan2(line.y2 - line.y1, line.x2 - line.x1);
 
     const headLength = 12;
-
-    ctx.setLineDash([]); // arrowhead always solid, regardless of line style
+    ctx.setLineDash([]);
 
     ctx.beginPath();
     ctx.moveTo(line.x2, line.y2);
@@ -670,10 +694,13 @@ function drawLine(ctx: CanvasRenderingContext2D, line: Line) {
     ctx.stroke();
 
     if (line.arrowHead === "classic") {
+      // start-angle now uses the first real segment when points exist
       const startAngle =
-        line.cpx !== undefined && line.cpy !== undefined
-          ? Math.atan2(line.y1 - line.cpy, line.x1 - line.cpx)
-          : Math.atan2(line.y1 - line.y2, line.x1 - line.x2);
+        pts && pts.length > 2
+          ? Math.atan2(pts[0].y - pts[1].y, pts[0].x - pts[1].x)
+          : line.cpx !== undefined && line.cpy !== undefined
+            ? Math.atan2(line.y1 - line.cpy, line.x1 - line.cpx)
+            : Math.atan2(line.y1 - line.y2, line.x1 - line.x2);
 
       ctx.beginPath();
       ctx.moveTo(line.x1, line.y1);
@@ -689,6 +716,8 @@ function drawLine(ctx: CanvasRenderingContext2D, line: Line) {
       ctx.stroke();
     }
   }
+
+  ctx.restore();
 }
 
 let measureCtx: CanvasRenderingContext2D | null = null;

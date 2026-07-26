@@ -12,7 +12,7 @@ export default function ArrowSetting({ activeTool }: { activeTool: string }) {
     useToolSettings();
   return (
     <div>
-      {activeTool !== "line" && activeTool !== "straight" && (
+      
         <div className="mt-2">
           <span className="mb-2 text-sm  text-gray-300 ">Arrow type</span>
           <div className="flex gap-4">
@@ -36,7 +36,7 @@ export default function ArrowSetting({ activeTool }: { activeTool: string }) {
             </div>
           </div>
         </div>
-      )}
+      
 
       {activeTool !== "line" && activeTool !== "straight" && (
         <div className="mt-2">

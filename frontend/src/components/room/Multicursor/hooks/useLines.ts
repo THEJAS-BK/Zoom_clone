@@ -13,19 +13,26 @@ export function useLines(
   userIdRef: React.RefObject<string>,
   activeTool: string | null,
   strokeColor: string,
-  shapesRef:RefObject<Shape[]>,
-   textBoxesRef: React.RefObject<TextBox[]>,
+  shapesRef: RefObject<Shape[]>,
+  textBoxesRef: React.RefObject<TextBox[]>,
   doRedraw: () => void,
 ) {
   const isDragging = useRef(false);
+  const isPlacing = useRef(false);
 
   const toCanvas = (clientX: number, clientY: number) => ({
     x: (clientX - camera.current.x) / camera.current.scale,
     y: (clientY - camera.current.y) / camera.current.scale,
   });
 
-  const { strokeWidth,opacity, strokeStyle, arrowType, arrowHead, selectedEle } =
-    useToolSettings();
+  const {
+    strokeWidth,
+    opacity,
+    strokeStyle,
+    arrowType,
+    arrowHead,
+    selectedEle,
+  } = useToolSettings();
 
   useEffect(() => {
     if (activeTool !== "mouse" || !selectedEle || selectedEle.type != "line")
@@ -35,11 +42,17 @@ export function useLines(
     selectedLine.arrowHead = arrowHead;
     selectedLine.arrowType = arrowType;
     selectedLine.lineStyle = strokeStyle;
-    selectedLine.opacity=opacity;
+    selectedLine.opacity = opacity;
     socket.emit("element-update", {
       roomId,
       id: selectedLine.id,
-      changes: { arrowHead, arrowType, strokeWidth, lineStyle: strokeStyle,opacity },
+      changes: {
+        arrowHead,
+        arrowType,
+        strokeWidth,
+        lineStyle: strokeStyle,
+        opacity,
+      },
     });
 
     doRedraw();
@@ -49,7 +62,73 @@ export function useLines(
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    const finalizeLine = () => {
+      if (!activeLine.current) return;
+      isPlacing.current = false;
+
+      let line = activeLine.current;
+      activeLine.current = null;
+
+      if (line.points && line.points.length > 2) {
+        line = { ...line, points: line.points.slice(0, -1) };
+      }
+
+      const dx = line.x2 - line.x1;
+      const dy = line.y2 - line.y1;
+      if (!line.points && dx * dx + dy * dy < 25) {
+        socket.emit("element-delete", { roomId, id: line.id });
+        doRedraw();
+        return;
+      }
+
+      socket.emit("element-update", {
+        roomId,
+        id: line.id,
+        changes: {
+          points: line.points,
+          x1: line.x1,
+          x2: line.x2,
+          y1: line.y1,
+          y2: line.y2,
+        },
+      });
+      linesRef.current = [...linesRef.current, line];
+      doRedraw();
+    };
+
     const onMouseDown = (e: MouseEvent) => {
+      if (isPlacing.current && activeLine.current) {
+        const { x, y } = toCanvas(e.clientX, e.clientY);
+
+        if (arrowType === "elbow") {
+          activeLine.current = { ...activeLine.current, x2: x, y2: y };
+          finalizeLine();
+          return;
+        }
+
+        // straight/curve: this click fixes the previewed point and opens a new segment
+        const pts = activeLine.current.points ?? [
+          { x: activeLine.current.x1, y: activeLine.current.y1 },
+          { x: activeLine.current.x2, y: activeLine.current.y2 },
+        ];
+        pts[pts.length - 1] = { x, y };
+        pts.push({ x, y }); // new trailing point, follows cursor until next click/Enter/Escape
+
+        activeLine.current = {
+          ...activeLine.current,
+          points: pts,
+          x2: x,
+          y2: y,
+        };
+        socket.emit("element-update", {
+          roomId,
+          id: activeLine.current.id,
+          changes: { points: pts, x2: x, y2: y },
+        });
+        doRedraw();
+        return;
+      }
+
       if (activeTool !== "line" && activeTool !== "arrow") return;
       const { x, y } = toCanvas(e.clientX, e.clientY);
       isDragging.current = true;
@@ -67,7 +146,7 @@ export function useLines(
         arrowType,
         arrowHead,
         opacity,
-        zIndex:getNextZIndex(shapesRef, linesRef, textBoxesRef),
+        zIndex: getNextZIndex(shapesRef, linesRef, textBoxesRef),
         userId: userIdRef.current,
       };
       const line = activeLine.current;
@@ -76,19 +155,33 @@ export function useLines(
     };
 
     const onMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current || !activeLine.current) return;
+      if ((!isDragging.current && !isPlacing.current) || !activeLine.current)
+        return;
       const { x, y } = toCanvas(e.clientX, e.clientY);
+      const line = activeLine.current;
+
+      const points = line.points
+        ? line.points.map((p, i) =>
+            i === line.points!.length - 1 ? { x, y } : p,
+          )
+        : undefined;
+
       activeLine.current = {
-        ...activeLine.current,
+        ...line,
         x2: x,
         y2: y,
+        ...(points ? { points } : {}),
       };
-
-      const line = activeLine.current;
       socket.emit("element-update", {
         roomId,
         id: line.id,
-        changes: { x1: line.x1, x2: line.x2, y1: line.y1, y2: line.y2 },
+        changes: {
+          x1: line.x1,
+          x2: x,
+          y1: line.y1,
+          y2: y,
+          ...(points ? { points } : {}),
+        },
       });
       requestAnimationFrame(doRedraw);
     };
@@ -98,28 +191,41 @@ export function useLines(
       isDragging.current = false;
 
       const line = activeLine.current;
-      activeLine.current = null;
-
       const dx = line.x2 - line.x1;
       const dy = line.y2 - line.y1;
+
       if (dx * dx + dy * dy < 25) {
-        socket.emit("element-delete", { roomId, id: line.id });
-        doRedraw();
+        isPlacing.current = true;
         return;
       }
 
+      activeLine.current = null;
       linesRef.current = [...linesRef.current, line];
       doRedraw();
     };
 
+    const onKeyDown = (e: KeyboardEvent) => {
+  if (!isPlacing.current || !activeLine.current) return;
+  if (e.key === "Escape") {
+    socket.emit("element-delete", { roomId, id: activeLine.current.id });
+    isPlacing.current = false;
+    activeLine.current = null;
+    doRedraw();
+  } else if (e.key === "Enter") {
+    finalizeLine();
+  }
+};
+
     canvas.addEventListener("mousedown", onMouseDown);
     canvas.addEventListener("mousemove", onMouseMove);
     canvas.addEventListener("mouseup", onMouseUp);
+    window.addEventListener("keydown", onKeyDown);
 
     return () => {
       canvas.removeEventListener("mousedown", onMouseDown);
       canvas.removeEventListener("mousemove", onMouseMove);
       canvas.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener("keydown", onKeyDown);
     };
   }, [
     activeTool,
