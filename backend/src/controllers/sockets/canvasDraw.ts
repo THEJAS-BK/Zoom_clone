@@ -6,13 +6,21 @@ export function registerCanvasHandler(
   roomBoards: Record<string, Stroke[]>,
   roomImages: Record<string, ImageElement[]>,
   roomElements: Record<string, CanvasElement[]>,
+  roomBoardColors:Record<string,string>
 ) {
   //intial state of the board
   socket.on("board-state", (roomId) => {
     socket.emit("board-state", roomBoards[roomId] ?? []);
     socket.emit("image-state", roomImages[roomId] ?? []);
     socket.emit("element-state", roomElements[roomId] ?? []);
+    socket.emit("board-color",roomBoardColors[roomId])
   });
+  
+  socket.on("board-color",(roomId,color)=>{
+    roomBoardColors[roomId]=color;
+    socket.to(roomId).emit(color)
+  })
+
 
   socket.on("stroke-start", (data) => {
     socket.to(data.roomId).emit("stroke-start", data);

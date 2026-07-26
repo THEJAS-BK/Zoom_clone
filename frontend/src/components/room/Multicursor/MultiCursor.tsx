@@ -86,7 +86,9 @@ export default function MultiCursor({
   useEffect(() => {
     setStrokeColor(color);
   }, []);
-  const { activeTool, selectedId } = useToolSettings();
+  const { activeTool, selectedId, } = useToolSettings();
+
+  
 
   //view mode
   useEffect(() => {
@@ -107,6 +109,7 @@ export default function MultiCursor({
     opacity,
     fillColor,
     tabSize,
+    boardColor
   } = useToolSettings();
 
   useEffect(() => {
@@ -441,11 +444,11 @@ export default function MultiCursor({
 
       <canvas
         ref={canvasRef}
-        className="bg-gray-700"
         style={{
           cursor: getCursorStyle(activeTool),
           overscrollBehavior: "none",
           overflow: "hidden",
+          backgroundColor:boardColor
         }}
         onClick={handleCanvasClick}
       />

@@ -16,6 +16,7 @@ let activeRooms: Record<string, Set<string>> = {};
 const roomElements: Record<string, CanvasElement[]> = {};
 const roomBoards: Record<string, Stroke[]> = {};
 const roomImages: Record<string, ImageElement[]> = {};
+const roomBoardColors: Record<string, string> = {};
 
 const setSocketConnection = (server: any) => {
   const io = new Server(server, {
@@ -46,7 +47,7 @@ const setSocketConnection = (server: any) => {
     registerRoomHandler(socket,io, activeRooms);
     registerWebRtcHandler(socket, io, activeRooms);
     registerChatInterfaceHandler(socket, io);
-    registerCanvasHandler(socket, roomBoards, roomImages, roomElements);
+    registerCanvasHandler(socket, roomBoards, roomImages, roomElements,roomBoardColors);
     registerImageHandler(socket, roomImages);
     registerFollowUserCamera(socket,io)
   });
