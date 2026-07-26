@@ -37,4 +37,11 @@ const colorShades: Record<string, string[]> = {
     backgroundColor: "#3a3a3a",
   };
 
-export {colorShades, strokeColors, backgroundColors, transparentPattern}
+  const boardColors = [
+  { name: "white", value: "#FFFFFF" },
+  { name: "gray",  value: "#374151" }, // gray-700
+  { name: "black", value: "#18181B" }, // zinc-900, not pure black
+  { name: "dark-grey", value: "#27272A" }, // zinc-800
+];
+
+export {colorShades,boardColors, strokeColors, backgroundColors, transparentPattern}

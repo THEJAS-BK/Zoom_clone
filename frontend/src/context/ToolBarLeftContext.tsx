@@ -102,6 +102,10 @@ type ToolSettings = {
   //tick mark toggle
   selectedMemId: string;
   setSelectedMemId: Dispatch<SetStateAction<string>>;
+
+  //board colors
+  boardColor:string;
+  setBoardColor: Dispatch<SetStateAction<string>>;
 };
 
 const ToolBarLeftContext = createContext<ToolSettings | null>(null);
@@ -155,7 +159,7 @@ export function ToolSettingsProvider({
   //hamberger menu
   const [followUserCamera, setFollowUserCamera] = useState("");
   const [selectedMemId, setSelectedMemId] = useState("");
-
+  const [boardColor,setBoardColor]=useState("#374151")
   return (
     <ToolBarLeftContext.Provider
       value={{
@@ -213,6 +217,7 @@ export function ToolSettingsProvider({
         setFollowUserCamera,
         selectedMemId,
         setSelectedMemId,
+        boardColor,setBoardColor
       }}
     >
       {children}

@@ -3,6 +3,7 @@ import { useToolSettings } from "../../context/ToolBarLeftContext";
 import { Presentation, Check } from "lucide-react";
 import type { Participants } from "./Multicursor/types";
 import { socket } from "../../services/socket";
+import { boardColors } from "./LeftToolBar/tools/colors";
 
 interface HamberMenuProps {
   roomId: string;
@@ -17,17 +18,28 @@ export default function HamberMenu({
   setOpenCursor,
   setIsHambergerMenuOpen,
 }: HamberMenuProps) {
-  const [followMenuOpen, setFollowMenuOpen] = useState(false);
-  const [videoSettingsOpen, setVideoSettingsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const [members, setMembers] = useState<Participants[]>([]);
 
   const [isOtherMembers, setIsOtherMembers] = useState(true);
 
+    const [openSubmenu, setOpenSubmenu] = useState<
+    "video" | "follow" | "boardColor" | null
+  >(null);
+
+  const toggleSubmenu = (menu: "video" | "follow" | "boardColor") => {
+    setOpenSubmenu((prev) => (prev === menu ? null : menu));
+  };
+
+    const handleFollowUser = (socketId: string) => {
+    setFollowUserCamera((prev) => (prev === socketId ? "" : socketId));
+    setSelectedMemId((prev) => (prev === socketId ? "" : socketId));
+  };
+
+
   useEffect(() => {
     socket.emit("get-participants", roomId);
-
     const handleList = (members: Participants[]) => {
       if (members.length === 1) {
         setIsOtherMembers(false);
@@ -52,6 +64,8 @@ export default function HamberMenu({
     setFollowUserCamera,
     selectedMemId,
     setSelectedMemId,
+    boardColor,
+    setBoardColor,
   } = useToolSettings();
 
   useEffect(() => {
@@ -74,10 +88,9 @@ export default function HamberMenu({
     };
   }, [setIsHambergerMenuOpen]);
 
-  const handleFollowUser = (socketId: string) => {
-    setFollowUserCamera((prev)=>prev===socketId?"":socketId);
-    setSelectedMemId((prev)=>prev===socketId?"":socketId);
-  };
+
+
+
 
   return (
     <div
@@ -110,13 +123,14 @@ export default function HamberMenu({
             className="w-full flex items-center gap-2 px-4 py-2 text-sm text-left text-gray-200 hover:bg-white/10 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
-              setVideoSettingsOpen((prev) => !prev);
+              e.stopPropagation();
+              toggleSubmenu("video");
             }}
           >
             Video settings
           </button>
 
-          {videoSettingsOpen && (
+          {openSubmenu === "video" && (
             <div className="absolute top-0 left-full ml-1 flex flex-col bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl min-w-[140px] z-40">
               <button
                 className="px-3 py-2 text-sm text-left text-gray-200 hover:bg-white/10 transition-colors"
@@ -165,13 +179,13 @@ export default function HamberMenu({
         {!viewMode && (
           <li className="relative ">
             <div
-              className="px-4 py-2 text-sm text-gray-200 hover:bg-white/10 cursor-pointer transition-colors border border-white/10"
-              onClick={() => setFollowMenuOpen((prev) => !prev)}
+              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-left text-gray-200 hover:bg-white/10 transition-colors"
+              onClick={() => toggleSubmenu("follow")}
             >
               Follow user camera
             </div>
 
-            {followMenuOpen && (
+            {openSubmenu==="follow" && (
               <div className="absolute top-0 left-full ml-1 flex flex-col bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl min-w-[160px] z-40">
                 {isOtherMembers && (
                   <>
@@ -182,7 +196,6 @@ export default function HamberMenu({
                           key={member.socketId}
                           className="px-3 py-2 flex justify-between align-center text-sm text-left text-gray-200 hover:bg-white/10 transition-colors"
                           onClick={() => {
-                       
                             handleFollowUser(member.socketId);
                           }}
                         >
@@ -210,8 +223,33 @@ export default function HamberMenu({
             )}
           </li>
         )}
-        <li className="px-4 py-2 text-sm text-gray-200 hover:bg-white/10 cursor-pointer transition-colors ">
-          Board colors
+
+        <li className="relative border-b border-white/10">
+          <button
+            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-left text-gray-200 hover:bg-white/10 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+             toggleSubmenu("boardColor")
+            }}
+          >
+            Board colors
+          </button>
+          {openSubmenu==="boardColor" && (
+            <div className="absolute top-0 left-full ml-1 flex p-1 justify-between bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl min-w-[140px] z-40">
+              {boardColors.map((color) => (
+                <>
+                  <div
+                    key={color.name}
+                    style={{ backgroundColor: color.value }}
+                    className={`h-7 w-7 border rounded
+                   ${color.value === boardColor ? `border-2 border-blue-300 ` : " border border-transparent"}
+                    `}
+                    onClick={() => setBoardColor(color.value)}
+                  ></div>
+                </>
+              ))}
+            </div>
+          )}
         </li>
 
         <li className="px-4 py-2 text-sm text-gray-200 hover:bg-white/10 cursor-pointer transition-colors ">
