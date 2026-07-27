@@ -13,7 +13,7 @@ import { Image, Eraser, MousePointer, Hand } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useToolSettings } from "../../context/ToolBarLeftContext";
 
-export default function Tools() {
+export default function Tools({ setIsImageUploadInterfaceOpen }: { setIsImageUploadInterfaceOpen: React.Dispatch<React.SetStateAction<boolean>> }) {
   const { activeTool, setActiveTool, selectedEle, setSelectedEle } =
     useToolSettings();
 
@@ -144,13 +144,13 @@ export default function Tools() {
         <div className="w-px h-6 bg-gray-700 mx-1" />
 
         {/* Image upload */}
-        <label
-          htmlFor="image-upload"
+        <div
           title="Insert image"
           className="tool-btn flex items-center justify-center cursor-pointer"
+          onClick={() => setIsImageUploadInterfaceOpen(true)}
         >
           <Image size={18} />
-        </label>
+        </div>
       </div>
     </>
   );

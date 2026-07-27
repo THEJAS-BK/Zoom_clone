@@ -97,7 +97,7 @@ export function useLines(
     };
 
     const onMouseDown = (e: MouseEvent) => {
-      if(activeTool!== "line" && activeTool !== "arrow"&&activeLine){
+      if (activeTool !== "line" && activeTool !== "arrow" && activeLine) {
         finalizeLine();
         return;
       }
@@ -209,16 +209,16 @@ export function useLines(
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
-  if (!isPlacing.current || !activeLine.current) return;
-  if (e.key === "Escape") {
-    socket.emit("element-delete", { roomId, id: activeLine.current.id });
-    isPlacing.current = false;
-    activeLine.current = null;
-    doRedraw();
-  } else if (e.key === "Enter") {
-    finalizeLine();
-  }
-};
+      if (!isPlacing.current || !activeLine.current) return;
+      if (e.key === "Escape") {
+        socket.emit("element-delete", { roomId, id: activeLine.current.id });
+        isPlacing.current = false;
+        activeLine.current = null;
+        doRedraw();
+      } else if (e.key === "Enter") {
+        finalizeLine();
+      }
+    };
 
     canvas.addEventListener("mousedown", onMouseDown);
     canvas.addEventListener("mousemove", onMouseMove);

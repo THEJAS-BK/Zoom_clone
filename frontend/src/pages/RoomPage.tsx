@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import MainContent from "../components/room/MainContent";
-import {  useRef, useState } from "react";
+import {  useEffect, useRef, useState } from "react";
 import { WebRtcProvider } from "../context/WebRtcContext";
 import { ToolSettingsProvider } from "../context/ToolBarLeftContext.tsx";
 import MultiCursor from "../components/room/Multicursor/MultiCursor";
@@ -13,6 +13,7 @@ import { Menu } from "lucide-react";
 import Tools from "../components/room/Tools.tsx";
 import ToolBarContainer from "../components/room/LeftToolBar/ToolBarContainer.tsx";
 import HamberMenu from "../components/room/HamberMenu.tsx";
+import  ImageUploadInterface from "../components/room/ImageUploadInterface.tsx";
 
 type BoardImage = {
   id: string;
@@ -38,19 +39,13 @@ export default function RoomPage() {
   const [isHambergerMenuOpen, setIsHambergerMenuOpen] = useState(false);
 
   const [isViewMode, setIsViewMode] = useState(false);
+
+  const [isImageUploadInterfaceOpen, setIsImageUploadInterfaceOpen] = useState(false);
+  useEffect(()=>{
+    console.log(isImageUploadInterfaceOpen)
+  }, [isImageUploadInterfaceOpen])
   return (
     <>
-      {/*image upload*/}
-      <input
-        type="file"
-        id="image-upload"
-        className="hidden"
-        accept="image/*"
-        onChange={(e) => {
-          handleImageUpload(e, images, setRedrawVersion, roomId);
-        }}
-      />
-
       <WebRtcProvider roomId={roomId}>
         <ToolSettingsProvider>
           <div className="h-screen flex flex-col overflow-hidden">
@@ -79,7 +74,13 @@ export default function RoomPage() {
               {/*center tools menu*/}
               {openCursor && isViewMode && (
                 <div className="absolute top-10 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded text-white shadow-lg z-20 ">
-                  <Tools />
+                  <Tools setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen} />
+                </div>
+              )}
+              {/*image upload interface*/}
+              {openCursor&&isImageUploadInterfaceOpen && (
+                <div  className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
+                  <ImageUploadInterface setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen} />
                 </div>
               )}
 

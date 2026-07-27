@@ -89,10 +89,6 @@ export default function MultiCursor({
   const { activeTool, selectedId, } = useToolSettings();
 
   
-
-  useEffect(()=>{
-       socket.emit("board-color-request",roomId)
-  },[])
   //view mode
   useEffect(() => {
     setIsViewMode(viewMode);
