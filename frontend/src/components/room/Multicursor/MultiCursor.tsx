@@ -18,7 +18,7 @@ import type { BoardImage, TextBox, Stroke, Point, ActiveStroke } from "./types";
 import { useSocketBoard } from "./hooks/useSocketBoard";
 import { useSocketDraw } from "./hooks/useSocketDraw";
 import { useCanvasZoom } from "./hooks/useCanvasZoom";
-import { useImageTransform } from "./hooks/useImageTransform";
+import { useImage } from "./hooks/useImage";
 import { getCursorStyle } from "./tools/CustomCursor";
 import { useTextBox } from "./hooks/useTextBox";
 import { useHandTool } from "./hooks/useHandTool";
@@ -171,7 +171,7 @@ export default function MultiCursor({
     camera,
     shapesRef,
     linesRef,
-    selectedId,
+    images,
     strokeColor,
     activeTool,
     textBoxesRef,
@@ -225,7 +225,7 @@ export default function MultiCursor({
     doRedraw,
   );
   useHandTool(canvasRef, camera, activeTool, doRedraw, roomId);
-  useSocketBoard(roomId ?? "", canvasRef, images, strokes, doRedraw);
+  useSocketBoard(roomId ?? "", canvasRef, strokes, doRedraw);
   useSocketDraw(
     roomId ?? "",
     canvasRef,
@@ -253,13 +253,10 @@ export default function MultiCursor({
   );
 
   //image transformations
-  useImageTransform(
-    canvasRef,
-    camera,
+  useImage(
+    roomId,
     images,
     imageCache,
-    selectedImgIdx,
-    roomId ?? "",
     doRedraw,
   );
 

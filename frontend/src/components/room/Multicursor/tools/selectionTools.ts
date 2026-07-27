@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import type { Line, Shape, TextBox, ToolSetters } from "../types";
+import type { BoardImage, Line, Shape, TextBox, ToolSetters } from "../types";
 import { socket } from "../../../../services/socket";
 import { measureTextBox } from "../canvas";
 const handleElementDelete = (
@@ -8,12 +8,14 @@ const handleElementDelete = (
   shapesRef: RefObject<Shape[]>,
   linesRef: RefObject<Line[]>,
   textBoxesRef: React.RefObject<TextBox[]>,
-  setSelectedEle: React.Dispatch<React.SetStateAction<Shape | Line | TextBox | null>>,
-  doRedrawRef:()=>void,
+  boardImagesRef: React.RefObject<BoardImage[]>,
+  setSelectedEle: React.Dispatch<
+    React.SetStateAction<Shape | Line | TextBox | BoardImage | null>
+  >,
+  doRedrawRef: () => void,
   roomId: string,
-  activeTool:string|null
+  activeTool: string | null,
 ) => {
-
   if (e.key !== "Delete" && e.key !== "Backspace") return;
   if (activeTool !== "mouse") return;
 
@@ -29,6 +31,8 @@ const handleElementDelete = (
     linesRef.current = linesRef.current.filter((l) => l.id !== id);
   } else if (textBoxesRef.current.some((t) => t.id === id)) {
     textBoxesRef.current = textBoxesRef.current.filter((t) => t.id !== id);
+  } else if (boardImagesRef.current.some((img) => img.id === id)) {
+    boardImagesRef.current = boardImagesRef.current.filter((img) => img.id !== id);
   } else {
     return;
   }
@@ -43,7 +47,7 @@ interface InteractionRefs {
   isDragging: React.RefObject<boolean>;
   isResizing: React.RefObject<boolean>;
   isRotating: React.RefObject<boolean>;
-  dragType: React.RefObject<"shape" | "line" | "textbox" | null>;
+  dragType: React.RefObject<"shape" | "line" | "textbox" | "image" | null>;
   dragOffset: React.RefObject<{ x: number; y: number }>;
   lineDragOffset: React.RefObject<{
     x1: number;
@@ -55,9 +59,16 @@ interface InteractionRefs {
   resizeOrigin: React.RefObject<{ x: number; y: number } | null>;
   lineEndpoint: React.RefObject<"p1" | "p2" | "mid" | null>;
 }
+interface Positionable {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation?: number;
+}
 
 // ---- 1. resize-origin math, extracted as a pure function ----
-function computeResizeOrigin(shape: Shape, corner: string) {
+function computeResizeOrigin(shape: Positionable, corner: string) {
   const left = Math.min(shape.x, shape.x + shape.width);
   const top = Math.min(shape.y, shape.y + shape.height);
   const right = Math.max(shape.x, shape.x + shape.width);
@@ -76,7 +87,6 @@ function computeResizeOrigin(shape: Shape, corner: string) {
 
   return { x: centerX + worldOx, y: centerY + worldOy };
 }
-
 // ---- 2. try to grab a handle on the currently selected shape ----
 // returns true if the click was consumed (caller should return early)
 function tryStartShapeHandleInteraction(
@@ -149,11 +159,37 @@ function tryStartLineHandleInteraction(
   return false;
 }
 
+function tryStartImageHandleInteraction(
+  image: BoardImage,
+  x: number,
+  y: number,
+  scale: number,
+  refs: InteractionRefs,
+  hitTestRotationHandle: typeof import("./hitTests").hitTestRotationHandle,
+  hitTestCorner: typeof import("./hitTests").hitTestCorner,
+): boolean {
+  if (hitTestRotationHandle(image, x, y, scale)) {
+    refs.isRotating.current = true;
+    return true;
+  }
+
+  const corner = hitTestCorner(image, x, y, scale);
+  if (corner) {
+    refs.isResizing.current = true;
+    refs.resizeCorner.current = corner;
+    refs.resizeOrigin.current = computeResizeOrigin(image, corner);
+    return true;
+  }
+
+  return false;
+}
+
 // ---- 4. hit-test all element collections for a NEW selection ----
 interface HitResult {
   hitShape?: Shape;
   hitLine?: Line;
   hitText?: TextBox;
+  hitImage?: BoardImage;
 }
 
 function findElementAt(
@@ -164,17 +200,19 @@ function findElementAt(
   shapes: Shape[],
   lines: Line[],
   textBoxes: TextBox[],
+  images: BoardImage[],
   hitTestShape: typeof import("./hitTests").hitTestShape,
   hitTestLine: typeof import("./hitTests").hitTestLine,
   hitTestTextBox: typeof import("./hitTests").hitTestTextBox,
+  hitTestImage: typeof import("./hitTests").hitTestImage,
 ): HitResult {
-  // reverse so topmost (last drawn) wins
   const hitShape = [...shapes].reverse().find((s) => hitTestShape(s, x, y));
   const hitLine = [...lines].reverse().find((l) => hitTestLine(l, x, y, scale));
   const hitText = [...textBoxes]
     .reverse()
     .find((t) => hitTestTextBox(t, x, y, ctx));
-  return { hitShape, hitLine, hitText };
+  const hitImage = [...images].reverse().find((img) => hitTestImage(img, x, y));
+  return { hitShape, hitLine, hitText, hitImage };
 }
 
 function syncToolSettingsToShape(shape: Shape, s: ToolSetters) {
@@ -206,6 +244,7 @@ export {
   computeResizeOrigin,
   tryStartShapeHandleInteraction,
   tryStartLineHandleInteraction,
+  tryStartImageHandleInteraction,
   findElementAt,
   syncToolSettingsToShape,
   syncToolSettingsToText,
@@ -214,12 +253,14 @@ export {
 };
 export type { InteractionRefs, HitResult, ToolSetters };
 
-
-
 //mouse move
 
 // ---- shared: dedupe the repeated emit pattern ----
-function emitElementUpdate(roomId: string, id: string, changes: Record<string, unknown>) {
+function emitElementUpdate(
+  roomId: string,
+  id: string,
+  changes: Record<string, unknown>,
+) {
   socket.emit("element-update", { roomId, id, changes });
 }
 
@@ -231,7 +272,7 @@ function computeTextBoxRotation(tb: TextBox, x: number, y: number): number {
   return Math.atan2(y - centerY, x - centerX) + Math.PI / 2;
 }
 
-function computeShapeRotation(shape: Shape, x: number, y: number): number {
+function computeShapeRotation(shape: Positionable, x: number, y: number): number {
   const left = Math.min(shape.x, shape.x + shape.width);
   const top = Math.min(shape.y, shape.y + shape.height);
   const right = Math.max(shape.x, shape.x + shape.width);
@@ -261,8 +302,8 @@ function computeLineEndpointChanges(
 
 // ---- shape resize math (rotation-aware) ----
 function computeShapeResize(
-  shape: Shape,
-  corner: string,
+  shape: Positionable,
+  corner: string|null,
   anchor: { x: number; y: number },
   x: number,
   y: number,
@@ -275,8 +316,8 @@ function computeShapeResize(
   const localDx = dx * Math.cos(-rotation) - dy * Math.sin(-rotation);
   const localDy = dx * Math.sin(-rotation) + dy * Math.cos(-rotation);
 
-  const signX = corner.includes("r") ? 1 : -1;
-  const signY = corner.includes("b") ? 1 : -1;
+  const signX = corner?.includes("r") ? 1 : -1;
+  const signY = corner?.includes("b") ? 1 : -1;
 
   const newWidth = Math.max(minSize, signX * localDx);
   const newHeight = Math.max(minSize, signY * localDy);
@@ -284,8 +325,10 @@ function computeShapeResize(
   const anchorLocalX = -signX * (newWidth / 2);
   const anchorLocalY = -signY * (newHeight / 2);
 
-  const offsetX = anchorLocalX * Math.cos(rotation) - anchorLocalY * Math.sin(rotation);
-  const offsetY = anchorLocalX * Math.sin(rotation) + anchorLocalY * Math.cos(rotation);
+  const offsetX =
+    anchorLocalX * Math.cos(rotation) - anchorLocalY * Math.sin(rotation);
+  const offsetY =
+    anchorLocalX * Math.sin(rotation) + anchorLocalY * Math.cos(rotation);
 
   const newCenterX = anchor.x - offsetX;
   const newCenterY = anchor.y - offsetY;

@@ -22,7 +22,7 @@ export function useOfflineSelection(
   const isDragging = useRef(false);
   const dragOffset = useRef({ x: 0, y: 0 });
   const lineDragOffset = useRef({ x1: 0, x2: 0, y1: 0, y2: 0 });
-  const dragType = useRef<"shape" | "textbox" | "line" | null>(null);
+  const dragType = useRef<"shape" | "textbox" | "line"|"image" | null>(null);
 
   const toCanvas = (clientX: number, clientY: number) => ({
     x: (clientX - camera.current.x) / camera.current.scale,

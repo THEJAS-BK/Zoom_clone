@@ -20,6 +20,7 @@ type ActiveStroke = {
 
 type BoardImage = {
   id: string;
+  type:"image"
   image: string;
   x: number;
   y: number;
@@ -85,7 +86,7 @@ interface Line {
    points?: { x: number; y: number }[];
 }
 
-type CanvasElement = TextBox | Shape | Line;
+type CanvasElement = TextBox | Shape | Line|BoardImage;
 
 // ---- 5. sync toolbar state to whatever got selected ----
 interface ToolSetters {

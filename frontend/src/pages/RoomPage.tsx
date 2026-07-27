@@ -15,6 +15,7 @@ import HamberMenu from "../components/room/HamberMenu.tsx";
 import  ImageUploadInterface from "../components/room/ImageUploadInterface.tsx";
 
 type BoardImage = {
+  type: "image";
   id: string;
   image: string;
   x: number;

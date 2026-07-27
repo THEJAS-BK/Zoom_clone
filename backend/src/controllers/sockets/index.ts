@@ -4,18 +4,16 @@ import { Server } from "socket.io";
 //handlers
 import { registerWebRtcHandler } from "./webRtc";
 import { registerChatInterfaceHandler } from "./chat";
-import { registerImageHandler } from "./image";
 import { registerRoomHandler } from "./room";
 import { registerCanvasHandler } from "./canvasDraw";
 //types
-import { Stroke, ImageElement, CanvasElement } from "./types/canvasTypes";
+import { Stroke, CanvasElement } from "./types/canvasTypes";
 import { registerFollowUserCamera } from "./followUserCamera";
 
 
 let activeRooms: Record<string, Set<string>> = {};
 const roomElements: Record<string, CanvasElement[]> = {};
 const roomBoards: Record<string, Stroke[]> = {};
-const roomImages: Record<string, ImageElement[]> = {};
 const roomBoardColors: Record<string, string> = {};
 
 const setSocketConnection = (server: any) => {
@@ -47,8 +45,7 @@ const setSocketConnection = (server: any) => {
     registerRoomHandler(socket,io, activeRooms);
     registerWebRtcHandler(socket, io, activeRooms);
     registerChatInterfaceHandler(socket, io);
-    registerCanvasHandler(socket, roomBoards, roomImages, roomElements,roomBoardColors);
-    registerImageHandler(socket, roomImages);
+    registerCanvasHandler(socket, roomBoards, roomElements,roomBoardColors);
     registerFollowUserCamera(socket,io)
   });
   return io;

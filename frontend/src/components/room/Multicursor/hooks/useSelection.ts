@@ -1,14 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import type { Dispatch, RefObject, SetStateAction } from "react";
-import type { Shape, Line, TextBox, ToolSetters } from "../types";
+import type { Shape, Line, TextBox, ToolSetters, BoardImage } from "../types";
 import { hitTestTextBoxRotationHandle } from "../canvas";
-import { hitTestLine, hitTestShape, hitTestTextBox } from "../tools/hitTests";
+import {
+  hitTestLine,
+  hitTestShape,
+  hitTestTextBox,
+  hitTestImage,
+} from "../tools/hitTests";
 import { socket } from "../../../../services/socket";
 import { hitTestCorner, hitTestRotationHandle } from "../tools/hitTests";
 import { useToolSettings } from "../../../../context/ToolBarLeftContext";
 //tools
 
 import { measureTextBox } from "../canvas";
+
+type DragType = "shape" | "textbox" | "line" | "image" | null;
 
 //mousedown
 import {
@@ -26,6 +33,7 @@ import {
 import {
   tryStartShapeHandleInteraction,
   tryStartLineHandleInteraction,
+  tryStartImageHandleInteraction,
   findElementAt,
   syncToolSettingsToShape,
   syncToolSettingsToText,
@@ -38,7 +46,7 @@ export function useSelection(
   camera: RefObject<{ x: number; y: number; scale: number }>,
   shapesRef: RefObject<Shape[]>,
   linesRef: RefObject<Line[]>,
-  selectedId: React.RefObject<string | null>,
+  images: RefObject<BoardImage[]>,
   color: string,
   activeTool: string | null,
   textBoxesRef: React.RefObject<TextBox[]>,
@@ -49,7 +57,7 @@ export function useSelection(
   const isDragging = useRef(false);
   const dragOffset = useRef({ x: 0, y: 0 });
   const lineDragOffset = useRef({ x1: 0, x2: 0, y1: 0, y2: 0 });
-  const dragType = useRef<"shape" | "textbox" | "line" | null>(null);
+  const dragType = useRef<"shape" | "textbox" | "line" | "image" | null>(null);
   const toCanvas = (clientX: number, clientY: number) => ({
     x: (clientX - camera.current.x) / camera.current.scale,
     y: (clientY - camera.current.y) / camera.current.scale,
@@ -80,6 +88,7 @@ export function useSelection(
     setFillColor,
     setStrokeStyle,
     setEdgeStyle,
+    selectedId,
   } = useToolSettings();
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -173,10 +182,30 @@ export function useSelection(
           )
         )
           return;
+
+        const selectedImage = images.current.find(
+          (img) => img.id === selectedId.current,
+        );
+
+        if (
+          selectedImage &&
+          tryStartImageHandleInteraction(
+            selectedImage,
+            x,
+            y,
+            camera.current.scale,
+            refs,
+            hitTestRotationHandle,
+            hitTestCorner,
+          )
+        ) {
+          dragType.current = "image";
+          return;
+        }
       }
 
       // 2. otherwise, look for a new hit among all elements
-      const { hitShape, hitLine, hitText } = findElementAt(
+      const { hitShape, hitLine, hitText, hitImage } = findElementAt(
         x,
         y,
         ctx,
@@ -184,9 +213,11 @@ export function useSelection(
         shapesRef.current,
         linesRef.current,
         textBoxesRef.current,
+        images.current,
         hitTestShape,
         hitTestLine,
         hitTestTextBox,
+        hitTestImage,
       );
 
       // 3. start dragging + sync toolbar to the hit element
@@ -211,9 +242,13 @@ export function useSelection(
           y2: y - hitLine.y2,
         };
         syncToolSettingsToLine(hitLine, setters);
+      } else if (hitImage) {
+        isDragging.current = true;
+        dragType.current = "image";
+        dragOffset.current = { x: x - hitImage.x, y: y - hitImage.y };
       }
 
-      const hit = hitShape ?? hitLine ?? hitText;
+      const hit = hitShape ?? hitLine ?? hitText ?? hitImage;
       if (!hit) return;
       selectedId.current = hit.id;
       setSelectedEle(hit);
@@ -238,6 +273,16 @@ export function useSelection(
           doRedraw();
           return;
         }
+        if (dragType.current === "image") {
+          const image = images.current.find(
+            (img) => img.id === selectedId.current,
+          );
+          if (!image) return;
+          image.rotation = computeShapeRotation(image, x, y); // same math works, shares Positionable shape
+          emitElementUpdate(roomId, image.id, { rotation: image.rotation });
+          doRedraw();
+          return;
+        }
 
         const shape = shapesRef.current.find(
           (s) => s.id === selectedId.current,
@@ -251,6 +296,7 @@ export function useSelection(
       }
 
       if (!isDragging.current && !isResizing.current) return;
+      //resize image
 
       //!resize lines
       if (isResizing.current && lineEndpoint.current) {
@@ -269,27 +315,42 @@ export function useSelection(
         return;
       }
 
-      //!resize shapes
-      if (isResizing.current && resizeCorner.current && resizeOrigin.current) {
-        const shape = shapesRef.current.find(
-          (s) => s.id === selectedId.current,
-        );
-        if (!shape) return;
+      //!resize images
+if (isResizing.current && resizeCorner.current && resizeOrigin.current) {
+  const corner = resizeCorner.current;
+  const origin = resizeOrigin.current;
 
-        const changes = computeShapeResize(
-          shape,
-          resizeCorner.current,
-          resizeOrigin.current,
-          x,
-          y,
-        );
-        Object.assign(shape, changes);
-        emitElementUpdate(roomId, shape.id, changes);
-        doRedraw();
-        return;
-      }
+  if (dragType.current === "image") {
+    const image = images.current.find((img) => img.id === selectedId.current);
+    if (!image) return;
+
+    const changes = computeShapeResize(image, corner, origin, x, y);
+    Object.assign(image, changes);
+    emitElementUpdate(roomId, image.id, changes);
+    doRedraw();
+    return;
+  }
+
+  //!resize shapes
+  const shape = shapesRef.current.find((s) => s.id === selectedId.current);
+  if (!shape) return;
+
+  const changes = computeShapeResize(shape, corner, origin, x, y);
+  Object.assign(shape, changes);
+  emitElementUpdate(roomId, shape.id, changes);
+  doRedraw();
+  return;
+}
 
       //!moving shape/textbox
+      if (dragType.current === "image") {
+        const image = images.current.find(
+          (img) => img.id === selectedId.current,
+        );
+        const pos = computeDragPosition(x, y, dragOffset.current);
+        if (image) Object.assign(image, pos);
+        emitElementUpdate(roomId, selectedId.current, pos);
+      }
       if (dragType.current === "shape" || dragType.current === "textbox") {
         const pos = computeDragPosition(x, y, dragOffset.current);
 
@@ -315,6 +376,8 @@ export function useSelection(
         if (line) Object.assign(line, pos);
         emitElementUpdate(roomId, selectedId.current, pos);
       }
+
+      //move image
 
       doRedraw();
     };
@@ -364,6 +427,7 @@ export function useSelection(
         shapesRef,
         linesRef,
         textBoxesRef,
+        images,
         setSelectedEle,
         doRedraw,
         roomId,
@@ -402,8 +466,7 @@ export function useSelection(
         return;
       }
     };
-
-    if (activeTool === "mouse") {
+    if (activeTool === "mouse" && selectedEle.type !== "image") {
       setStrokeColor(selectedEle.color);
     }
 

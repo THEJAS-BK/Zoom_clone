@@ -60,22 +60,28 @@ const redraw = (
     camera.current.y * dpr,
   );
 
- for (const imageData of images.current) {
-  const cached = imageCache.current.get(imageData.id);
-  if (cached) {
-    const centerX = imageData.x + imageData.width / 2;
-    const centerY = imageData.y + imageData.height / 2;
-    const rotation = imageData.rotation || 0;
+  for (const imageData of images.current) {
+    const cached = imageCache.current.get(imageData.id);
+    if (cached) {
+      const centerX = imageData.x + imageData.width / 2;
+      const centerY = imageData.y + imageData.height / 2;
+      const rotation = imageData.rotation || 0;
 
-    ctx.save();
-    ctx.translate(centerX, centerY);
-    ctx.rotate(rotation);
-    ctx.drawImage(cached, -imageData.width / 2, -imageData.height / 2, imageData.width, imageData.height);
-    ctx.restore();
-  } else {
-    const img = new Image();
-    img.onload = () => {
-      imageCache.current.set(imageData.id, img);
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(rotation);
+      ctx.drawImage(
+        cached,
+        -imageData.width / 2,
+        -imageData.height / 2,
+        imageData.width,
+        imageData.height,
+      );
+      ctx.restore();
+    } else {
+      const img = new Image();
+      img.onload = () => {
+        imageCache.current.set(imageData.id, img);
         redraw(
           canvas,
           ctx,
@@ -98,14 +104,10 @@ const redraw = (
           opacity,
           fillColor,
         );
-    };
-    img.src = imageData.image; 
+      };
+      img.src = imageData.image;
+    }
   }
-}
-
-
-      
-
 
   const allShapes = [
     ...shapesRef.current,
@@ -318,6 +320,26 @@ const redraw = (
         selectedText.y + height,
         selectedText.rotation || 0,
       );
+    }
+    const selectedImage = images?.current?.find((img) => img.id === id);
+    if (selectedImage) {
+      const left = Math.min(
+        selectedImage.x,
+        selectedImage.x + selectedImage.width,
+      );
+      const top = Math.min(
+        selectedImage.y,
+        selectedImage.y + selectedImage.height,
+      );
+      const right = Math.max(
+        selectedImage.x,
+        selectedImage.x + selectedImage.width,
+      );
+      const bottom = Math.max(
+        selectedImage.y,
+        selectedImage.y + selectedImage.height,
+      );
+      drawSelectionBox(left, top, right, bottom, selectedImage.rotation || 0);
     }
   }
 };

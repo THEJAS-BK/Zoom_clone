@@ -42,6 +42,7 @@ export default function ImageUploadInterface({
 
   const handleImageUploadToCanvas = (img: ImageDoc) => {
     const newImage: BoardImage = {
+      type: "image",
       id: crypto.randomUUID(),
       image: img.url,
       x: 100,
@@ -52,7 +53,7 @@ export default function ImageUploadInterface({
     };
     images.current = [...images.current, newImage];
     doRedrawRef.current?.();
-    socket.emit("add-image", { ...newImage, roomId });
+    socket.emit("element-add", { roomId, element: newImage });
     setIsImageUploadInterfaceOpen(false);
   };
 

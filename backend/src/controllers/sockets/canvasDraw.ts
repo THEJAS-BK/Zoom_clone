@@ -1,17 +1,15 @@
 import { Server, Socket } from "socket.io";
-import { CanvasElement, ImageElement, Stroke } from "./types/canvasTypes";
+import { CanvasElement, Stroke } from "./types/canvasTypes";
 
 export function registerCanvasHandler(
   socket: Socket,
   roomBoards: Record<string, Stroke[]>,
-  roomImages: Record<string, ImageElement[]>,
   roomElements: Record<string, CanvasElement[]>,
   roomBoardColors:Record<string,string>
 ) {
   //intial state of the board
   socket.on("board-state", (roomId) => {
     socket.emit("board-state", roomBoards[roomId] ?? []);
-    socket.emit("image-state", roomImages[roomId] ?? []);
     socket.emit("element-state", roomElements[roomId] ?? []);
     socket.emit("board-color-change",roomBoardColors[roomId]??"#27272A")
   });

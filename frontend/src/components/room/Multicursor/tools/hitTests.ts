@@ -1,7 +1,7 @@
 // ---- hit tests ----
 
 import { resolveFontFamily } from "../canvas";
-import type { Shape, TextBox,Line } from "../types";
+import type { Shape, TextBox,Line,BoardImage } from "../types";
 
 function hitTestShape(shape: Shape, x: number, y: number): boolean {
   const left = Math.min(shape.x, shape.x + shape.width);
@@ -59,6 +59,26 @@ function hitTestLine(line: Line, x: number, y: number, scale: number): boolean {
   const closestY = line.y1 + t * dy;
   return Math.hypot(x - closestX, y - closestY) < tolerance;
 }
+function hitTestImage(img: BoardImage, x: number, y: number): boolean {
+  const centerX = img.x + img.width / 2;
+  const centerY = img.y + img.height / 2;
+  const rotation = img.rotation || 0;
+
+  const dx = x - centerX;
+  const dy = y - centerY;
+  const localX = dx * Math.cos(-rotation) - dy * Math.sin(-rotation);
+  const localY = dx * Math.sin(-rotation) + dy * Math.cos(-rotation);
+
+  const halfWidth = img.width / 2;
+  const halfHeight = img.height / 2;
+
+  return (
+    localX >= -halfWidth &&
+    localX <= halfWidth &&
+    localY >= -halfHeight &&
+    localY <= halfHeight
+  );
+}
 
 function hitTestTextBox(
   tb: TextBox,
@@ -87,8 +107,19 @@ function hitTestTextBox(
 
   return localX >= left && localX <= right && localY >= top && localY <= bottom;
 }
+
+
+
+interface Positionable {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation?: number;
+}
+
 function hitTestRotationHandle(
-  shape: Shape,
+  shape: Positionable,
   x: number,
   y: number,
   scale: number,
@@ -117,7 +148,7 @@ function hitTestRotationHandle(
   return ddx * ddx + ddy * ddy <= (10 / scale) * (10 / scale);
 }
 function hitTestCorner(
-  shape: Shape,
+  shape: Positionable,
   x: number,
   y: number,
   scale: number,
@@ -133,7 +164,7 @@ function hitTestCorner(
   const centerX = (left + right) / 2;
   const centerY = (top + bottom) / 2;
 
-  const rotation = shape.rotation || 0; // ← use actual rotation
+  const rotation = shape.rotation || 0;
   const dx = x - centerX;
   const dy = y - centerY;
   const localX = dx * Math.cos(-rotation) - dy * Math.sin(-rotation);
@@ -156,4 +187,4 @@ function hitTestCorner(
   }
   return null;
 }
-export {hitTestLine,hitTestShape,hitTestTextBox,hitTestRotationHandle,hitTestCorner}
+export {hitTestLine,hitTestShape,hitTestTextBox,hitTestImage,hitTestRotationHandle,hitTestCorner}

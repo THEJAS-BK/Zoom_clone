@@ -6,16 +6,18 @@ type Stroke = {
   points: { x: number; y: number }[];
 };
 
-type ImageElement = {
+type BoardImage = {
   id: string;
+  type: "image";
   image: string;
-  userId: string;
   x: number;
   y: number;
   width: number;
   height: number;
-  rotation: number | 0;
+  rotation: number;
+  userId: string;
 };
+
 
 type CanvasElement =
   | {
@@ -67,6 +69,7 @@ type CanvasElement =
   opacity:number;
   userId: string;
    points?: { x: number; y: number }[];
-    };
+  }
+  |BoardImage
 
-export type { Stroke, ImageElement, CanvasElement };
+export type { Stroke, BoardImage, CanvasElement };

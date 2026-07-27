@@ -7,6 +7,7 @@ import {
   type RefObject,
 } from "react";
 import type {
+  BoardImage,
   Line,
   Shape,
   TextBox,
@@ -55,8 +56,8 @@ type ToolSettings = {
   activeTool: string | null;
   setActiveTool: Dispatch<SetStateAction<string | null>>;
 
-  selectedEle: Shape | Line | TextBox | null;
-  setSelectedEle: Dispatch<SetStateAction<Shape | Line | TextBox | null>>;
+  selectedEle: Shape | Line | TextBox | BoardImage | null;
+  setSelectedEle: Dispatch<SetStateAction<Shape | Line | TextBox|BoardImage | null>>;
 
   selectedId: RefObject<string | null>;
 
@@ -131,7 +132,7 @@ export function ToolSettingsProvider({
   const [arrowHead, setArrowHead] = useState("none");
   const [edgeStyle, setEdgeStyle] = useState("sharp");
 
-  const [selectedEle, setSelectedEle] = useState<Shape | Line | TextBox | null>(
+  const [selectedEle, setSelectedEle] = useState<Shape | Line | TextBox|BoardImage | null>(
     null,
   );
 
