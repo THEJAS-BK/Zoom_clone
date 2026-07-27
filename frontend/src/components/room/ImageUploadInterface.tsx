@@ -41,20 +41,35 @@ export default function ImageUploadInterface({
   };
 
   const handleImageUploadToCanvas = (img: ImageDoc) => {
-    const newImage: BoardImage = {
-      type: "image",
-      id: crypto.randomUUID(),
-      image: img.url,
-      x: 100,
-      y: 100,
-      width: 200,
-      height: 200,
-      rotation: 0,
+    const tempImg = new Image();
+    tempImg.onload = () => {
+      const maxSize = 400;
+      let width = tempImg.naturalWidth;
+      let height = tempImg.naturalHeight;
+
+      if (width > maxSize || height > maxSize) {
+        const scale = maxSize / Math.max(width, height);
+        width *= scale;
+        height *= scale;
+      }
+
+      const newImage: BoardImage = {
+        type: "image",
+        id: crypto.randomUUID(),
+        image: img.url,
+        x: 100,
+        y: 100,
+        width,
+        height,
+        rotation: 0,
+      };
+
+      images.current = [...images.current, newImage];
+      doRedrawRef.current?.();
+      socket.emit("element-add", { roomId, element: newImage });
+      setIsImageUploadInterfaceOpen(false);
     };
-    images.current = [...images.current, newImage];
-    doRedrawRef.current?.();
-    socket.emit("element-add", { roomId, element: newImage });
-    setIsImageUploadInterfaceOpen(false);
+    tempImg.src = img.url;
   };
 
   useEffect(() => {
