@@ -28,7 +28,6 @@ import { setSocketConnection } from "./controllers/sockets";
 //routes
 import userRoutes from "./routes/auth.routes";
 import { authHeader } from "./middlewares/auth.middleware";
-
 import imageRoutes from "./routes/image.routes";
 
 //sockets setup

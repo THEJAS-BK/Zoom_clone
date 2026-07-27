@@ -1,29 +1,51 @@
-import { X, Upload, ImageIcon } from "lucide-react";
+import { X, Upload, ImageIcon, Loader2 } from "lucide-react";
 import api from "../../utils/axios";
+import { useEffect, useState } from "react";
+
+interface ImageDoc {
+  _id: string;
+  url: string;
+  publicId: string;
+  uploadedBy: string;
+}
 
 export default function ImageUploadInterface({
   setIsImageUploadInterfaceOpen,
 }: {
   setIsImageUploadInterfaceOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const [images, setImages] = useState<ImageDoc[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleFileChange=async (e: React.ChangeEvent<HTMLInputElement>) => {
-   const file=e.target.files?.[0];
-   if(!file) return;
-   const formData=new FormData();
-   formData.append("image", file);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    try{
-      const res=await api.post("/image/upload", formData,{
-        headers:{"Content-Type": "multipart/form-data"}
-      });
-      console.log(res.data)
-      
-    }catch(err){
-      console.error("upload failed", err)
+    const formData = new FormData();
+    formData.append("image", file);
+
+    setIsUploading(true);
+    try {
+      const res = await api.post("/image/upload", formData);
+      setImages((prev) => [...prev, res.data]);
+    } catch (err) {
+      console.error("upload failed", err);
+    } finally {
+      setIsUploading(false);
     }
-
   };
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const res = await api.get("/image");
+        setImages(res.data);
+      } catch (err) {
+        console.error("failed to fetch images", err);
+      }
+    };
+    fetchImages();
+  }, []);
 
   return (
     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative">
@@ -31,9 +53,7 @@ export default function ImageUploadInterface({
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-[#101820]">Upload Image</h2>
         <button
-          onClick={() => {
-            console.log("hello")
-            setIsImageUploadInterfaceOpen(false)}}
+          onClick={() => setIsImageUploadInterfaceOpen(false)}
           className="p-1.5 rounded-full hover:bg-zinc-100 transition-colors"
         >
           <X className="w-5 h-5 text-zinc-500" />
@@ -41,18 +61,30 @@ export default function ImageUploadInterface({
       </div>
 
       {/* Upload button */}
-      <label className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-[#7C6FF0] text-white font-medium cursor-pointer hover:bg-[#6a5de0] transition-colors">
-        <Upload className="w-4 h-4" />
-        Upload
+      <label
+        className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-full font-medium transition-colors ${
+          isUploading
+            ? "bg-[#7C6FF0]/60 cursor-not-allowed"
+            : "bg-[#7C6FF0] cursor-pointer hover:bg-[#6a5de0]"
+        } text-white`}
+      >
+        {isUploading ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Uploading...
+          </>
+        ) : (
+          <>
+            <Upload className="w-4 h-4" />
+            Upload
+          </>
+        )}
         <input
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={(e) => {
-           handleFileChange(e)
-
-            
-          }}
+          disabled={isUploading}
+          onChange={handleFileChange}
         />
       </label>
 
@@ -63,25 +95,24 @@ export default function ImageUploadInterface({
         <div className="flex-1 h-px bg-zinc-200" />
       </div>
 
-      {/* Image grid — populate from API later */}
+      {/* Image grid */}
       <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-        {/* Placeholder empty state until API is wired up */}
-        <div className="col-span-3 flex flex-col items-center justify-center py-8 text-zinc-300">
-          <ImageIcon className="w-8 h-8 mb-2" />
-          <span className="text-xs">No images yet</span>
-        </div>
-
-        {/* When ready, map images like:
-        {images.map((img) => (
-          <button
-            key={img.id}
-            onClick={() => handleSelectImage(img)}
-            className="aspect-square rounded-lg overflow-hidden border border-zinc-200 hover:border-[#7C6FF0] transition-colors"
-          >
-            <img src={img.url} alt="" className="w-full h-full object-cover" />
-          </button>
-        ))}
-        */}
+        {images.length === 0 ? (
+          <div className="col-span-3 flex flex-col items-center justify-center py-8 text-zinc-300">
+            <ImageIcon className="w-8 h-8 mb-2" />
+            <span className="text-xs">No images yet</span>
+          </div>
+        ) : (
+          images.reverse().map((img) => (
+            <button
+              key={img._id}
+              onClick={() => console.log("ji")}
+              className="aspect-square rounded-lg overflow-hidden border border-zinc-200 hover:border-[#7C6FF0] transition-colors"
+            >
+              <img src={img.url} alt="" className="w-full h-full object-cover" />
+            </button>
+          ))
+        )}
       </div>
     </div>
   );
