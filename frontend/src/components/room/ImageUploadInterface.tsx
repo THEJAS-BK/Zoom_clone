@@ -1,10 +1,30 @@
 import { X, Upload, ImageIcon } from "lucide-react";
+import api from "../../utils/axios";
 
 export default function ImageUploadInterface({
   setIsImageUploadInterfaceOpen,
 }: {
   setIsImageUploadInterfaceOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+
+  const handleFileChange=async (e: React.ChangeEvent<HTMLInputElement>) => {
+   const file=e.target.files?.[0];
+   if(!file) return;
+   const formData=new FormData();
+   formData.append("image", file);
+
+    try{
+      const res=await api.post("/image/upload", formData,{
+        headers:{"Content-Type": "multipart/form-data"}
+      });
+      console.log(res.data)
+      
+    }catch(err){
+      console.error("upload failed", err)
+    }
+
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative">
       {/* Header */}
@@ -29,8 +49,9 @@ export default function ImageUploadInterface({
           accept="image/*"
           className="hidden"
           onChange={(e) => {
-            // handle file selection later
-            console.log(e.target.files?.[0]);
+           handleFileChange(e)
+
+            
           }}
         />
       </label>

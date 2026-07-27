@@ -27,18 +27,26 @@ import { setSocketConnection } from "./controllers/sockets";
 
 //routes
 import userRoutes from "./routes/auth.routes";
+import { authHeader } from "./middlewares/auth.middleware";
+
+import imageRoutes from "./routes/image.routes";
 
 //sockets setup
 const server = createServer(app);
 const io = setSocketConnection(server);
 
 //all routes
+app.get("/checkRoute",authHeader,(req,res)=>{
+res.sendStatus(200)
+})
+
+app.use("/image", imageRoutes);
 
 app.use(
   "/auth",
   userRoutes,
 );
-
+// app.use("/image", imageRoutes);
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "this is backend code" });
 });

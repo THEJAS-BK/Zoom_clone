@@ -41,9 +41,7 @@ export default function RoomPage() {
   const [isViewMode, setIsViewMode] = useState(false);
 
   const [isImageUploadInterfaceOpen, setIsImageUploadInterfaceOpen] = useState(false);
-  useEffect(()=>{
-    console.log(isImageUploadInterfaceOpen)
-  }, [isImageUploadInterfaceOpen])
+
   return (
     <>
       <WebRtcProvider roomId={roomId}>

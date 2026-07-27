@@ -4,6 +4,7 @@ import { Presentation, Check } from "lucide-react";
 import type { Participants } from "./Multicursor/types";
 import { socket } from "../../services/socket";
 import { boardColors } from "./LeftToolBar/tools/colors";
+import api from "../../utils/axios";
 
 interface HamberMenuProps {
   roomId: string;
@@ -262,6 +263,14 @@ export default function HamberMenu({
 
         <li className="px-4 py-2 text-sm text-red-400 hover:bg-white/10 cursor-pointer transition-colors">
           Exit room
+        </li>
+        <li
+        onClick={async ()=>{
+          const val=await api.get("/checkRoute");
+          console.log(val)
+        }}
+        >
+          check
         </li>
       </ul>
     </div>
