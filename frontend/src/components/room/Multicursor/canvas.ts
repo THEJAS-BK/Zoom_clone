@@ -60,58 +60,52 @@ const redraw = (
     camera.current.y * dpr,
   );
 
-  // for (const imageData of images.current) {
-  //   const cached = imageCache.current.get(imageData.id);
-  //   if (cached) {
-  //     const centerX = imageData.x + imageData.width / 2;
-  //     const centerY = imageData.y + imageData.height / 2;
-  //     const rotation = imageData.rotation || 0;
+ for (const imageData of images.current) {
+  const cached = imageCache.current.get(imageData.id);
+  if (cached) {
+    const centerX = imageData.x + imageData.width / 2;
+    const centerY = imageData.y + imageData.height / 2;
+    const rotation = imageData.rotation || 0;
 
-  //     ctx.save();
-  //     ctx.translate(centerX, centerY);
-  //     ctx.rotate(rotation);
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.rotate(rotation);
+    ctx.drawImage(cached, -imageData.width / 2, -imageData.height / 2, imageData.width, imageData.height);
+    ctx.restore();
+  } else {
+    const img = new Image();
+    img.onload = () => {
+      imageCache.current.set(imageData.id, img);
+        redraw(
+          canvas,
+          ctx,
+          camera,
+          images,
+          imageCache,
+          activeStrokes,
+          currentStroke,
+          strokes,
+          userId,
+          color,
+          shapesRef,
+          activeShape,
+          linesRef,
+          activeLine,
+          selectedId,
+          textBoxesRef,
+          activeTextBox,
+          strokeWidth,
+          opacity,
+          fillColor,
+        );
+    };
+    img.src = imageData.image; 
+  }
+}
 
-  //     ctx.drawImage(
-  //       cached,
-  //       -imageData.width / 2,
-  //       -imageData.height / 2,
-  //       imageData.width,
-  //       imageData.height,
-  //     );
 
-  //     ctx.restore();
-  //   } else {
-  //     const img = new Image();
-  //     img.onload = () => {
-  //       imageCache.current.set(imageData.id, img);
+      
 
-  //       redraw(
-  //         canvas,
-  //         ctx,
-  //         camera,
-  //         images,
-  //         imageCache,
-  //         activeStrokes,
-  //         currentStroke,
-  //         strokes,
-  //         userId,
-  //         color,
-  //         shapesRef,
-  //         activeShape,
-  //         linesRef,
-  //         activeLine,
-  //         selectedId,
-  //         textBoxesRef,
-  //         activeTextBox,
-  //         strokeWidth,
-  //         opacity,
-  //         fillColor,
-  //       );
-  //     };
-
-  //     img.src = imageData.image;
-  //   }
-  // }
 
   const allShapes = [
     ...shapesRef.current,

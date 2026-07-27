@@ -1,7 +1,9 @@
 import { X, Upload, ImageIcon, Loader2 } from "lucide-react";
 import api from "../../utils/axios";
 import { useEffect, useState } from "react";
-
+import type { BoardImage } from "./Multicursor/types";
+import { useToolSettings } from "../../context/ToolBarLeftContext";
+import { socket } from "../../services/socket";
 interface ImageDoc {
   _id: string;
   url: string;
@@ -10,12 +12,15 @@ interface ImageDoc {
 }
 
 export default function ImageUploadInterface({
+  images,
   setIsImageUploadInterfaceOpen,
 }: {
+  images: React.RefObject<BoardImage[]>;
   setIsImageUploadInterfaceOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const [images, setImages] = useState<ImageDoc[]>([]);
+  const [gallaryImages, setGallaryImages] = useState<ImageDoc[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const { doRedrawRef, roomId } = useToolSettings();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -27,7 +32,7 @@ export default function ImageUploadInterface({
     setIsUploading(true);
     try {
       const res = await api.post("/image/upload", formData);
-      setImages((prev) => [...prev, res.data]);
+      setGallaryImages((prev) => [...prev, res.data]);
     } catch (err) {
       console.error("upload failed", err);
     } finally {
@@ -35,11 +40,27 @@ export default function ImageUploadInterface({
     }
   };
 
+  const handleImageUploadToCanvas = (img: ImageDoc) => {
+    const newImage: BoardImage = {
+      id: crypto.randomUUID(),
+      image: img.url,
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 200,
+      rotation: 0,
+    };
+    images.current = [...images.current, newImage];
+    doRedrawRef.current?.();
+    socket.emit("add-image", { ...newImage, roomId });
+    setIsImageUploadInterfaceOpen(false);
+  };
+
   useEffect(() => {
     const fetchImages = async () => {
       try {
         const res = await api.get("/image");
-        setImages(res.data);
+        setGallaryImages(res.data);
       } catch (err) {
         console.error("failed to fetch images", err);
       }
@@ -97,19 +118,23 @@ export default function ImageUploadInterface({
 
       {/* Image grid */}
       <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-        {images.length === 0 ? (
+        {gallaryImages.length === 0 ? (
           <div className="col-span-3 flex flex-col items-center justify-center py-8 text-zinc-300">
             <ImageIcon className="w-8 h-8 mb-2" />
             <span className="text-xs">No images yet</span>
           </div>
         ) : (
-          images.reverse().map((img) => (
+          gallaryImages.reverse().map((img) => (
             <button
               key={img._id}
-              onClick={() => console.log("ji")}
+              onClick={() => handleImageUploadToCanvas(img)}
               className="aspect-square rounded-lg overflow-hidden border border-zinc-200 hover:border-[#7C6FF0] transition-colors"
             >
-              <img src={img.url} alt="" className="w-full h-full object-cover" />
+              <img
+                src={img.url}
+                alt=""
+                className="w-full h-full object-cover"
+              />
             </button>
           ))
         )}

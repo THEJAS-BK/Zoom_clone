@@ -6,7 +6,6 @@ import { ToolSettingsProvider } from "../context/ToolBarLeftContext.tsx";
 import MultiCursor from "../components/room/Multicursor/MultiCursor";
 
 //image upload function
-import { handleImageUpload } from "../components/room/Multicursor/tools/imageUpload.ts";
 
 import { Menu } from "lucide-react";
 
@@ -78,7 +77,7 @@ export default function RoomPage() {
               {/*image upload interface*/}
               {openCursor&&isImageUploadInterfaceOpen && (
                 <div  className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
-                  <ImageUploadInterface setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen} />
+                  <ImageUploadInterface  images={images} setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen} />
                 </div>
               )}
 
