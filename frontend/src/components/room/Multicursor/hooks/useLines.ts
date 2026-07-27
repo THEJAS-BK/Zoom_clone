@@ -70,7 +70,15 @@ export function useLines(
       activeLine.current = null;
 
       if (line.points && line.points.length > 2) {
-        line = { ...line, points: line.points.slice(0, -1) };
+        const trimmedPoints = line.points.slice(0, -1);
+        const lastPoint = trimmedPoints[trimmedPoints.length - 1];
+
+        line = {
+          ...line,
+          points: trimmedPoints,
+          x2: lastPoint.x,
+          y2: lastPoint.y,
+        };
       }
 
       const dx = line.x2 - line.x1;

@@ -22,34 +22,60 @@ export function useEraser(
     }
   };
   const isEraserSelected = useRef<boolean>(false);
+  const lastPoint = useRef<Point | null>(null);
 
   useEffect(() => {
     if (activeTool !== "eraser") {
       isEraserSelected.current = false;
       return;
     }
-   
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const mouseDown = () => {
       if (activeTool === "eraser") {
         isEraserSelected.current = true;
+        lastPoint.current = null;
       }
     };
+
     const mouseMove = (e: MouseEvent) => {
       if (!isEraserSelected.current) return;
       const point = getCanvasPoint(e, canvas, camera);
-      eraseAtPoint(point);
+
+      if (lastPoint.current) {
+        const steps = Math.max(
+          1,
+          Math.ceil(
+            Math.hypot(
+              point.x - lastPoint.current.x,
+              point.y - lastPoint.current.y,
+            ) / 5,
+          ),
+        );
+        for (let i = 1; i <= steps; i++) {
+          const t = i / steps;
+          eraseAtPoint({
+            x: lastPoint.current.x + (point.x - lastPoint.current.x) * t,
+            y: lastPoint.current.y + (point.y - lastPoint.current.y) * t,
+          });
+        }
+      } else {
+        eraseAtPoint(point);
+      }
+
+      lastPoint.current = point;
     };
     const mouseUp = () => {
       if (!isEraserSelected.current) return;
       isEraserSelected.current = false;
+      lastPoint.current = null;
     };
     canvas.addEventListener("mousedown", mouseDown);
     canvas.addEventListener("mousemove", mouseMove);
     window.addEventListener("mouseup", mouseUp);
     return () => {
-        socket.off("stroke-delete")
+      socket.off("stroke-delete");
       canvas.removeEventListener("mousedown", mouseDown);
       canvas.removeEventListener("mousemove", mouseMove);
       window.removeEventListener("mouseup", mouseUp);
