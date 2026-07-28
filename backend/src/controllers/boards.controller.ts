@@ -3,7 +3,7 @@ import { roomBoards, roomElements, roomBoardColors } from "./sockets/index";
 import Board from "../models/board.model";
 import { Request, Response } from "express";
 
-export const saveBoard = async (req: Request, res: Response) => {
+const saveBoard = async (req: Request, res: Response) => {
   try {
     const { roomId } = req.params;
     const { name } = req.body;
@@ -28,7 +28,7 @@ export const saveBoard = async (req: Request, res: Response) => {
   }
 };
 
-export const updateBoard = async (req: Request, res: Response) => {
+const updateBoard = async (req: Request, res: Response) => {
   try {
     const { boardId } = req.params;
     const { name, roomId } = req.body;
@@ -37,19 +37,19 @@ export const updateBoard = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const board=await Board.findById(boardId);
+    const board = await Board.findById(boardId);
 
     if (!board) {
       return res.status(404).json({ message: "Board not found" });
     }
-    if(board.ownerId.toString() !== req.userId) {
+    if (board.ownerId.toString() !== req.userId) {
       return res.status(403).json({ message: "Forbidden" });
     }
 
-    board.name=name;
-    board.boardColor=roomBoardColors[roomId] ?? "#27272A";
-    board.strokes=roomBoards[roomId] ?? [];
-    board.elements=roomElements[roomId] ?? [];
+    board.name = name;
+    board.boardColor = roomBoardColors[roomId] ?? "#27272A";
+    board.strokes = roomBoards[roomId] ?? [];
+    board.elements = roomElements[roomId] ?? [];
 
     await board.save();
 
@@ -59,14 +59,15 @@ export const updateBoard = async (req: Request, res: Response) => {
   }
 };
 
-export const getBoards = async (req: Request, res: Response) => {
+const getBoards = async (req: Request, res: Response) => {
   try {
     if (!req.userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const boards = await Board.find({ ownerId: req.userId })
-    .select("_id name updatedAt ");
+    const boards = await Board.find({ ownerId: req.userId }).select(
+      "_id name updatedAt ",
+    );
 
     res.status(200).json(boards);
   } catch (err) {
@@ -74,8 +75,7 @@ export const getBoards = async (req: Request, res: Response) => {
   }
 };
 
-
-export const getOfflineBoardContent=async(req: Request, res: Response) => {
+const getOfflineBoardContent = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -89,4 +89,65 @@ export const getOfflineBoardContent=async(req: Request, res: Response) => {
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch offline board content" });
   }
+};
+
+const saveOfflineBoard = async (req: Request, res: Response) => {
+  try {
+    const { name, boardColor, strokes, elements } = req.body;
+
+    if (!req.userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const board = await Board.create({
+      ownerId: req.userId,
+      name,
+      boardColor: boardColor,
+      strokes: strokes,
+      elements: elements,
+    });
+    res.status(201).json({ _id: board._id, name: board.name });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to save offline board" });
+  }
+};
+
+const updateOfflineBoard = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { name, boardColor, strokes, elements } = req.body;
+
+    if (!req.userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const board = await Board.findById(id);
+
+    if (!board) {
+      return res.status(404).json({ message: "Board not found" });
+    }
+
+    if (board.ownerId.toString() !== req.userId) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    board.name = name;
+    board.boardColor = boardColor;
+    board.strokes = strokes;
+    board.elements = elements;
+
+    await board.save();
+
+    res.status(200).json({ name: board.name });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to update offline board" });
+  }
+};
+
+export {
+  saveBoard,
+  updateBoard,
+  getBoards,
+  getOfflineBoardContent,
+  saveOfflineBoard,
+  updateOfflineBoard,
 };

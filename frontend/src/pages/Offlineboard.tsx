@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Menu, TableOfContents } from "lucide-react";
-import { ToolSettingsProvider, useToolSettings } from "../context/ToolBarLeftContext.tsx";
+import {
+  ToolSettingsProvider,
+  useToolSettings,
+} from "../context/ToolBarLeftContext.tsx";
 import OfflineMultiCursor from "../components/home/OfflineMulticursor.tsx";
 import OfflineTools from "../components/home/OfflineTools.tsx";
 import ToolBarContainer from "../components/room/LeftToolBar/ToolBarContainer.tsx";
@@ -12,11 +15,11 @@ import api from "../utils/axios.ts";
 import { distributeElements } from "../components/home/tools/distributeElements.ts";
 
 export default function Offlineboard() {
-  return(
-  <ToolSettingsProvider>
-    <OfflineboardContent />
-  </ToolSettingsProvider>
-  )
+  return (
+    <ToolSettingsProvider>
+      <OfflineboardContent />
+    </ToolSettingsProvider>
+  );
 }
 
 function OfflineboardContent() {
@@ -24,26 +27,40 @@ function OfflineboardContent() {
   const images = useRef<BoardImage[]>([]);
   const [isImageUploadInterfaceOpen, setIsImageUploadInterfaceOpen] =
     useState(false);
-  const {linesRef,textBoxesRef,shapesRef,setBoardColor,strokes} = useToolSettings();
-    const {id} = useParams();
-  useEffect(()=>{
-    if(id==="new")return;
-
-     const fetchBoardContent=async()=>{
-       try{
-        const val=await api.get(`/boards/offline/${id}`)
-        if(val.data){
+  const {
+    linesRef,
+    textBoxesRef,
+    shapesRef,
+    setBoardColor,
+    strokes,
+    activeSavedBoardId,
+    setBoardName,
+  } = useToolSettings();
+  const { id } = useParams();
+  useEffect(() => {
+    if (id === "new" || !id) return;
+    activeSavedBoardId.current = id;
+    const fetchBoardContent = async () => {
+      try {
+        const val = await api.get(`/boards/offline/${id}`);
+        if (val.data) {
           setBoardColor(val.data.boardColor);
-          strokes.current=val.data.strokes;
-          distributeElements(val.data.elements, linesRef, textBoxesRef, shapesRef, images);
+          setBoardName(val.data.name);
+          strokes.current = val.data.strokes;
+          distributeElements(
+            val.data.elements,
+            linesRef,
+            textBoxesRef,
+            shapesRef,
+            images,
+          );
         }
-      }
-      catch(err){
+      } catch (err) {
         console.error("Error fetching offline board:", err);
       }
-     }
-     fetchBoardContent();
-  }, [])
+    };
+    fetchBoardContent();
+  }, []);
 
   return (
     <main className="h-screen flex-1 flex static overflow-hidden">
@@ -61,7 +78,7 @@ function OfflineboardContent() {
         <Menu />
       </button>
 
-      {isHambergerMenuOpen && <OfflineHamberMenu />}
+      {isHambergerMenuOpen && <OfflineHamberMenu images={images} />}
       {isImageUploadInterfaceOpen && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
           <ImageUploadInterface
