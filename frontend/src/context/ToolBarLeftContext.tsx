@@ -178,6 +178,8 @@ export function ToolSettingsProvider({
   const activeSavedBoardId = useRef<string | null>(null);
   const activeBoardName = useRef<string | null>(null);
   const [boardName, setBoardName] = useState("");
+
+
   return (
     <ToolBarLeftContext.Provider
       value={{

@@ -73,3 +73,20 @@ export const getBoards = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to fetch boards" });
   }
 };
+
+
+export const getOfflineBoardContent=async(req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const board = await Board.findById(id);
+
+    if (!board) {
+      return res.status(404).json({ message: "Board not found" });
+    }
+
+    res.status(200).json(board);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch offline board content" });
+  }
+};

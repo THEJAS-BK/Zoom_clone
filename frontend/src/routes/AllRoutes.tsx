@@ -8,7 +8,7 @@ import Offlineboard from "../pages/Offlineboard";
 export default function AllRoutes() {
   return (
     <Routes>
-      <Route path="/offlineboard" element={<Offlineboard/>} ></Route>
+      <Route path="/offlineboard/:id" element={<Offlineboard/>} ></Route>
       <Route path="/register" element={<Register />} />
       <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
