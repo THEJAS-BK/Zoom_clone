@@ -79,7 +79,7 @@ const { roomId,activeBoardName,activeSavedBoardId,boardName,setBoardName,linesRe
 };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg min-h-[350px] max-h-[40px] p-6 relative flex flex-col">
+    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg min-h-[450px] max-h-[560px] p-6 relative flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-1">
         <h2 className="text-lg font-semibold text-[#101820]">My Boards</h2>

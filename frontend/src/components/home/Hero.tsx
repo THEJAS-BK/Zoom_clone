@@ -7,7 +7,7 @@ type CreateRoomResponse = {
   message?: string;
 };
 //hooks
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 //services
@@ -16,6 +16,12 @@ import { socket } from "../../services/socket";
 //utils
 import { generateRoomId } from "../../utils/RoomId";
 import MyBoards from "./MyBoards";
+
+interface BoardDoc {
+  _id: string;
+  name: string;
+  updatedAt: string;
+}
 
 function connectSocket(maxAttempts = 5): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -65,6 +71,8 @@ export default function Hero() {
   const [Toast, setToast] = useState({ open: false, message: "" });
   const [loading, setLoading] = useState<string | null>(null);
 
+    const [boards, setBoards] = useState<BoardDoc[]>([]);
+
   const handleCreateRoom = async () => {
     try {
       setLoading("creating room");
@@ -113,6 +121,10 @@ export default function Hero() {
       setToast({ open: true, message: "connection failed try again" });
     }
   };
+
+  useEffect(()=>{
+
+  },[])
 
   return (
     <>
