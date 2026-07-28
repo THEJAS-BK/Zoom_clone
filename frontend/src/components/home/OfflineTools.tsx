@@ -12,7 +12,7 @@ import { Image, Eraser, MousePointer, Hand } from "lucide-react";
 
 import { useToolSettings } from "../../context/ToolBarLeftContext";
 
-export default function OfflineTools({}) {
+export default function OfflineTools({ setIsImageUploadInterfaceOpen }: { setIsImageUploadInterfaceOpen: React.Dispatch<React.SetStateAction<boolean>> }) {
   const { activeTool, setActiveTool } = useToolSettings();
 
   return (
@@ -112,13 +112,13 @@ export default function OfflineTools({}) {
       <div className="w-px h-6 bg-gray-700 mx-1" />
 
       {/* Image upload */}
-      <label
-        htmlFor="image-upload"
-        title="Insert image"
-        className="tool-btn flex items-center justify-center cursor-pointer"
-      >
-        <Image size={18} />
-      </label>
+       <div
+          title="Insert image"
+          className="tool-btn flex items-center justify-center cursor-pointer"
+          onClick={() => setIsImageUploadInterfaceOpen(true)}
+        >
+          <Image size={18} />
+        </div>
     </div>
   );
 }

@@ -20,7 +20,7 @@ export default function ImageUploadInterface({
 }) {
   const [gallaryImages, setGallaryImages] = useState<ImageDoc[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const { doRedrawRef, roomId } = useToolSettings();
+  const { doRedrawRef, roomId,isOffline } = useToolSettings();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -66,7 +66,9 @@ export default function ImageUploadInterface({
 
       images.current = [...images.current, newImage];
       doRedrawRef.current?.();
-      socket.emit("element-add", { roomId, element: newImage });
+      if(!isOffline) {
+        socket.emit("element-add", { roomId, element: newImage });
+      }
       setIsImageUploadInterfaceOpen(false);
     };
     tempImg.src = img.url;

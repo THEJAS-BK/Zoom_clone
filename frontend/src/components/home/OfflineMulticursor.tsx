@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import type { RefObject } from "react";
 const COLORS = ["#1f2937", "#f87171", "#22c55e", "#3b82f6", "#d97706"];
 //helper function
 import { redraw } from "../room/Multicursor/canvas";
@@ -9,25 +10,28 @@ import type {
   Stroke,
   Point,
   ActiveStroke,
+  TextBox,
 } from "../room/Multicursor/types";
 //tools
 import { autoPanIfNeeded } from "../room/Multicursor/tools/autoPanTextBox";
 import { useToolSettings } from "../../context/ToolBarLeftContext";
 import { getCursorStyle } from "../room/Multicursor/tools/CustomCursor";
+import { resolveFontFamily } from "../room/Multicursor/canvas";
+import { measureTextBox } from "../room/Multicursor/canvas";
 //hooks
 import { useOfflineCanvasZoom } from "./hooks/useOfflineCanvasZoom";
 import { useOfflineEraser } from "./hooks/useOfflineEraser";
 import { useOfflineHandTool } from "./hooks/useOfflineHandTool";
-import { useOfflineImageTransform } from "./hooks/useOfflineImageTransform";
 import { useOfflineSelection } from "./hooks/useOfflineSelection";
 import { useOfflineTextBox } from "./hooks/useOfflineTextBox";
 import { useOfflineShapes } from "./hooks/useOfflineShape";
 import { useOfflineDraw } from "./hooks/useOfflineDraw";
 import { useOfflineLines } from "./hooks/useOfflineLines";
 import { useOfflineDeleteElement } from "./hooks/useOfflineDeleteElement";
+import { useLayers } from "../room/Multicursor/hooks/useLayers";
 import ZoomControls from "../room/Multicursor/ZoomControls";
 
-export default function OfflineMultiCursor({}: {}) {
+export default function OfflineMultiCursor({images}: {images: RefObject<BoardImage[]>}) {
   const camera = useRef({ x: 0, y: 0, scale: 1 });
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
@@ -41,6 +45,8 @@ export default function OfflineMultiCursor({}: {}) {
   const selectedImgIdx = useRef<number>(-1);
 
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+  const [userName, setUserName] = useState("");
+  const [userId, setUserId] = useState("");
   const measureRef = useRef<HTMLSpanElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [panTick, setPanTick] = useState(0);
@@ -50,10 +56,6 @@ export default function OfflineMultiCursor({}: {}) {
   const [, forceUpdate] = useState(0);
   const triggerUpdate = () => forceUpdate((n) => n + 1);
 
-  const images = useRef<BoardImage[]>([]);
-  useEffect(() => {
-    setIsOffline(true);
-  }, []);
 
   //shapes,textBoxes and lines
   const {
@@ -72,7 +74,14 @@ export default function OfflineMultiCursor({}: {}) {
     activeTool,
     selectedId,
     setIsOffline,
+    tabSize,
+    boardColor,
   } = useToolSettings();
+
+  useEffect(() => {
+    setIsOffline(true);
+    return () => setIsOffline(false);
+  }, []);
 
   useEffect(() => {
     setStrokeColor(color);
@@ -110,12 +119,14 @@ export default function OfflineMultiCursor({}: {}) {
     doRedrawRef.current = doRedraw;
   }, [doRedraw]);
 
+  useLayers();
+
   useOfflineSelection(
     canvasRef,
     camera,
     shapesRef,
     linesRef,
-    selectedId,
+    images,
     strokeColor,
     activeTool,
     textBoxesRef,
@@ -188,15 +199,6 @@ export default function OfflineMultiCursor({}: {}) {
     doRedraw,
   );
 
-  useOfflineImageTransform(
-    canvasRef,
-    camera,
-    images,
-    imageCache,
-    selectedImgIdx,
-    doRedraw,
-  );
-
   useOfflineLines(
     canvasRef,
     camera,
@@ -235,7 +237,93 @@ export default function OfflineMultiCursor({}: {}) {
 
     ctx.lineWidth = 5;
     ctx.lineCap = "round";
+
+    const id = crypto.randomUUID();
+    setUserName("You");
+    setUserId(id);
+    userIdRef.current = id;
   }, []);
+
+  function TextBoxEditor({
+    box,
+    camera,
+    onInput,
+    onBlur,
+    textareaRef,
+  }: {
+    box: TextBox;
+    camera: React.RefObject<{ x: number; y: number; scale: number }>;
+    onInput: (text: string) => void;
+    onBlur: (text: string) => void;
+    textareaRef: RefObject<HTMLTextAreaElement | null>;
+  }) {
+    const scale = camera.current.scale;
+
+    const resizeTextarea = (el: HTMLTextAreaElement) => {
+      const { width, height } = measureTextBox(
+        el.value,
+        box.fontSize,
+        box.fontFamily,
+      );
+
+      el.style.width = width * scale + 20 + "px";
+      el.style.height = height * scale + 6 + "px";
+      el.style.transformOrigin = `${(width * scale) / 2}px ${(height * scale) / 2}px`;
+
+      // keep textarea position synced to the same centering the ref undergoes
+      el.style.left = box.x * scale + camera.current.x + "px";
+      el.style.top = box.y * scale + camera.current.y + "px";
+    };
+
+    useLayoutEffect(() => {
+      const el = textareaRef.current;
+      if (!el) return;
+      resizeTextarea(el);
+      const len = el.value.length;
+      el.focus();
+      el.setSelectionRange(len, len);
+    }, [box.id]); // re-run when switching to a different box (key already remounts, this covers first paint)
+
+    return (
+      <textarea
+        ref={textareaRef}
+        key={box.id}
+        defaultValue={box.text}
+        rows={1}
+        spellCheck={false}
+        style={{
+          color: "transparent",
+          caretColor: box.color,
+          position: "absolute",
+          left: box.x * scale + camera.current.x,
+          top: box.y * scale + camera.current.y,
+          transform: `rotate(${box.rotation ?? 0}rad)`,
+
+          border: "none",
+          outline: "none",
+          boxShadow: "none",
+          fontSize: box.fontSize * scale,
+          fontFamily: resolveFontFamily(box.fontFamily),
+          textAlign: box.textAlign as CanvasTextAlign,
+          fontWeight: "normal",
+          resize: "none",
+          overflow: "hidden",
+          padding: 0,
+          margin: 0,
+          boxSizing: "border-box",
+          lineHeight: `${box.fontSize * scale * 1.4}px`,
+          verticalAlign: "top",
+          background: "transparent",
+        }}
+        onInput={(e) => {
+          const el = e.currentTarget;
+          onInput(el.value);
+          resizeTextarea(el);
+        }}
+        onBlur={(e) => onBlur(e.target.value)}
+      />
+    );
+  }
 
   return (
     <div
@@ -248,123 +336,43 @@ export default function OfflineMultiCursor({}: {}) {
         height: "100%",
       }}
     >
+      <ZoomControls canvasRef={canvasRef} camera={camera} doRedraw={doRedraw} />
+
       <canvas
         ref={canvasRef}
-        className="bg-gray-700"
         style={{
           cursor: getCursorStyle(activeTool),
           overscrollBehavior: "none",
           overflow: "hidden",
+          backgroundColor: boardColor,
         }}
         onClick={handleCanvasClick}
       />
 
-      <ZoomControls canvasRef={canvasRef} camera={camera} doRedraw={doRedraw} />
-
-      {/* active textarea overlay */}
       {activeTextBox.current && (
-        <>
-          <span
-            ref={measureRef}
-            style={{
-              position: "absolute",
-              visibility: "hidden",
-              whiteSpace: "pre",
-              fontSize: activeTextBox.current.fontSize * camera.current.scale,
-              fontFamily: "monospace",
-              top: -9999,
-            }}
-          />
-          <textarea
-            ref={textareaRef}
-            autoFocus
-            rows={1}
-            spellCheck={false}
-            style={{
-              color: "transparent",
-              caretColor: activeTextBox.current.color,
-              position: "absolute",
-              left:
-                activeTextBox.current.x * camera.current.scale +
-                camera.current.x,
-              top:
-                activeTextBox.current.y * camera.current.scale +
-                camera.current.y,
-              border: "none",
-              outline: "none",
-              fontSize: activeTextBox.current.fontSize * camera.current.scale,
-              fontFamily: "monospace",
-              fontWeight: "normal",
-              resize: "none",
-              overflow: "hidden",
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-              width: "20px",
-              height: `${activeTextBox.current.fontSize * camera.current.scale + 6}px`,
-              padding: 0,
-              margin: 0,
-              boxSizing: "border-box" as const,
-              lineHeight: `${activeTextBox.current.fontSize * camera.current.scale * 1.4}px`,
-              verticalAlign: "top",
-              background: "transparent",
-            }}
-            onInput={(e) => {
-              const el = e.currentTarget;
-              updateTextBoxContent(el.value);
-
-              const measure = measureRef.current!;
-              const scale = camera.current.scale;
-
-              const lines = el.value.split("\n");
-              const longest = lines.reduce(
-                (a, b) => (a.length > b.length ? a : b),
-                "",
-              );
-              measure.textContent = longest || " ";
-              measure.style.fontSize = `${activeTextBox.current!.fontSize * scale}px`;
-              measure.style.fontFamily = "monospace";
-
-              const naturalWidth = measure.offsetWidth + 20;
-              const leftPos =
-                activeTextBox.current!.x * scale + camera.current.x;
-              const maxAllowed = window.innerWidth - leftPos - 20;
-
-              el.style.width =
-                Math.min(naturalWidth, Math.max(maxAllowed, 20)) + "px";
-              el.style.height = "auto";
-              el.style.height = el.scrollHeight + "px";
-
-              const rect = el.getBoundingClientRect();
-              autoPanIfNeeded(
-                canvasRef.current!,
-                canvasRef.current!.getContext("2d")!,
-                camera,
-                rect.right,
-                rect.bottom,
-                images,
-                imageCache,
-                activeStrokes,
-                currentStroke,
-                strokes,
-                userIdRef.current,
-                strokeColor,
-                () => setPanTick((t) => t + 1),
-                shapesRef,
-                activeShape,
-                linesRef,
-                activeLine,
-                selectedId,
-                textBoxesRef,
-                activeTextBox,
-              );
-            }}
-            onBlur={(e) => {
-              finalizeTextBox(e.target.value);
-              editingExistingRef.current = false;
-              triggerUpdate();
-            }}
-          />
-        </>
+        <TextBoxEditor
+          key={activeTextBox.current.id}
+          box={activeTextBox.current}
+          camera={camera}
+          onInput={(text) => {
+            updateTextBoxContent(text);
+            const rect = textareaRef.current!.getBoundingClientRect();
+            autoPanIfNeeded(
+              camera,
+              rect.right,
+              rect.bottom,
+              () => setPanTick((t) => t + 1),
+              doRedraw,
+            );
+            doRedraw();
+          }}
+          onBlur={(text) => {
+            finalizeTextBox(text);
+            editingExistingRef.current = false;
+            triggerUpdate();
+          }}
+          textareaRef={textareaRef}
+        />
       )}
     </div>
   );

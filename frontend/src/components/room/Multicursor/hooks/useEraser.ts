@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { Stroke, Point, ActiveStroke } from "../types.ts";
+import type { Stroke, Point } from "../types.ts";
 import { getCanvasPoint, isPointNearStroke } from "../canvas.ts";
 import { socket } from "../../../../services/socket.ts";
 

@@ -160,7 +160,7 @@ export function ToolSettingsProvider({
   //hamberger menu
   const [followUserCamera, setFollowUserCamera] = useState("");
   const [selectedMemId, setSelectedMemId] = useState("");
-  const [boardColor,setBoardColor]=useState("")
+  const [boardColor,setBoardColor]=useState("#374151")
   return (
     <ToolBarLeftContext.Provider
       value={{

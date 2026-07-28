@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { Stroke, Point } from "../../room/Multicursor/types.ts";
-import {getCanvasPoint, isPointNearStroke } from "../../room/Multicursor/canvas.ts";
+import { getCanvasPoint, isPointNearStroke } from "../../room/Multicursor/canvas.ts";
 
 export function useOfflineEraser(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
@@ -21,14 +21,21 @@ export function useOfflineEraser(
   };
 
   const isEraserSelected = useRef(false);
+  const lastPoint = useRef<Point | null>(null);
 
   useEffect(() => {
+    if (activeTool !== "eraser") {
+      isEraserSelected.current = false;
+      return;
+    }
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const mouseDown = () => {
       if (activeTool === "eraser") {
         isEraserSelected.current = true;
+        lastPoint.current = null;
       }
     };
 
@@ -36,12 +43,35 @@ export function useOfflineEraser(
       if (!isEraserSelected.current) return;
 
       const point = getCanvasPoint(e, canvas, camera);
-      eraseAtPoint(point);
+
+      if (lastPoint.current) {
+        const steps = Math.max(
+          1,
+          Math.ceil(
+            Math.hypot(
+              point.x - lastPoint.current.x,
+              point.y - lastPoint.current.y,
+            ) / 5,
+          ),
+        );
+        for (let i = 1; i <= steps; i++) {
+          const t = i / steps;
+          eraseAtPoint({
+            x: lastPoint.current.x + (point.x - lastPoint.current.x) * t,
+            y: lastPoint.current.y + (point.y - lastPoint.current.y) * t,
+          });
+        }
+      } else {
+        eraseAtPoint(point);
+      }
+
+      lastPoint.current = point;
     };
 
     const mouseUp = () => {
       if (!isEraserSelected.current) return;
       isEraserSelected.current = false;
+      lastPoint.current = null;
     };
 
     canvas.addEventListener("mousedown", mouseDown);
