@@ -65,6 +65,7 @@ function OfflineboardContent() {
   return (
     <main className="h-screen flex-1 flex static overflow-hidden">
       <button
+      data-hamburger-trigger
         onClick={() => setIsHambergerMenuOpen(!isHambergerMenuOpen)}
         className="absolute text-white z-20 left-5 top-5 border border-white rounded"
       >
@@ -78,7 +79,7 @@ function OfflineboardContent() {
         <Menu />
       </button>
 
-      {isHambergerMenuOpen && <OfflineHamberMenu images={images} />}
+      {isHambergerMenuOpen && <OfflineHamberMenu images={images} setIsHambergerMenuOpen={setIsHambergerMenuOpen} />}
       {isImageUploadInterfaceOpen && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
           <ImageUploadInterface

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState,useEffect, type SetStateAction } from "react";
 import { boardColors } from "../room/LeftToolBar/tools/colors";
 import { useToolSettings } from "../../context/ToolBarLeftContext";
 import { Check, X, Loader2 } from "lucide-react";
@@ -6,9 +6,11 @@ import api from "../../utils/axios";
 import { combineElements } from "./tools/combineElements";
 import type { BoardImage } from "../room/Multicursor/types";
 export default function OfflineHamberMenu({
-  images,
+  setIsHambergerMenuOpen,
+  images
 }: {
-  images: React.RefObject<BoardImage[]>;
+  setIsHambergerMenuOpen:React.Dispatch<SetStateAction<boolean>>,
+  images: React.RefObject<BoardImage[]>
 }) {
   const [isBoardcolorInterfaceOpen, setIsBoardcolorInterfaceOpen] =
     useState(false);
@@ -16,6 +18,8 @@ export default function OfflineHamberMenu({
     useState(false);
   const [isSavingBoard, setIsSavingBoard] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+
+    const menuRef = useRef<HTMLDivElement>(null);
   const {
     boardColor,
     setBoardColor,
@@ -72,8 +76,28 @@ export default function OfflineHamberMenu({
     }
   };
 
+   useEffect(() => {
+      const handleClickOutside = (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+  
+        // Ignore clicks on the trigger — let its own onClick toggle handle it
+        if (target.closest("[data-hamburger-trigger]")) {
+          return;
+        }
+  
+        if (menuRef.current && !menuRef.current.contains(target)) {
+          setIsHambergerMenuOpen(false);
+        }
+      };
+  
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, [setIsHambergerMenuOpen]);
+
   return (
-    <div className="absolute top-16 left-5 bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl  min-w-[220px] z-20">
+    <div ref={menuRef} className="absolute top-25 left-5 bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl  min-w-[220px] z-20">
       {/* Actions */}
       <ul>
         <li className="relative border-b border-white/10">
