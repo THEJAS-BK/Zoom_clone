@@ -1,9 +1,9 @@
 import multer from "multer";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary-v2";
 import cloudinary from "../config/cloudinary";
 
 const storage = new CloudinaryStorage({
-  cloudinary,
+  cloudinary: cloudinary as any,
   params: {
     folder: "syncvas",
     allowed_formats: ["jpg", "png", "jpeg", "webp"],
@@ -17,7 +17,7 @@ const storage = new CloudinaryStorage({
       },
     ],
   },
-} as any); // see note below
+});
 
 export const upload = multer({
   storage,
