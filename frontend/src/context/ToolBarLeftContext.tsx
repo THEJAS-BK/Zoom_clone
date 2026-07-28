@@ -107,6 +107,10 @@ type ToolSettings = {
   //board colors
   boardColor:string;
   setBoardColor: Dispatch<SetStateAction<string>>;
+
+  //board id
+  activeSavedBoardId:RefObject<string | null>
+  activeBoardName:RefObject<string | null>
 };
 
 const ToolBarLeftContext = createContext<ToolSettings | null>(null);
@@ -161,6 +165,8 @@ export function ToolSettingsProvider({
   const [followUserCamera, setFollowUserCamera] = useState("");
   const [selectedMemId, setSelectedMemId] = useState("");
   const [boardColor,setBoardColor]=useState("#374151")
+  const activeSavedBoardId = useRef<string | null>(null);
+  const activeBoardName = useRef<string | null>(null);
   return (
     <ToolBarLeftContext.Provider
       value={{
@@ -218,7 +224,9 @@ export function ToolSettingsProvider({
         setFollowUserCamera,
         selectedMemId,
         setSelectedMemId,
-        boardColor,setBoardColor
+        boardColor,setBoardColor,
+        activeSavedBoardId,
+        activeBoardName
       }}
     >
       {children}

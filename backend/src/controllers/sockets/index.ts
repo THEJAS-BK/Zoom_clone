@@ -51,4 +51,4 @@ const setSocketConnection = (server: any) => {
   return io;
 };
 
-export { setSocketConnection };
+export { setSocketConnection,roomElements,roomBoards,roomBoardColors };

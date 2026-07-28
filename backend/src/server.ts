@@ -19,7 +19,7 @@ app.use(
     credentials: true,
   }),
 );
-app.use(express.json({ limit: "40kb" }));
+app.use(express.json());
 app.use(urlencoded({ extended: true, limit: "40kb" }));
 
 //controllers
@@ -27,28 +27,25 @@ import { setSocketConnection } from "./controllers/sockets";
 
 //routes
 import userRoutes from "./routes/auth.routes";
-import { authHeader } from "./middlewares/auth.middleware";
-import imageRoutes from "./routes/image.routes";
+
+import imageRoutes from "./routes/images.routes";
+import boardRoutes from "./routes/boards.routes"
 
 //sockets setup
 const server = createServer(app);
 const io = setSocketConnection(server);
 
 //all routes
-app.get("/checkRoute",authHeader,(req,res)=>{
-res.sendStatus(200)
-})
-
-app.use("/image", imageRoutes);
-
+app.use("/images", imageRoutes);
 app.use(
   "/auth",
   userRoutes,
 );
-// app.use("/image", imageRoutes);
-app.get("/", (req: Request, res: Response) => {
-  res.json({ message: "this is backend code" });
-});
+app.use("/boards", boardRoutes);
+
+
+
+
 server.listen(8080, () => {
   console.log("server started on port 8080");
 });

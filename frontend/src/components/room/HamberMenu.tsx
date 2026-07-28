@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useToolSettings } from "../../context/ToolBarLeftContext";
-import { Presentation, Check } from "lucide-react";
+import { Presentation, Check, Loader2 } from "lucide-react";
 import type { Participants } from "./Multicursor/types";
 import { socket } from "../../services/socket";
 import { boardColors } from "./LeftToolBar/tools/colors";
 import api from "../../utils/axios";
+
+import { X } from "lucide-react";
 
 interface HamberMenuProps {
   roomId: string;
@@ -26,10 +28,14 @@ export default function HamberMenu({
   const [isOtherMembers, setIsOtherMembers] = useState(true);
 
   const [openSubmenu, setOpenSubmenu] = useState<
-    "video" | "follow" | "boardColor" | null
+    "video" | "follow" | "boardColor" | "saveBoard" | null
   >(null);
+  const [boardName,setBoardName] = useState("");
+  const [isSavingBoard, setIsSavingBoard] = useState(false);
 
-  const toggleSubmenu = (menu: "video" | "follow" | "boardColor") => {
+  const toggleSubmenu = (
+    menu: "video" | "follow" | "boardColor" | "saveBoard",
+  ) => {
     setOpenSubmenu((prev) => (prev === menu ? null : menu));
   };
 
@@ -37,6 +43,34 @@ export default function HamberMenu({
     setFollowUserCamera((prev) => (prev === socketId ? "" : socketId));
     setSelectedMemId((prev) => (prev === socketId ? "" : socketId));
   };
+
+  const handleSaveBoard = async () => {
+  setIsSavingBoard(true);
+  try {
+    if(activeSavedBoardId.current) {
+      const res = await api.patch(`/boards/${activeSavedBoardId.current}`, {
+        name: boardName,
+        roomId:roomId
+      });
+    setBoardName(res.data.name)
+
+      activeBoardName.current=res.data.name;
+    }
+   else{
+     const res = await api.post(`/boards/${roomId}`, {
+      name: boardName,
+    });
+    setBoardName(res.data.name)
+     activeBoardName.current=res.data.name;
+    activeSavedBoardId.current = res.data._id;
+   }
+  
+  } catch (err) {
+    console.error("Failed to save board:", err);
+  } finally {
+    setIsSavingBoard(false);
+  }
+};
 
   useEffect(() => {
     socket.emit("get-participants", roomId);
@@ -66,9 +100,14 @@ export default function HamberMenu({
     setSelectedMemId,
     boardColor,
     setBoardColor,
+    activeSavedBoardId,
+    activeBoardName
   } = useToolSettings();
 
   useEffect(() => {
+
+    setBoardName(activeBoardName.current??"")
+
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
 
@@ -86,6 +125,8 @@ export default function HamberMenu({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
+
+
   }, [setIsHambergerMenuOpen]);
 
   return (
@@ -254,23 +295,73 @@ export default function HamberMenu({
           )}
         </li>
 
-        <li className="px-4 py-2 text-sm text-gray-200 hover:bg-white/10 cursor-pointer transition-colors ">
-          My Boards
+        <li className="relative border-b border-white/10">
+          <button
+            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-left text-gray-200 hover:bg-white/10 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleSubmenu("saveBoard");
+            }}
+          >
+            Save Board
+          </button>
+          {openSubmenu === "saveBoard" && (
+            <div className="absolute top-0 left-full ml-1 bg-[#1e1e2e] border border-white/10 rounded-2xl shadow-xl w-72 p-6 z-40">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold text-gray-100">
+                  Save Board?
+                </h2>
+                <button
+                  onClick={() => toggleSubmenu("saveBoard")}
+                  className="p-1.5 rounded-full hover:bg-white/10 transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+
+              {/* Board name input */}
+              <label className="block mb-4">
+                <span className="text-sm text-gray-400 mb-1.5 block">
+                  Board Name?
+                </span>
+                <input
+                  type="text"
+                  value={boardName}
+                  onChange={(e) => setBoardName(e.target.value)}
+                  placeholder="Untitled board"
+                  className="w-full px-3 py-2 rounded-lg bg-[#2a2a3d] border border-white/10 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6FF0]"
+                />
+              </label>
+
+              {/* Save button */}
+              <button
+                onClick={handleSaveBoard}
+                disabled={isSavingBoard}
+                className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-full font-medium transition-colors ${
+                  isSavingBoard
+                    ? "bg-[#7C6FF0]/60 cursor-not-allowed"
+                    : "bg-[#7C6FF0] cursor-pointer hover:bg-[#6a5de0]"
+                } text-white`}
+              >
+                {isSavingBoard ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save"
+                )}
+              </button>
+            </div>
+          )}
         </li>
         <li className="px-4 py-2 text-sm text-gray-200 hover:bg-white/10 cursor-pointer transition-colors ">
-          Save Board
+          My boards
         </li>
 
         <li className="px-4 py-2 text-sm text-red-400 hover:bg-white/10 cursor-pointer transition-colors">
           Exit room
-        </li>
-        <li
-        onClick={async ()=>{
-          const val=await api.get("/checkRoute");
-          console.log(val)
-        }}
-        >
-          check
         </li>
       </ul>
     </div>

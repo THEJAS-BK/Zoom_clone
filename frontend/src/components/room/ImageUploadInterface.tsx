@@ -31,7 +31,7 @@ export default function ImageUploadInterface({
 
     setIsUploading(true);
     try {
-      const res = await api.post("/image/upload", formData);
+      const res = await api.post("/images/upload", formData);
       setGallaryImages((prev) => [...prev, res.data]);
     } catch (err) {
       console.error("upload failed", err);
@@ -77,7 +77,7 @@ export default function ImageUploadInterface({
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const res = await api.get("/image");
+        const res = await api.get("/images");
         setGallaryImages(res.data);
       } catch (err) {
         console.error("failed to fetch images", err);

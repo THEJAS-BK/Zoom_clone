@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authHeader } from "../middlewares/auth.middleware";
 import { upload } from "../middlewares/upload";
-import { fetchImages, uploadImage } from "../controllers/imageContoller";
+import { fetchImages, uploadImage } from "../controllers/images.controller";
     
 const router=Router();
 
