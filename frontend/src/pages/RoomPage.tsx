@@ -13,7 +13,11 @@ import Tools from "../components/room/Tools.tsx";
 import ToolBarContainer from "../components/room/LeftToolBar/ToolBarContainer.tsx";
 import HamberMenu from "../components/room/HamberMenu.tsx";
 import  ImageUploadInterface from "../components/room/ImageUploadInterface.tsx";
-
+import OnlineMyboards from "../components/room/OnlineMyboards.tsx";
+ import { useNavigate } from "react-router-dom";
+import { socket } from "../services/socket";
+import api from "../utils/axios";
+import { useToolSettings } from "../context/ToolBarLeftContext.tsx";
 type BoardImage = {
   type: "image";
   id: string;
@@ -27,85 +31,133 @@ type BoardImage = {
 
 export default function RoomPage() {
   const { roomId } = useParams();
-  const [openCursor, setOpenCursor] = useState(false);
-  const images = useRef<BoardImage[]>([]);
-
-  //redraw
-  const [redrawVersion, setRedrawVersion] = useState(0);
-
   if (!roomId) return <div>Not found</div>;
 
-  //hambergerMenu
+  return (
+    <WebRtcProvider roomId={roomId} >
+      <ToolSettingsProvider>
+        <RoomContent roomId={roomId} />
+      </ToolSettingsProvider>
+    </WebRtcProvider>
+  );
+}
+
+
+
+function RoomContent({ roomId }: { roomId: string }) {
+  const [openCursor, setOpenCursor] = useState(false);
+  const images = useRef<BoardImage[]>([]);
+  const [redrawVersion, setRedrawVersion] = useState(0);
   const [isHambergerMenuOpen, setIsHambergerMenuOpen] = useState(false);
-
   const [isViewMode, setIsViewMode] = useState(false);
-
   const [isImageUploadInterfaceOpen, setIsImageUploadInterfaceOpen] = useState(false);
+  const [isMyBoardsInterfaceOpen, setIsMyBoardsInterfaceOpen] = useState(false);
+  const [boardSwitching, setBoardSwitching] = useState<string | null>(null);
+
+  const navigate = useNavigate();
+  const pendingSaveRef = useRef<Promise<any> | null>(null);
+  const { activeSavedBoardId, activeBoardName, boardName, setBoardName,linesRef,textBoxesRef,strokes,shapesRef,doRedrawRef } = useToolSettings();
+
+  useEffect(() => {
+    const saveOwnCopy = async () => {
+      if (activeSavedBoardId.current) {
+        const res = await api.patch(`/boards/${activeSavedBoardId.current}`, {
+          name: boardName,
+          roomId: roomId,
+        });
+        setBoardName(res.data.name);
+        activeBoardName.current = res.data.name;
+      } else {
+        const res = await api.post(`/boards/${roomId}`, { name: new Date().toLocaleDateString() });
+        setBoardName(res.data.name);
+        activeBoardName.current = res.data.name;
+        activeSavedBoardId.current = res.data._id;
+      }
+    };
+
+    const handleSwitchStart = ({ initiatorName, boardName: incomingBoardName }: { initiatorName: string; boardName: string }) => {
+      setBoardSwitching(`${initiatorName} is opening "${incomingBoardName}"`);
+      pendingSaveRef.current = saveOwnCopy();
+    };
+
+    const handleSwitchComplete = async ({ newRoomId }: { newRoomId: string }) => {
+      if (pendingSaveRef.current) await pendingSaveRef.current;
+      socket.emit("join-room", newRoomId, (res: any) => {
+        if (res.success) {
+          navigate(`/room/${newRoomId}`);
+        } else {
+          setBoardSwitching(null);
+        }
+      });
+    };
+
+    socket.on("board-switch-start", handleSwitchStart);
+    socket.on("board-switch-complete", handleSwitchComplete);
+    return () => {
+      socket.off("board-switch-start", handleSwitchStart);
+      socket.off("board-switch-complete", handleSwitchComplete);
+    };
+  }, [roomId]);
 
   return (
-    <>
-      <WebRtcProvider roomId={roomId}>
-        <ToolSettingsProvider>
-          <div className="h-screen flex flex-col overflow-hidden">
-            <main className="flex-1 flex static">
-              {openCursor && (
-                <>
-                  <button
-                    data-hamburger-trigger
-                    onClick={() => setIsHambergerMenuOpen(!isHambergerMenuOpen)}
-                    className="absolute text-white z-20 left-5 top-5 bg-slate-800 p-2 rounded"
-                  >
-                    <Menu />
-                  </button>
-                 {isViewMode&& <ToolBarContainer />}
-                </>
-              )}
+    <div className="h-screen flex flex-col overflow-hidden">
+      <main className="flex-1 flex static">
+        {openCursor && (
+          <>
+            <button
+              data-hamburger-trigger
+              onClick={() => setIsHambergerMenuOpen(!isHambergerMenuOpen)}
+              className="absolute text-white z-20 left-5 top-5 bg-slate-800 p-2 rounded"
+            >
+              <Menu />
+            </button>
+            {isViewMode && <ToolBarContainer />}
+          </>
+        )}
 
-              {isHambergerMenuOpen && (
-                <HamberMenu
-                  openCursor={openCursor}
-                  setOpenCursor={setOpenCursor}
-                  roomId={roomId}
-                  setIsHambergerMenuOpen={setIsHambergerMenuOpen}
-                />
-              )}
-              {/*center tools menu*/}
-              {openCursor && isViewMode && (
-                <div className="absolute top-10 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded text-white shadow-lg z-20 ">
-                  <Tools setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen} />
-                </div>
-              )}
-              {/*image upload interface*/}
-              {openCursor&&isImageUploadInterfaceOpen && (
-                <div  className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
-                  <ImageUploadInterface  images={images} setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen} />
-                </div>
-              )}
+        {isHambergerMenuOpen && (
+          <HamberMenu
+            openCursor={openCursor}
+            setOpenCursor={setOpenCursor}
+            roomId={roomId}
+            setIsHambergerMenuOpen={setIsHambergerMenuOpen}
+            setIsMyBoardsInterfaceOpen={setIsMyBoardsInterfaceOpen}
+          />
+        )}
 
-              {/* cursor interface not open*/}
-              {!openCursor && (
-                <>
-                  <MainContent
-                    openCursor={openCursor}
-                    setOpenCursor={setOpenCursor}
-                  />
-                </>
-              )}
-
-              {openCursor && (
-                <MultiCursor
-                  roomId={roomId}
-                  imageUpdate={redrawVersion}
-                  images={images}
-                  openCursor={openCursor}
-                  setOpenCursor={setOpenCursor}
-                  setIsViewMode={setIsViewMode}
-                />
-              )}
-            </main>
+        {openCursor && isViewMode && (
+          <div className="absolute top-10 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded text-white shadow-lg z-20 ">
+            <Tools setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen} />
           </div>
-        </ToolSettingsProvider>
-      </WebRtcProvider>
-    </>
+        )}
+
+        {openCursor && isImageUploadInterfaceOpen && (
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
+            <ImageUploadInterface images={images} setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen} />
+          </div>
+        )}
+
+        {openCursor && isMyBoardsInterfaceOpen && (
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
+            <OnlineMyboards setIsMyBoardsInterfaceOpen={setIsMyBoardsInterfaceOpen} setBoardSwitching={setBoardSwitching} />
+          </div>
+        )}
+
+        {!openCursor && (
+          <MainContent openCursor={openCursor} setOpenCursor={setOpenCursor} />
+        )}
+
+        {openCursor && (
+          <MultiCursor
+            roomId={roomId}
+            imageUpdate={redrawVersion}
+            images={images}
+            openCursor={openCursor}
+            setOpenCursor={setOpenCursor}
+            setIsViewMode={setIsViewMode}
+          />
+        )}
+      </main>
+    </div>
   );
 }

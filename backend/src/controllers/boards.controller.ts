@@ -7,7 +7,6 @@ export const saveBoard = async (req: Request, res: Response) => {
   try {
     const { roomId } = req.params;
     const { name } = req.body;
-
     if (!req.userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -57,5 +56,20 @@ export const updateBoard = async (req: Request, res: Response) => {
     res.status(200).json({ name: board.name });
   } catch (err) {
     res.status(500).json({ message: "Failed to update board" });
+  }
+};
+
+export const getBoards = async (req: Request, res: Response) => {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const boards = await Board.find({ ownerId: req.userId })
+    .select("_id name updatedAt ");
+
+    res.status(200).json(boards);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch boards" });
   }
 };

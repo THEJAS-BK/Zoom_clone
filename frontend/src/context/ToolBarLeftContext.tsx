@@ -10,6 +10,7 @@ import type {
   BoardImage,
   Line,
   Shape,
+  Stroke,
   TextBox,
 } from "../components/room/Multicursor/types";
 import { useRef } from "react";
@@ -57,7 +58,9 @@ type ToolSettings = {
   setActiveTool: Dispatch<SetStateAction<string | null>>;
 
   selectedEle: Shape | Line | TextBox | BoardImage | null;
-  setSelectedEle: Dispatch<SetStateAction<Shape | Line | TextBox|BoardImage | null>>;
+  setSelectedEle: Dispatch<
+    SetStateAction<Shape | Line | TextBox | BoardImage | null>
+  >;
 
   selectedId: RefObject<string | null>;
 
@@ -105,12 +108,17 @@ type ToolSettings = {
   setSelectedMemId: Dispatch<SetStateAction<string>>;
 
   //board colors
-  boardColor:string;
+  boardColor: string;
   setBoardColor: Dispatch<SetStateAction<string>>;
 
   //board id
-  activeSavedBoardId:RefObject<string | null>
-  activeBoardName:RefObject<string | null>
+  activeSavedBoardId: RefObject<string | null>;
+  activeBoardName: RefObject<string | null>;
+
+  boardName: string;
+  setBoardName: Dispatch<SetStateAction<string>>;
+
+  strokes: RefObject<Stroke[]>;
 };
 
 const ToolBarLeftContext = createContext<ToolSettings | null>(null);
@@ -136,9 +144,9 @@ export function ToolSettingsProvider({
   const [arrowHead, setArrowHead] = useState("none");
   const [edgeStyle, setEdgeStyle] = useState("sharp");
 
-  const [selectedEle, setSelectedEle] = useState<Shape | Line | TextBox|BoardImage | null>(
-    null,
-  );
+  const [selectedEle, setSelectedEle] = useState<
+    Shape | Line | TextBox | BoardImage | null
+  >(null);
 
   const selectedId = useRef<string | null>(null);
 
@@ -160,13 +168,16 @@ export function ToolSettingsProvider({
   const [tabSize, setTabSize] = useState("");
 
   const [viewMode, setViewMode] = useState(true);
+  const strokes = useRef<Stroke[]>([]);
+
 
   //hamberger menu
   const [followUserCamera, setFollowUserCamera] = useState("");
   const [selectedMemId, setSelectedMemId] = useState("");
-  const [boardColor,setBoardColor]=useState("#374151")
+  const [boardColor, setBoardColor] = useState("#374151");
   const activeSavedBoardId = useRef<string | null>(null);
   const activeBoardName = useRef<string | null>(null);
+  const [boardName, setBoardName] = useState("");
   return (
     <ToolBarLeftContext.Provider
       value={{
@@ -224,9 +235,13 @@ export function ToolSettingsProvider({
         setFollowUserCamera,
         selectedMemId,
         setSelectedMemId,
-        boardColor,setBoardColor,
+        boardColor,
+        setBoardColor,
         activeSavedBoardId,
-        activeBoardName
+        activeBoardName,
+        boardName,
+        setBoardName,
+        strokes
       }}
     >
       {children}

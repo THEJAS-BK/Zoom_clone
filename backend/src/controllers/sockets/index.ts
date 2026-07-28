@@ -9,6 +9,7 @@ import { registerCanvasHandler } from "./canvasDraw";
 //types
 import { Stroke, CanvasElement } from "./types/canvasTypes";
 import { registerFollowUserCamera } from "./followUserCamera";
+import { registerSwitchBoards } from "./switchboards";
 
 
 let activeRooms: Record<string, Set<string>> = {};
@@ -42,6 +43,7 @@ const setSocketConnection = (server: any) => {
   });
   io.on("connection", (socket) => {
     console.log("user joined    ", socket.id);
+    registerSwitchBoards(socket, roomBoards, roomElements,roomBoardColors,activeRooms);
     registerRoomHandler(socket,io, activeRooms);
     registerWebRtcHandler(socket, io, activeRooms);
     registerChatInterfaceHandler(socket, io);

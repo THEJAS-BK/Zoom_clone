@@ -57,7 +57,6 @@ export default function MultiCursor({
   const camera = useRef({ x: 0, y: 0, scale: 1 });
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const strokes = useRef<Stroke[]>([]);
   const currentStroke = useRef<Point[]>([]);
   const activeStrokes = useRef<Record<string, ActiveStroke>>({});
   const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
@@ -108,7 +107,8 @@ export default function MultiCursor({
     opacity,
     fillColor,
     tabSize,
-    boardColor
+    boardColor,
+    strokes
   } = useToolSettings();
 
   useEffect(() => {

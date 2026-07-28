@@ -35,5 +35,5 @@ export function useSocketBoard(
       socket.off("board-state");
       socket.off("board-color");
     };
-  }, [doRedraw]);
+  }, [doRedraw,roomId]);
 }

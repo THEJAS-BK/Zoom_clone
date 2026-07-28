@@ -13,6 +13,7 @@ interface HamberMenuProps {
   openCursor: boolean;
   setOpenCursor: React.Dispatch<React.SetStateAction<boolean>>;
   setIsHambergerMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsMyBoardsInterfaceOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function HamberMenu({
@@ -20,6 +21,7 @@ export default function HamberMenu({
   openCursor,
   setOpenCursor,
   setIsHambergerMenuOpen,
+  setIsMyBoardsInterfaceOpen,
 }: HamberMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -30,8 +32,9 @@ export default function HamberMenu({
   const [openSubmenu, setOpenSubmenu] = useState<
     "video" | "follow" | "boardColor" | "saveBoard" | null
   >(null);
-  const [boardName,setBoardName] = useState("");
+
   const [isSavingBoard, setIsSavingBoard] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   const toggleSubmenu = (
     menu: "video" | "follow" | "boardColor" | "saveBoard",
@@ -45,32 +48,32 @@ export default function HamberMenu({
   };
 
   const handleSaveBoard = async () => {
-  setIsSavingBoard(true);
-  try {
-    if(activeSavedBoardId.current) {
-      const res = await api.patch(`/boards/${activeSavedBoardId.current}`, {
-        name: boardName,
-        roomId:roomId
-      });
-    setBoardName(res.data.name)
+    setIsSavingBoard(true);
+    setIsSaved(true);
+    try {
+      if (activeSavedBoardId.current) {
+        const res = await api.patch(`/boards/${activeSavedBoardId.current}`, {
+          name: boardName,
+          roomId: roomId,
+        });
+        setBoardName(res.data.name);
 
-      activeBoardName.current=res.data.name;
+        activeBoardName.current = res.data.name;
+      } else {
+        const res = await api.post(`/boards/${roomId}`, {
+          name: boardName,
+        });
+        setTimeout(() => setIsSaved(false), 3000);
+        setBoardName(res.data.name);
+        activeBoardName.current = res.data.name;
+        activeSavedBoardId.current = res.data._id;
+      }
+    } catch (err) {
+      console.error("Failed to save board:", err);
+    } finally {
+      setIsSavingBoard(false);
     }
-   else{
-     const res = await api.post(`/boards/${roomId}`, {
-      name: boardName,
-    });
-    setBoardName(res.data.name)
-     activeBoardName.current=res.data.name;
-    activeSavedBoardId.current = res.data._id;
-   }
-  
-  } catch (err) {
-    console.error("Failed to save board:", err);
-  } finally {
-    setIsSavingBoard(false);
-  }
-};
+  };
 
   useEffect(() => {
     socket.emit("get-participants", roomId);
@@ -101,13 +104,12 @@ export default function HamberMenu({
     boardColor,
     setBoardColor,
     activeSavedBoardId,
-    activeBoardName
+    activeBoardName,
+    boardName,setBoardName
   } = useToolSettings();
 
   useEffect(() => {
-
-    setBoardName(activeBoardName.current??"")
-
+    setBoardName(activeBoardName.current ?? "");
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
 
@@ -125,8 +127,6 @@ export default function HamberMenu({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-
-
   }, [setIsHambergerMenuOpen]);
 
   return (
@@ -349,6 +349,11 @@ export default function HamberMenu({
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Saving...
                   </>
+                ) : isSaved ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Saved!
+                  </>
                 ) : (
                   "Save"
                 )}
@@ -356,7 +361,13 @@ export default function HamberMenu({
             </div>
           )}
         </li>
-        <li className="px-4 py-2 text-sm text-gray-200 hover:bg-white/10 cursor-pointer transition-colors ">
+        <li
+          onClick={(e) => {
+            e.preventDefault();
+            setIsMyBoardsInterfaceOpen(true);
+          }}
+          className="px-4 py-2 text-sm text-gray-200 hover:bg-white/10 cursor-pointer transition-colors "
+        >
           My boards
         </li>
 
