@@ -35,6 +35,7 @@ function OfflineboardContent() {
     strokes,
     activeSavedBoardId,
     setBoardName,
+    doRedrawRef
   } = useToolSettings();
   const { id } = useParams();
   useEffect(() => {
@@ -55,11 +56,12 @@ function OfflineboardContent() {
             images,
           );
         }
+        doRedrawRef.current?.();
       } catch (err) {
         console.error("Error fetching offline board:", err);
       }
-    };
-    fetchBoardContent();
+    }; fetchBoardContent();
+  
   }, []);
 
   return (
