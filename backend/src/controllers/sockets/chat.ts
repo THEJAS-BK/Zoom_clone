@@ -4,14 +4,14 @@ type RecieveMessage = {
   socketId: string;
   userId: string;
   name: string;
-  data: string;
+  textData: string;
   timeStamp: number;
 };
 
 const roomMessages: Record<string, RecieveMessage[]> = {};
 
 export function registerChatInterfaceHandler(socket: Socket, io: Server) {
-  socket.on("send-message", (roomId: string, data: string) => {
+  socket.on("send-message", (roomId: string, Textdata: string) => {
     if (!roomMessages[roomId]) {
       roomMessages[roomId] = [];
     }
@@ -19,7 +19,7 @@ export function registerChatInterfaceHandler(socket: Socket, io: Server) {
     const message: RecieveMessage = {
       userId: socket.data.userId,
       name: socket.data.name,
-      data,
+      textData: Textdata,
       socketId: socket.id,
       timeStamp: Date.now(),
     };
