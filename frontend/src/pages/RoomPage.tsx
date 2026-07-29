@@ -55,6 +55,9 @@ function RoomContent({ roomId }: { roomId: string }) {
     useState(false);
   const [isMyBoardsInterfaceOpen, setIsMyBoardsInterfaceOpen] = useState(false);
   const [boardSwitching, setBoardSwitching] = useState<string | null>(null);
+   const camera = useRef({ x: 0, y: 0, scale: 1 });
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
 
   const navigate = useNavigate();
   const pendingSaveRef = useRef<Promise<any> | null>(null);
@@ -158,6 +161,8 @@ function RoomContent({ roomId }: { roomId: string }) {
             <ImageUploadInterface
               images={images}
               setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen}
+              camera={camera}
+              canvasRef={canvasRef}
             />
           </div>
         )}
@@ -183,6 +188,8 @@ function RoomContent({ roomId }: { roomId: string }) {
             openCursor={openCursor}
             setOpenCursor={setOpenCursor}
             setIsViewMode={setIsViewMode}
+            camera={camera}
+            canvasRef={canvasRef}
           />
         )}
       </main>

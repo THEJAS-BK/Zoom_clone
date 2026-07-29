@@ -46,6 +46,8 @@ export default function MultiCursor({
   openCursor,
   setOpenCursor,
   setIsViewMode,
+  camera,
+  canvasRef
 }: {
   images: React.RefObject<BoardImage[]>;
   imageUpdate: number;
@@ -53,9 +55,9 @@ export default function MultiCursor({
   openCursor: boolean;
   setOpenCursor: React.Dispatch<React.SetStateAction<boolean>>;
   setIsViewMode: React.Dispatch<React.SetStateAction<boolean>>;
+  camera: React.RefObject<any>,
+  canvasRef: React.RefObject<HTMLCanvasElement | null>
 }) {
-  const camera = useRef({ x: 0, y: 0, scale: 1 });
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const currentStroke = useRef<Point[]>([]);
   const activeStrokes = useRef<Record<string, ActiveStroke>>({});

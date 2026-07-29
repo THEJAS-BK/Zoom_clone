@@ -14,13 +14,22 @@ interface ImageDoc {
 export default function ImageUploadInterface({
   images,
   setIsImageUploadInterfaceOpen,
+  camera,
+  canvasRef,
 }: {
   images: React.RefObject<BoardImage[]>;
   setIsImageUploadInterfaceOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  camera: React.RefObject<any>;
+  canvasRef: React.RefObject<HTMLCanvasElement | null>;
 }) {
   const [gallaryImages, setGallaryImages] = useState<ImageDoc[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const { doRedrawRef, roomId,isOffline } = useToolSettings();
+  const { doRedrawRef, roomId, isOffline } = useToolSettings();
+
+  const toCanvas = (clientX: number, clientY: number) => ({
+    y: (clientY - camera.current.y) / camera.current.scale,
+    x: (clientX - camera.current.x) / camera.current.scale,
+  });
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -53,21 +62,28 @@ export default function ImageUploadInterface({
         height *= scale;
       }
 
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const center = toCanvas(
+        rect?.left + (rect?.width || 0) / 2,
+        rect?.top + (rect?.height || 0) / 2,
+      );
+
       const newImage: BoardImage = {
         type: "image",
         id: crypto.randomUUID(),
         image: img.url,
-        x: 100,
-        y: 100,
+        x: center.x-width/2,
+        y: center.y-height/2,
         width,
         height,
         rotation: 0,
-        zIndex: 0
+        zIndex: 0,
       };
 
       images.current = [...images.current, newImage];
       doRedrawRef.current?.();
-      if(!isOffline) {
+      if (!isOffline) {
         socket.emit("element-add", { roomId, element: newImage });
       }
       setIsImageUploadInterfaceOpen(false);

@@ -61,77 +61,31 @@ const redraw = (
     camera.current.y * dpr,
   );
 
-  const allShapes = [
-    ...shapesRef.current,
-    ...(activeShape?.current ? [activeShape.current] : []),
-  ];
-  const allLines = [
-    ...linesRef.current,
-    ...(activeLine?.current ? [activeLine.current] : []),
-  ];
-  const allTextBoxesForDraw = [
-    ...(textBoxesRef?.current ?? []).filter(
-      (tb) => tb.id !== activeTextBox?.current?.id,
-    ),
-    ...(activeTextBox?.current ? [activeTextBox.current] : []),
-  ];
+  for (const imageData of images.current) {
+    const cached = imageCache.current.get(imageData.id);
+    if (cached) {
+      const centerX = imageData.x + imageData.width / 2;
+      const centerY = imageData.y + imageData.height / 2;
+      const rotation = imageData.rotation || 0;
+      console.log(imageData.x,imageData.y)
+      console.log(centerX,centerY)
 
-  type Sortable =
-  | { kind: "shape"; zIndex: number; el: Shape }
-  | { kind: "line"; zIndex: number; el: Line }
-  | { kind: "textbox"; zIndex: number; el: TextBox }
-  | { kind: "image"; zIndex: number; el: BoardImage };
-
- const merged: Sortable[] = [
-  ...images.current.map((el) => ({
-    kind: "image" as const,
-    zIndex: el.zIndex ?? 0,
-    el,
-  })),
-  ...allShapes.map((el) => ({
-    kind: "shape" as const,
-    zIndex: el.zIndex ?? 0,
-    el,
-  })),
-  ...allLines.map((el) => ({
-    kind: "line" as const,
-    zIndex: el.zIndex ?? 0,
-    el,
-  })),
-  ...allTextBoxesForDraw.map((el) => ({
-    kind: "textbox" as const,
-    zIndex: el.zIndex ?? 0,
-    el,
-  })),
-].sort((a, b) => a.zIndex - b.zIndex);
-
- for (const item of merged) {
-  switch (item.kind) {
-    case "image": {
-      const imageData = item.el;
-      const cached = imageCache.current.get(imageData.id);
-
-      if (cached) {
-        const centerX = imageData.x + imageData.width / 2;
-        const centerY = imageData.y + imageData.height / 2;
-        const rotation = imageData.rotation || 0;
-
-        ctx.save();
-        ctx.translate(centerX, centerY);
-        ctx.rotate(rotation);
-        ctx.drawImage(
-          cached,
-          -imageData.width / 2,
-          -imageData.height / 2,
-          imageData.width,
-          imageData.height
-        );
-        ctx.restore();
-      } else {
-        const img = new Image();
-        img.onload = () => {
-          imageCache.current.set(imageData.id, img);
-          redraw(
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(rotation);
+      ctx.drawImage(
+        cached,
+        -imageData.width / 2,
+        -imageData.height / 2,
+        imageData.width,
+        imageData.height,
+      );
+      ctx.restore();
+    } else {
+      const img = new Image();
+      img.onload = () => {
+        imageCache.current.set(imageData.id, img);
+        redraw(
           canvas,
           ctx,
           camera,
@@ -153,25 +107,54 @@ const redraw = (
           opacity,
           fillColor,
         );
-        };
-        img.src = imageData.image;
-      }
-      break;
+      };
+      img.src = imageData.image;
     }
-
-    case "shape":
-      drawShape(ctx, item.el);
-      break;
-
-    case "line":
-      drawLine(ctx, item.el);
-      break;
-
-    case "textbox":
-      drawTextBox(ctx, item.el);
-      break;
   }
-}
+
+  const allShapes = [
+    ...shapesRef.current,
+    ...(activeShape?.current ? [activeShape.current] : []),
+  ];
+  const allLines = [
+    ...linesRef.current,
+    ...(activeLine?.current ? [activeLine.current] : []),
+  ];
+  const allTextBoxesForDraw = [
+    ...(textBoxesRef?.current ?? []).filter(
+      (tb) => tb.id !== activeTextBox?.current?.id,
+    ),
+    ...(activeTextBox?.current ? [activeTextBox.current] : []),
+  ];
+
+  type Sortable =
+    | { kind: "shape"; zIndex: number; el: Shape }
+    | { kind: "line"; zIndex: number; el: Line }
+    | { kind: "textbox"; zIndex: number; el: TextBox };
+
+  const merged: Sortable[] = [
+    ...allShapes.map((el) => ({
+      kind: "shape" as const,
+      zIndex: el.zIndex ?? 0,
+      el,
+    })),
+    ...allLines.map((el) => ({
+      kind: "line" as const,
+      zIndex: el.zIndex ?? 0,
+      el,
+    })),
+    ...allTextBoxesForDraw.map((el) => ({
+      kind: "textbox" as const,
+      zIndex: el.zIndex ?? 0,
+      el,
+    })),
+  ].sort((a, b) => a.zIndex - b.zIndex);
+
+  for (const item of merged) {
+    if (item.kind === "shape") drawShape(ctx, item.el);
+    else if (item.kind === "line") drawLine(ctx, item.el);
+    else drawTextBox(ctx, item.el);
+  }
 
   // strokes on top
   const allActive = Object.entries(activeStrokes.current).map(
@@ -652,7 +635,6 @@ function drawRoundedPolygon(
   }
   ctx.closePath();
 }
-
 
 function drawLine(ctx: CanvasRenderingContext2D, line: Line) {
   ctx.save();

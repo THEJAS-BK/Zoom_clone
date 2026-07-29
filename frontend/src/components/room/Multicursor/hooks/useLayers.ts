@@ -22,7 +22,6 @@ export function useLayers() {
       ...textBoxesRef.current.map((el) => ({ type: "textbox" as const, el })),
       ...images.current.map((el) => ({ type: "image" as const, el })),
     ];
-    console.log(all)
     return all.sort((a, b) => (a.el.zIndex ?? 0) - (b.el.zIndex ?? 0));
   };
 
