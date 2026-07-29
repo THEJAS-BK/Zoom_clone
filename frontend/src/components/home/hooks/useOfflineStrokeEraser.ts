@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import type { Stroke, Point } from "../../room/Multicursor/types.ts";
 import { getCanvasPoint, isPointNearStroke } from "../../room/Multicursor/canvas.ts";
 
-export function useOfflineEraser(
+export function useOfflineStrokeEraser(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
   camera: React.RefObject<any>,
   strokes: React.RefObject<Stroke[]>,

@@ -2,8 +2,8 @@ import { useEffect, useRef } from "react";
 import type { Stroke, Point } from "../types.ts";
 import { getCanvasPoint, isPointNearStroke } from "../canvas.ts";
 import { socket } from "../../../../services/socket.ts";
-
-export function useEraser(
+import { useHistory } from "../../../../context/LocalHistoryContext.tsx";
+export function useStrokeEraser(
   roomId: string,
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
   camera: React.RefObject<any>,
@@ -11,15 +11,24 @@ export function useEraser(
   activeTool: string | null,
   doRedraw: () => void,
 ) {
+  const { pushUndo } = useHistory();
+
   const eraseAtPoint = (point: Point) => {
-    const before = strokes.current.length;
+    const removed = strokes.current.filter((stroke) =>
+      isPointNearStroke(point, stroke),
+    );
+    if (removed.length === 0) return;
+
     strokes.current = strokes.current.filter(
       (stroke) => !isPointNearStroke(point, stroke),
     );
-    if (strokes.current.length !== before) {
-      socket.emit("stroke-delete", { point: point, roomId });
-      doRedraw();
+
+    for (const stroke of removed) {
+      pushUndo({ type: "stroke-delete", stroke });
     }
+
+    socket.emit("stroke-delete", { point, roomId });
+    doRedraw();
   };
   const isEraserSelected = useRef<boolean>(false);
   const lastPoint = useRef<Point | null>(null);

@@ -32,9 +32,9 @@ import { measureTextBox } from "./canvas";
 
 //leftSide tools
 import { useToolSettings } from "../../../context/ToolBarLeftContext";
-import { useEraser } from "./hooks/useEraser";
+import { useStrokeEraser } from "./hooks/useStrokesEraser";
 import { useWebRtcContext } from "../../../context/WebRtcContext";
-import ZoomControls from "./ZoomControls";
+import ZoomControls from "./ZoomAndUndoRedo";
 import { useLayers } from "./hooks/useLayers";
 import OptionsFooter from "../OptionsFooter";
 import { useFollowUserCamera } from "./hooks/useFollowUserCamera";
@@ -242,7 +242,7 @@ export default function MultiCursor({
     doRedraw,
   );
 
-  useEraser(roomId ?? "", canvasRef, camera, strokes, activeTool, doRedraw);
+  useStrokeEraser(roomId ?? "", canvasRef, camera, strokes, activeTool, doRedraw);
   useCanvasZoom(
     wrapperRef,
     canvasRef,

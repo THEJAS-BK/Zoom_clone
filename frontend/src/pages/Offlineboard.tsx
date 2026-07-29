@@ -15,11 +15,14 @@ import api from "../utils/axios.ts";
 import { distributeElements } from "../components/home/tools/distributeElements.ts";
 import NotSavedBoard from "../components/home/NotSavedBoard.tsx";
 import GoLiveInterface from "../components/home/GoLiveInterface.tsx";
+import { HistoryProvider } from "../context/LocalHistoryContext.tsx";
 
 export default function Offlineboard() {
   return (
     <ToolSettingsProvider>
-      <OfflineboardContent />
+      <HistoryProvider>
+        <OfflineboardContent />
+      </HistoryProvider>
     </ToolSettingsProvider>
   );
 }
@@ -29,8 +32,9 @@ function OfflineboardContent() {
   const images = useRef<BoardImage[]>([]);
   const [isImageUploadInterfaceOpen, setIsImageUploadInterfaceOpen] =
     useState(false);
-  const [openBoardNotSavedInterface,setOpenBoardNotSavedInterface]=useState(false)
-  const [openGoLiveInterface,setOpenGoLiveInterface]=useState(false)
+  const [openBoardNotSavedInterface, setOpenBoardNotSavedInterface] =
+    useState(false);
+  const [openGoLiveInterface, setOpenGoLiveInterface] = useState(false);
   const {
     linesRef,
     textBoxesRef,
@@ -101,9 +105,11 @@ function OfflineboardContent() {
           />
         </div>
       )}
-       {openBoardNotSavedInterface && (
+      {openBoardNotSavedInterface && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
-        <NotSavedBoard setOpenBoardNotSavedInterface={setOpenBoardNotSavedInterface} />
+          <NotSavedBoard
+            setOpenBoardNotSavedInterface={setOpenBoardNotSavedInterface}
+          />
         </div>
       )}
       {openGoLiveInterface && (

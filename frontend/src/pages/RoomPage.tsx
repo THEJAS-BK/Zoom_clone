@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import MainContent from "../components/room/MainContent";
-import {  useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { WebRtcProvider } from "../context/WebRtcContext";
 import { ToolSettingsProvider } from "../context/ToolBarLeftContext.tsx";
 import MultiCursor from "../components/room/Multicursor/MultiCursor";
@@ -12,12 +12,13 @@ import { Menu } from "lucide-react";
 import Tools from "../components/room/Tools.tsx";
 import ToolBarContainer from "../components/room/LeftToolBar/ToolBarContainer.tsx";
 import HamberMenu from "../components/room/HamberMenu.tsx";
-import  ImageUploadInterface from "../components/room/ImageUploadInterface.tsx";
+import ImageUploadInterface from "../components/room/ImageUploadInterface.tsx";
 import OnlineMyboards from "../components/room/OnlineMyboards.tsx";
- import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { socket } from "../services/socket";
 import api from "../utils/axios";
 import { useToolSettings } from "../context/ToolBarLeftContext.tsx";
+import { HistoryProvider } from "../context/LocalHistoryContext.tsx";
 type BoardImage = {
   type: "image";
   id: string;
@@ -34,15 +35,15 @@ export default function RoomPage() {
   if (!roomId) return <div>Not found</div>;
 
   return (
-    <WebRtcProvider roomId={roomId} >
+    <WebRtcProvider roomId={roomId}>
       <ToolSettingsProvider>
-        <RoomContent roomId={roomId} />
+        <HistoryProvider>
+          <RoomContent roomId={roomId} />
+        </HistoryProvider>
       </ToolSettingsProvider>
     </WebRtcProvider>
   );
 }
-
-
 
 function RoomContent({ roomId }: { roomId: string }) {
   const [openCursor, setOpenCursor] = useState(false);
@@ -50,13 +51,24 @@ function RoomContent({ roomId }: { roomId: string }) {
   const [redrawVersion, setRedrawVersion] = useState(0);
   const [isHambergerMenuOpen, setIsHambergerMenuOpen] = useState(false);
   const [isViewMode, setIsViewMode] = useState(false);
-  const [isImageUploadInterfaceOpen, setIsImageUploadInterfaceOpen] = useState(false);
+  const [isImageUploadInterfaceOpen, setIsImageUploadInterfaceOpen] =
+    useState(false);
   const [isMyBoardsInterfaceOpen, setIsMyBoardsInterfaceOpen] = useState(false);
   const [boardSwitching, setBoardSwitching] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const pendingSaveRef = useRef<Promise<any> | null>(null);
-  const { activeSavedBoardId, activeBoardName, boardName, setBoardName,linesRef,textBoxesRef,strokes,shapesRef,doRedrawRef } = useToolSettings();
+  const {
+    activeSavedBoardId,
+    activeBoardName,
+    boardName,
+    setBoardName,
+    linesRef,
+    textBoxesRef,
+    strokes,
+    shapesRef,
+    doRedrawRef,
+  } = useToolSettings();
 
   useEffect(() => {
     const saveOwnCopy = async () => {
@@ -68,19 +80,31 @@ function RoomContent({ roomId }: { roomId: string }) {
         setBoardName(res.data.name);
         activeBoardName.current = res.data.name;
       } else {
-        const res = await api.post(`/boards/${roomId}`, { name: new Date().toLocaleDateString() });
+        const res = await api.post(`/boards/${roomId}`, {
+          name: new Date().toLocaleDateString(),
+        });
         setBoardName(res.data.name);
         activeBoardName.current = res.data.name;
         activeSavedBoardId.current = res.data._id;
       }
     };
 
-    const handleSwitchStart = ({ initiatorName, boardName: incomingBoardName }: { initiatorName: string; boardName: string }) => {
+    const handleSwitchStart = ({
+      initiatorName,
+      boardName: incomingBoardName,
+    }: {
+      initiatorName: string;
+      boardName: string;
+    }) => {
       setBoardSwitching(`${initiatorName} is opening "${incomingBoardName}"`);
       pendingSaveRef.current = saveOwnCopy();
     };
 
-    const handleSwitchComplete = async ({ newRoomId }: { newRoomId: string }) => {
+    const handleSwitchComplete = async ({
+      newRoomId,
+    }: {
+      newRoomId: string;
+    }) => {
       if (pendingSaveRef.current) await pendingSaveRef.current;
       socket.emit("join-room", newRoomId, (res: any) => {
         if (res.success) {
@@ -127,19 +151,27 @@ function RoomContent({ roomId }: { roomId: string }) {
 
         {openCursor && isViewMode && (
           <div className="absolute top-10 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded text-white shadow-lg z-20 ">
-            <Tools setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen} />
+            <Tools
+              setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen}
+            />
           </div>
         )}
 
         {openCursor && isImageUploadInterfaceOpen && (
           <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
-            <ImageUploadInterface images={images} setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen} />
+            <ImageUploadInterface
+              images={images}
+              setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen}
+            />
           </div>
         )}
 
         {openCursor && isMyBoardsInterfaceOpen && (
           <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
-            <OnlineMyboards setIsMyBoardsInterfaceOpen={setIsMyBoardsInterfaceOpen} setBoardSwitching={setBoardSwitching} />
+            <OnlineMyboards
+              setIsMyBoardsInterfaceOpen={setIsMyBoardsInterfaceOpen}
+              setBoardSwitching={setBoardSwitching}
+            />
           </div>
         )}
 

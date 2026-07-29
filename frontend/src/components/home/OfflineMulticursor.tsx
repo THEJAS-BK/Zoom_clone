@@ -20,7 +20,7 @@ import { resolveFontFamily } from "../room/Multicursor/canvas";
 import { measureTextBox } from "../room/Multicursor/canvas";
 //hooks
 import { useOfflineCanvasZoom } from "./hooks/useOfflineCanvasZoom";
-import { useOfflineEraser } from "./hooks/useOfflineEraser";
+import { useOfflineStrokeEraser } from "./hooks/useOfflineStrokeEraser";
 import { useOfflineHandTool } from "./hooks/useOfflineHandTool";
 import { useOfflineSelection } from "./hooks/useOfflineSelection";
 import { useOfflineTextBox } from "./hooks/useOfflineTextBox";
@@ -29,7 +29,7 @@ import { useOfflineDraw } from "./hooks/useOfflineDraw";
 import { useOfflineLines } from "./hooks/useOfflineLines";
 import { useOfflineDeleteElement } from "./hooks/useOfflineDeleteElement";
 import { useLayers } from "../room/Multicursor/hooks/useLayers";
-import ZoomControls from "../room/Multicursor/ZoomControls";
+import ZoomAndRedoUndo from "../room/Multicursor/ZoomAndUndoRedo";
 
 export default function OfflineMultiCursor({images}: {images: RefObject<BoardImage[]>}) {
   const camera = useRef({ x: 0, y: 0, scale: 1 });
@@ -190,7 +190,7 @@ export default function OfflineMultiCursor({images}: {images: RefObject<BoardIma
     doRedraw,
   );
 
-  useOfflineEraser(canvasRef, camera, strokes, activeTool, doRedraw);
+  useOfflineStrokeEraser(canvasRef, camera, strokes, activeTool, doRedraw);
   useOfflineCanvasZoom(
     wrapperRef,
     canvasRef,
@@ -336,7 +336,7 @@ export default function OfflineMultiCursor({images}: {images: RefObject<BoardIma
         height: "100%",
       }}
     >
-      <ZoomControls canvasRef={canvasRef} camera={camera} doRedraw={doRedraw} />
+      <ZoomAndRedoUndo canvasRef={canvasRef} camera={camera} doRedraw={doRedraw} />
 
       <canvas
         ref={canvasRef}

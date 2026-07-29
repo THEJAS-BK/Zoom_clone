@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, type RefObject } from "react";
 import type { Line, Shape, TextBox } from "../../room/Multicursor/types";
 import { hitTestLine, hitTestShape, hitTestTextBox } from "../../room/Multicursor/tools/hitTests";
+import { useHistory } from "../../../context/LocalHistoryContext";
 
 export function useOfflineDeleteElement(
   canvasRef: RefObject<HTMLCanvasElement | null>,
@@ -11,6 +12,7 @@ export function useOfflineDeleteElement(
   textBoxesRef: React.RefObject<TextBox[]>,
   doRedraw: () => void,
 ) {
+  const { pushUndo } = useHistory();
   const toCanvas = (clientX: number, clientY: number) => ({
     x: (clientX - camera.current.x) / camera.current.scale,
     y: (clientY - camera.current.y) / camera.current.scale,
@@ -49,16 +51,19 @@ export function useOfflineDeleteElement(
         shapesRef.current = shapesRef.current.filter(
           (s) => s.id !== hitShape.id,
         );
+        pushUndo({ type: "shape-delete", shape: hitShape });
       }
       if (hitLine) {
         id = hitLine.id;
         linesRef.current = linesRef.current.filter((l) => l.id !== hitLine.id);
+        pushUndo({ type: "line-delete", line: hitLine });
       }
       if (hitText) {
         id = hitText.id;
         textBoxesRef.current = textBoxesRef.current.filter(
           (t) => t.id !== hitText.id,
         );
+        pushUndo({ type: "textbox-delete", textBox: hitText });
       }
       doRedraw();
     };
