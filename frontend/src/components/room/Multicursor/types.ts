@@ -27,6 +27,7 @@ type BoardImage = {
   width: number;
   height: number;
   rotation: number | 0;
+  zIndex:number
 };
 
 interface TextBox {

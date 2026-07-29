@@ -16,6 +16,7 @@ type BoardImage = {
   height: number;
   rotation: number;
   userId: string;
+  zIndex:number;
 };
 
 

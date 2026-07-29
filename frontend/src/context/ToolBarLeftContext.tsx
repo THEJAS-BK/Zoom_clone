@@ -119,6 +119,8 @@ type ToolSettings = {
   setBoardName: Dispatch<SetStateAction<string>>;
 
   strokes: RefObject<Stroke[]>;
+
+    images: React.RefObject<BoardImage[]>;
 };
 
 const ToolBarLeftContext = createContext<ToolSettings | null>(null);
@@ -156,6 +158,8 @@ export function ToolSettingsProvider({
   const activeTextBox = useRef<TextBox | null>(null);
   const linesRef = useRef<Line[]>([]);
   const activeLine = useRef<Line | null>(null);
+
+    const images = useRef<BoardImage[]>([]);
 
   const doRedrawRef = useRef<(() => void) | null>(null);
   const [roomId, setRoomId] = useState<string>("");
@@ -243,7 +247,8 @@ export function ToolSettingsProvider({
         activeBoardName,
         boardName,
         setBoardName,
-        strokes
+        strokes,
+        images
       }}
     >
       {children}

@@ -90,7 +90,7 @@ export default function CompactToolBar({
                 <>
                   <StrokeWidth />
                   <OpacitySlider />
-                  <LayerControls />
+                  <LayerControls activeTool={displayTool} />
                 </>
               )}
 
@@ -98,7 +98,7 @@ export default function CompactToolBar({
                 <>
                   <FontSetting />
                   <OpacitySlider />
-                  <LayerControls />
+                  <LayerControls activeTool={displayTool} />
                 </>
               )}
 
@@ -108,7 +108,7 @@ export default function CompactToolBar({
                   <StrokeStyle />
                   <ArrowSetting activeTool={displayTool} />
                   <OpacitySlider />
-                  <LayerControls />
+                  <LayerControls activeTool={displayTool} />
                 </>
               )}
 
@@ -119,7 +119,7 @@ export default function CompactToolBar({
                   <ArrowSetting activeTool={displayTool} />
                   <EdgeSetting />
                   <OpacitySlider />
-                  <LayerControls />
+                  <LayerControls activeTool={displayTool} />
                 </>
               )}
 
@@ -129,7 +129,7 @@ export default function CompactToolBar({
                   <StrokeStyle />
                   <EdgeSetting />
                   <OpacitySlider />
-                  <LayerControls />
+                  <LayerControls activeTool={displayTool}   />
                 </>
               )}
 
@@ -138,7 +138,7 @@ export default function CompactToolBar({
                   <StrokeWidth />
                   <StrokeStyle />
                   <OpacitySlider />
-                  <LayerControls />
+                  <LayerControls activeTool={displayTool} />
                 </>
               )}
             </>

@@ -47,7 +47,7 @@ export default function RoomPage() {
 
 function RoomContent({ roomId }: { roomId: string }) {
   const [openCursor, setOpenCursor] = useState(false);
-  const images = useRef<BoardImage[]>([]);
+
   const [redrawVersion, setRedrawVersion] = useState(0);
   const [isHambergerMenuOpen, setIsHambergerMenuOpen] = useState(false);
   const [isViewMode, setIsViewMode] = useState(false);
@@ -63,11 +63,7 @@ function RoomContent({ roomId }: { roomId: string }) {
     activeBoardName,
     boardName,
     setBoardName,
-    linesRef,
-    textBoxesRef,
-    strokes,
-    shapesRef,
-    doRedrawRef,
+    images
   } = useToolSettings();
 
   useEffect(() => {

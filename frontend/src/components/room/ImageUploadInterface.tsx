@@ -62,6 +62,7 @@ export default function ImageUploadInterface({
         width,
         height,
         rotation: 0,
+        zIndex: 0
       };
 
       images.current = [...images.current, newImage];

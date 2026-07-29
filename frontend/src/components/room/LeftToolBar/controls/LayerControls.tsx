@@ -6,13 +6,12 @@ import {
 } from "lucide-react";
 import { useLayers } from "../../Multicursor/hooks/useLayers";
 
-export default function LayerControls() {
+export default function LayerControls({activeTool}: {activeTool: string|null}) {
   const layers = useLayers();
-
   if (!layers) return null;
   const { sendToBack, sendBackward, bringForward, bringToFront } = layers;
   return (
-    <div>
+    <div className={`${activeTool === "image" ? "absolute text-white rounded-2xl bg-[#1f1f2b] p-3 shadow-xl left-3 top-1/4 z-20" : ""}`} >
       <span className="mb-2 mt-2 ml-1 text-sm text-gray-300">Layers</span>
       <div className="flex gap-3 mt-2">
         <div

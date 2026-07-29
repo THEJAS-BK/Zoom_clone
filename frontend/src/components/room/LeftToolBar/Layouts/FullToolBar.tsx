@@ -24,7 +24,7 @@ export default function FullToolBar({
           <ColorSwatches activeTool={"pen"} />
           <StrokeWidth />
           <OpacitySlider />
-          <LayerControls />
+          <LayerControls activeTool={displayTool} />
         </>
       )}
       {displayTool === "text" && (
@@ -32,7 +32,7 @@ export default function FullToolBar({
           <ColorSwatches activeTool={"text"} />
           <FontSetting />
           <OpacitySlider />
-          <LayerControls />
+          <LayerControls activeTool={displayTool} />
         </>
       )}
       {displayTool === "arrow" && (
@@ -42,7 +42,7 @@ export default function FullToolBar({
           <StrokeStyle />
           <ArrowSetting activeTool={"arrow"} />
           <OpacitySlider />
-          <LayerControls />
+          <LayerControls activeTool={displayTool} />
         </>
       )}
       {(displayTool === "line" || displayTool === "straight") && (
@@ -52,7 +52,7 @@ export default function FullToolBar({
           <StrokeStyle />
           <EdgeSetting />
           <OpacitySlider />
-          <LayerControls />
+          <LayerControls activeTool={displayTool} />
         </>
       )}
       {displayTool === "square" && (
@@ -63,7 +63,7 @@ export default function FullToolBar({
           <ArrowSetting activeTool={"square"} />
           <EdgeSetting />
           <OpacitySlider />
-          <LayerControls />
+          <LayerControls activeTool={displayTool} />
         </>
       )}
       {displayTool === "diamond" && (
@@ -75,7 +75,7 @@ export default function FullToolBar({
           <ArrowSetting activeTool={"diamond"} />
           <EdgeSetting />
           <OpacitySlider />
-          <LayerControls />
+          <LayerControls activeTool={displayTool} />
         </>
       )}
       {displayTool === "circle" && (
@@ -86,7 +86,7 @@ export default function FullToolBar({
           <StrokeStyle />
           <ArrowSetting activeTool={"circle"} />
           <OpacitySlider />
-          <LayerControls />
+          <LayerControls activeTool={displayTool} />
         </>
       )}
     </div>

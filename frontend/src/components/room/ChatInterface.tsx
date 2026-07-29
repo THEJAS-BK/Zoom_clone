@@ -37,10 +37,7 @@ export default function ChatInterface({ onClose }: { onClose: () => void }) {
     socket.emit("send-message", roomId, inputText);
     setInputText("");
   };
-  useEffect(()=>{
-    console.log(messages)
-  },[])
-
+  
  return (
   <div
     onClick={(e) => e.stopPropagation()}

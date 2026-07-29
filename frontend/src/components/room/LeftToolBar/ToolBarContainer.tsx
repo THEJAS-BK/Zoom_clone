@@ -2,6 +2,7 @@ import FullToolBar from "./Layouts/FullToolBar";
 import { useToolSettings } from "../../../context/ToolBarLeftContext";
 import CompactToolBar from "./Layouts/CompactToolBar";
 import { useEffect, useRef, useState } from "react";
+import LayerControls from "./controls/LayerControls";
 
 function useMediaQuery(query: string) {
   const [matches, setMatches] = useState(() => window.matchMedia(query).matches);
@@ -28,16 +29,15 @@ export default function ToolBarContainer() {
     lastTool.current = selectedEle.lineType;
   } else if (selectedEle?.type === "textbox") {
     lastTool.current = "text";
-  } 
+  } else if(selectedEle?.type==="image"){
+    lastTool.current="image"
+  }
   
   if (selectedEle === null||activeTool!=="mouse") {
     lastTool.current = null; 
   }
 
-
   const displayTool = lastTool.current || activeTool  ;
-
-
 
   return (
     <div >
@@ -46,6 +46,9 @@ export default function ToolBarContainer() {
       ) : (
         <FullToolBar displayTool={displayTool} />
       )}
+
+      {selectedEle?.type==="image"?<LayerControls activeTool={"image"} />:null}
+    
     </div>
   );
 }

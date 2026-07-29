@@ -1,5 +1,6 @@
 import { useToolSettings } from "../../../../context/ToolBarLeftContext";
 import { socket } from "../../../../services/socket";
+import type { BoardImage } from "../types";
 export function useLayers() {
   const {
     selectedEle,
@@ -8,7 +9,8 @@ export function useLayers() {
     textBoxesRef,
     doRedrawRef,
     roomId,
-    isOffline
+    isOffline,
+    images,
   } = useToolSettings();
 
   if (!selectedEle) return;
@@ -18,7 +20,9 @@ export function useLayers() {
       ...shapesRef.current.map((el) => ({ type: "shape" as const, el })),
       ...linesRef.current.map((el) => ({ type: "line" as const, el })),
       ...textBoxesRef.current.map((el) => ({ type: "textbox" as const, el })),
+      ...images.current.map((el) => ({ type: "image" as const, el })),
     ];
+    console.log(all)
     return all.sort((a, b) => (a.el.zIndex ?? 0) - (b.el.zIndex ?? 0));
   };
 
@@ -35,8 +39,12 @@ export function useLayers() {
       textBoxesRef.current = textBoxesRef.current.map((t) =>
         t.id === id ? { ...t, zIndex } : t,
       );
+    } else if (type === "image") {
+      images.current = images.current.map((i) =>
+        i.id === id ? { ...i, zIndex } : i,
+      );
     }
-    if(isOffline) return
+    if (isOffline) return;
     socket.emit("element-update", { roomId, id, changes: { zIndex } });
   };
 
