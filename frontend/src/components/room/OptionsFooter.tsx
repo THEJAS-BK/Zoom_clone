@@ -127,7 +127,7 @@ export default function OptionsFooter({
           <div className="flex bg-red-600 rounded-full px-3 py-2">
             <button
             onClick={handleExitRoom}
-            className="bg-red-500  hover:bg-red-400 text-white ">
+            className="bg-red-500 hover:bg-red-400 text-white ">
               <SquareArrowRightExit size={20} />
             </button>
           </div>

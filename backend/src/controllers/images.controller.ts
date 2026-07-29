@@ -1,7 +1,7 @@
 import { Request, RequestHandler, Response } from "express";
 import Image from "../models/image.model";
 
- const uploadImage = async (req: Request, res: Response) => {
+const uploadImage = async (req: Request, res: Response) => {
   try {
     if (!req.userId) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -11,14 +11,16 @@ import Image from "../models/image.model";
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-    const file = req.file as Express.Multer.File & { path: string; filename: string };
+    const file = req.file as Express.Multer.File & {
+      path: string;
+      filename: string;
+    };
 
     const savedImage = await Image.create({
-      url: file.path,       
-      publicId: file.filename, 
+      url: file.path,
+      publicId: file.filename,
       uploadedBy: req.userId,
     });
-
 
     res.status(201).json(savedImage);
   } catch (err) {
@@ -27,22 +29,30 @@ import Image from "../models/image.model";
   }
 };
 
-const fetchImages:RequestHandler=(req,res)=>{
-    const userId=req.userId
-    if(!userId) return res.status(401).json({ message: "Unauthorized" });
+const fetchImages: RequestHandler = async (req, res) => {
+  const userId = req.userId;
+  if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    Image.find({ uploadedBy: userId })
-      .then((images) => {
-        res.status(200).json(images);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch images:", err);
-        res.status(500).json({ message: "Failed to fetch images" });
-      });
+  await Image.find({ uploadedBy: userId })
+    .then((images) => {
+      res.status(200).json(images);
+    })
+    .catch((err) => {
+      console.error("Failed to fetch images:", err);
+      res.status(500).json({ message: "Failed to fetch images" });
+    });
 };
 
+const deleteImages: RequestHandler = async (req, res) => {
+  if (!req.userId) {
+    return res.sendStatus(401).json({ message: "Unauthorized" });
+  }
+  const imgId = req.params.id;
 
-export {
-    uploadImage,
-    fetchImages
-}
+  const img = await Image.deleteMany({ _id: imgId, uploadedBy: req.userId });
+  console.log(img);
+
+  res.send(200).json({ message: "deleted successfully" });
+};
+
+export { uploadImage, fetchImages,deleteImages };

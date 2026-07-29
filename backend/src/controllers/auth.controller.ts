@@ -97,7 +97,7 @@ const login:RequestHandler = async (
   }
 };
 
-export const userController = {
+export const authController = {
   register,
   login
 };

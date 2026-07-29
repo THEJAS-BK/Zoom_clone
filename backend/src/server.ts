@@ -26,8 +26,8 @@ app.use(urlencoded({ extended: true, limit: "40kb" }));
 import { setSocketConnection } from "./controllers/sockets";
 
 //routes
-import userRoutes from "./routes/auth.routes";
-
+import AuthRoutes from "./routes/auth.routes";
+import userRoutes from "./routes/users.routes"
 import imageRoutes from "./routes/images.routes";
 import boardRoutes from "./routes/boards.routes"
 
@@ -36,10 +36,11 @@ const server = createServer(app);
 const io = setSocketConnection(server);
 
 //all routes
+app.use("/users",userRoutes)
 app.use("/images", imageRoutes);
 app.use(
   "/auth",
-  userRoutes,
+  AuthRoutes,
 );
 app.use("/boards", boardRoutes);
 
