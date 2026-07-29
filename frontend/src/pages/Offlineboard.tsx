@@ -13,6 +13,8 @@ import ImageUploadInterface from "../components/room/ImageUploadInterface.tsx";
 import { useParams } from "react-router-dom";
 import api from "../utils/axios.ts";
 import { distributeElements } from "../components/home/tools/distributeElements.ts";
+import NotSavedBoard from "../components/home/NotSavedBoard.tsx";
+import GoLiveInterface from "../components/home/GoLiveInterface.tsx";
 
 export default function Offlineboard() {
   return (
@@ -27,6 +29,8 @@ function OfflineboardContent() {
   const images = useRef<BoardImage[]>([]);
   const [isImageUploadInterfaceOpen, setIsImageUploadInterfaceOpen] =
     useState(false);
+  const [openBoardNotSavedInterface,setOpenBoardNotSavedInterface]=useState(false)
+  const [openGoLiveInterface,setOpenGoLiveInterface]=useState(false)
   const {
     linesRef,
     textBoxesRef,
@@ -35,7 +39,7 @@ function OfflineboardContent() {
     strokes,
     activeSavedBoardId,
     setBoardName,
-    doRedrawRef
+    doRedrawRef,
   } = useToolSettings();
   const { id } = useParams();
   useEffect(() => {
@@ -60,14 +64,14 @@ function OfflineboardContent() {
       } catch (err) {
         console.error("Error fetching offline board:", err);
       }
-    }; fetchBoardContent();
-  
+    };
+    fetchBoardContent();
   }, []);
 
   return (
     <main className="h-screen flex-1 flex static overflow-hidden">
       <button
-      data-hamburger-trigger
+        data-hamburger-trigger
         onClick={() => setIsHambergerMenuOpen(!isHambergerMenuOpen)}
         className="absolute text-white z-20 left-5 top-5 border border-white rounded"
       >
@@ -81,13 +85,30 @@ function OfflineboardContent() {
         <Menu />
       </button>
 
-      {isHambergerMenuOpen && <OfflineHamberMenu images={images} setIsHambergerMenuOpen={setIsHambergerMenuOpen} />}
+      {isHambergerMenuOpen && (
+        <OfflineHamberMenu
+          images={images}
+          setIsHambergerMenuOpen={setIsHambergerMenuOpen}
+          setOpenBoardNotSavedInterface={setOpenBoardNotSavedInterface}
+          setOpenGoLiveInterface={setOpenGoLiveInterface}
+        />
+      )}
       {isImageUploadInterfaceOpen && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
           <ImageUploadInterface
             images={images}
             setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen}
           />
+        </div>
+      )}
+       {openBoardNotSavedInterface && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
+        <NotSavedBoard setOpenBoardNotSavedInterface={setOpenBoardNotSavedInterface} />
+        </div>
+      )}
+      {openGoLiveInterface && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
+          <GoLiveInterface setOpenGoLiveInterface={setOpenGoLiveInterface} />
         </div>
       )}
 
