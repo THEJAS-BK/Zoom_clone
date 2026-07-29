@@ -12,6 +12,8 @@ import {
 import { useEffect, useState } from "react";
 import ChatInterface from "./ChatInterface";
 import ParticipantList from "./ParticipantList";
+import { socket } from "../../services/socket";
+import { useNavigate } from "react-router-dom";
 interface VideoOptionsProp {
   audioToggle: () => void;
   videoToggle: () => void;
@@ -33,6 +35,13 @@ export default function OptionsFooter({
   const handleTabClick = (tabName: string) => {
     setTab((prev) => (prev === tabName ? "" : tabName));
   };
+
+  const navigate=useNavigate();
+
+    const handleExitRoom=()=>{
+     socket.disconnect();
+     navigate("/dashboard")
+    }
 
 
   return (
@@ -116,7 +125,9 @@ export default function OptionsFooter({
 
           {/* Right group: exit */}
           <div className="flex bg-red-600 rounded-full px-3 py-2">
-            <button className="bg-red-500 hover:bg-red-400 text-white p-2 rounded-full">
+            <button
+            onClick={handleExitRoom}
+            className="bg-red-500  hover:bg-red-400 text-white ">
               <SquareArrowRightExit size={20} />
             </button>
           </div>

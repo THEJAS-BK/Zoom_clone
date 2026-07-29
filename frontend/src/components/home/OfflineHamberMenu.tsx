@@ -5,6 +5,7 @@ import { Check, X, Loader2 } from "lucide-react";
 import api from "../../utils/axios";
 import { combineElements } from "./tools/combineElements";
 import type { BoardImage } from "../room/Multicursor/types";
+import { useNavigate } from "react-router";
 export default function OfflineHamberMenu({
   setIsHambergerMenuOpen,
   images,
@@ -27,6 +28,7 @@ export default function OfflineHamberMenu({
   const toggle = (option: "boardColor" | "saveBoards") => {
     setSubmenu((prev) => (prev === option ? null : option));
   };
+  const navigate=useNavigate();
 
   const {
     boardColor,
@@ -218,7 +220,9 @@ export default function OfflineHamberMenu({
             </div>
           )}
         </li>
-        <li className="px-4 py-2 text-sm text-red-400 hover:bg-white/10 cursor-pointer transition-colors">
+        <li
+        onClick={()=>navigate("/dashboard")}
+        className="px-4 py-2 text-sm text-red-400 hover:bg-white/10 cursor-pointer transition-colors">
           Exit
         </li>
       </ul>

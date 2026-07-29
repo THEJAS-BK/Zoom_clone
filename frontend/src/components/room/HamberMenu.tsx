@@ -7,6 +7,7 @@ import { boardColors } from "./LeftToolBar/tools/colors";
 import api from "../../utils/axios";
 
 import { X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface HamberMenuProps {
   roomId: string;
@@ -24,6 +25,8 @@ export default function HamberMenu({
   setIsMyBoardsInterfaceOpen,
 }: HamberMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const navigate=useNavigate();
 
   const [members, setMembers] = useState<Participants[]>([]);
 
@@ -90,6 +93,11 @@ export default function HamberMenu({
       socket.off("participants-list", handleList);
     };
   }, []);
+
+  const handleExitRoom=()=>{
+   socket.disconnect();
+   navigate("/dashboard")
+  }
 
   const {
     viewMode,
@@ -371,7 +379,9 @@ export default function HamberMenu({
           My boards
         </li>
 
-        <li className="px-4 py-2 text-sm text-red-400 hover:bg-white/10 cursor-pointer transition-colors">
+        <li
+        onClick={handleExitRoom}
+        className="px-4 py-2 text-sm text-red-400 hover:bg-white/10 cursor-pointer transition-colors">
           Exit room
         </li>
       </ul>
