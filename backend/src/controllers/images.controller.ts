@@ -45,14 +45,13 @@ const fetchImages: RequestHandler = async (req, res) => {
 
 const deleteImages: RequestHandler = async (req, res) => {
   if (!req.userId) {
-    return res.sendStatus(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: "Unauthorized" });
   }
   const imgId = req.params.id;
 
   const img = await Image.deleteMany({ _id: imgId, uploadedBy: req.userId });
-  console.log(img);
 
-  res.send(200).json({ message: "deleted successfully" });
+  res.status(200).json({ message: "deleted successfully" });
 };
 
-export { uploadImage, fetchImages,deleteImages };
+export { uploadImage, fetchImages, deleteImages };
