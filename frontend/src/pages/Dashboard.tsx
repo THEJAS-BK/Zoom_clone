@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Hero from "../components/home/Hero";
 import NavBar from "../components/home/NavBar";
 import { socket } from "../services/socket";
@@ -46,6 +46,14 @@ function connectSocket(maxAttempts = 5): Promise<void> {
 export default function Dashboard() {
   const [connectionError, setConnectionError] = useState(false);
   const [openMyImagesInterfaceOpen, setMyImageInterfaceOpen] = useState(false);
+  const myBoardsRef=useRef<HTMLDivElement | null>(null);
+
+  const scrollToBoards=()=>{
+    myBoardsRef.current?.scrollIntoView({
+      behavior:"smooth"
+    })
+  }
+
   useEffect(() => {
     connectSocket().catch(() => setConnectionError(true));
   }, []);
@@ -57,13 +65,13 @@ export default function Dashboard() {
           <MyImages setMyImageInterfaceOpen={setMyImageInterfaceOpen} />
         </div>
       )}
-      <NavBar setMyImageInterfaceOpen={setMyImageInterfaceOpen} />
+      <NavBar setMyImageInterfaceOpen={setMyImageInterfaceOpen} scrollToBoards={scrollToBoards} />
       {connectionError && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-lg z-99">
           Connection failed, please refresh
         </div>
       )}
-      <Hero />
+      <Hero myBoardsRef={myBoardsRef} />
     </div>
   );
 }

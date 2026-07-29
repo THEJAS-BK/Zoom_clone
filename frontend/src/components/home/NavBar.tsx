@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../utils/axios";
 
-export default function NavBar({setMyImageInterfaceOpen}:{setMyImageInterfaceOpen: (open: boolean) => void}) {
+export default function NavBar({setMyImageInterfaceOpen,scrollToBoards}:{setMyImageInterfaceOpen: (open: boolean) => void, scrollToBoards: () => void}) {
   const [visible, setVisible] = useState(true);
   const lastScrollY = useRef(0);
   const [user, setUser] = useState("");
@@ -63,7 +63,7 @@ export default function NavBar({setMyImageInterfaceOpen}:{setMyImageInterfaceOpe
       <div className="flex items-center gap-8">
         <h2 className="text-xl font-bold text-white tracking-tight">Syncvas</h2>
         <a
-          href=""
+       onClick={scrollToBoards}
           className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
         >
           My boards

@@ -58,7 +58,7 @@ function connectSocket(maxAttempts = 5): Promise<void> {
   });
 }
 
-export default function Hero() {
+export default function Hero({ myBoardsRef }: { myBoardsRef: React.RefObject<HTMLDivElement | null>}) {
   const navigate = useNavigate();
 
   const [showConfirm, setShowConfirm] = useState(false);
@@ -201,8 +201,10 @@ export default function Hero() {
             </button>
           </div>
         </div>
+      <div ref={myBoardsRef}>
 
-        <MyBoards />
+        <MyBoards  />
+      </div>
         <Footer />
       </div>
     </>
