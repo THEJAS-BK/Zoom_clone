@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Minus } from "lucide-react";
+import { Minus, Plus, Undo2, Redo2 } from "lucide-react";
 import { useToolSettings } from "../../../context/ToolBarLeftContext";
 
 const MIN_SCALE = 0.2;
@@ -47,31 +47,55 @@ export default function ZoomControls({
 
   const percentage = Math.round(camera.current.scale * 100);
 
-  return (
-   <>
-   {viewMode&& <div className="absolute bottom-3 left-5.5 flex items-center gap-1 bg-black rounded-2xl border border-gray-800 shadow-lg px-2 py-2 text-white">
-      <button
-        onClick={zoomOut}
-        title="Zoom out"
-        disabled={camera.current.scale <= MIN_SCALE}
-        className="tool-btn"
-      >
-        <Minus size={18} />
-      </button>
+return (
+  <>
+    {viewMode && (
+      <div className="absolute bottom-3 left-5.5 flex items-center gap-3">
+        <div className="flex items-center gap-1 bg-black rounded-2xl border border-gray-800 shadow-lg px-2 py-2 text-white">
+          <button
+            onClick={zoomOut}
+            title="Zoom out"
+            disabled={camera.current.scale <= MIN_SCALE}
+            className="tool-btn"
+          >
+            <Minus size={18} />
+          </button>
 
-      <span className="w-12 text-center text-sm tabular-nums select-none text-gray-300">
-        {percentage}%
-      </span>
+          <span className="w-12 text-center text-sm tabular-nums select-none text-gray-300">
+            {percentage}%
+          </span>
 
-      <button
-        onClick={zoomIn}
-        title="Zoom in"
-        disabled={camera.current.scale >= MAX_SCALE}
-        className="tool-btn"
-      >
-        <Plus size={18} />
-      </button>
-    </div>}
-   </>
-  );
+          <button
+            onClick={zoomIn}
+            title="Zoom in"
+            disabled={camera.current.scale >= MAX_SCALE}
+            className="tool-btn"
+          >
+            <Plus size={18} />
+          </button>
+        </div>
+
+        <div className="flex items-center gap-1 bg-black rounded-2xl border border-gray-800 shadow-lg px-2 py-2 text-white">
+          <button
+            // onClick={undo}
+            title="Undo"
+            // disabled={!canUndo}
+            className="tool-btn"
+          >
+            <Undo2 size={18} />
+          </button>
+
+          <button
+            // onClick={redo}
+            title="Redo"
+            // disabled={!canRedo}
+            className="tool-btn"
+          >
+            <Redo2 size={18} />
+          </button>
+        </div>
+      </div>
+    )}
+  </>
+);
 }
