@@ -10,6 +10,7 @@ const imageSchema = new Schema(
     width: { type: Number },
     height: { type: Number },
     rotation: { type: Number, default: 0 },
+    isDeleted:{type:Boolean,default:false,index:true}
   },
   { timestamps: true },
 );

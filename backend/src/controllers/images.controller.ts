@@ -33,7 +33,7 @@ const fetchImages: RequestHandler = async (req, res) => {
   const userId = req.userId;
   if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-  await Image.find({ uploadedBy: userId })
+  await Image.find({ uploadedBy: userId, isDeleted: false })
     .then((images) => {
       res.status(200).json(images);
     })
@@ -49,7 +49,10 @@ const deleteImages: RequestHandler = async (req, res) => {
   }
   const imgId = req.params.id;
 
-  const img = await Image.deleteMany({ _id: imgId, uploadedBy: req.userId });
+  await Image.updateMany(
+    { _id: imgId, uploadedBy: req.userId },
+    {$set: { isDeleted: true }}
+  );
 
   res.status(200).json({ message: "deleted successfully" });
 };
