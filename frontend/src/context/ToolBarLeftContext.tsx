@@ -121,6 +121,9 @@ type ToolSettings = {
   strokes: RefObject<Stroke[]>;
 
     images: React.RefObject<BoardImage[]>;
+
+    isDashedBorderNeeded:boolean;
+    setIsDashedBorderNeeded:Dispatch<SetStateAction<boolean>>;
 };
 
 const ToolBarLeftContext = createContext<ToolSettings | null>(null);
@@ -182,6 +185,8 @@ export function ToolSettingsProvider({
   const activeSavedBoardId = useRef<string | null>(null);
   const activeBoardName = useRef<string | null>(null);
   const [boardName, setBoardName] = useState("");
+
+  const [isDashedBorderNeeded, setIsDashedBorderNeeded] = useState(false);
 
 
   return (
@@ -248,7 +253,9 @@ export function ToolSettingsProvider({
         boardName,
         setBoardName,
         strokes,
-        images
+        images,
+        isDashedBorderNeeded,
+        setIsDashedBorderNeeded
       }}
     >
       {children}

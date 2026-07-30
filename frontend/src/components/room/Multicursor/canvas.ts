@@ -9,6 +9,7 @@ import type {
   TextBox,
 } from "./types";
 
+
 const getCanvasPoint = (
   e: MouseEvent,
   canvas: HTMLCanvasElement,
@@ -47,6 +48,7 @@ const redraw = (
   strokeWidth: number,
   opacity: number,
   fillColor: string,
+  isDashedBorderNeeded:boolean
 ) => {
   console.log("redraw running");
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -151,6 +153,7 @@ const redraw = (
               strokeWidth,
               opacity,
               fillColor,
+              isDashedBorderNeeded
             );
           };
           img.src = imageData.image;
@@ -216,12 +219,13 @@ const redraw = (
       right: number,
       bottom: number,
       rotation = 0,
-      cx = (left + right) / 2,
-      cy = (top + bottom) / 2,
+       isDashedBorderNeeded = false, 
     ) => {
       const w = right - left;
       const h = bottom - top;
       const PAD = 6 / scale;
+      const  cx = (left + right) / 2;
+      const cy = (top + bottom) / 2;
 
       ctx.save();
       ctx.translate(cx, cy);
@@ -230,8 +234,9 @@ const redraw = (
       // outline
       ctx.strokeStyle = "#7C6FF0";
       ctx.lineWidth = 2 / scale;
-      ctx.setLineDash([]);
+       ctx.setLineDash(isDashedBorderNeeded ? [6 / scale, 4 / scale] : []);
       ctx.strokeRect(-w / 2 - PAD, -h / 2 - PAD, w + PAD * 2, h + PAD * 2);
+        ctx.setLineDash([]); 
 
       // rotation handle
       ctx.beginPath();
@@ -332,12 +337,14 @@ const redraw = (
         selectedText.fontSize,
         selectedText.fontFamily,
       );
+
       drawSelectionBox(
         selectedText.x,
         selectedText.y,
         selectedText.x + width,
         selectedText.y + height,
         selectedText.rotation || 0,
+        isDashedBorderNeeded
       );
     }
     const selectedImage = images?.current?.find((img) => img.id === id);

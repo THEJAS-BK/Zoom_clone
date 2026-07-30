@@ -62,11 +62,6 @@ export function useTextBox(
   const updateTextBoxContent = (text: string) => {
   if (!activeTextBox.current) return;
   const tb = activeTextBox.current;
-
-  const before = measureTextBox(tb.text, tb.fontSize, tb.fontFamily);
-  const after = measureTextBox(text, tb.fontSize, tb.fontFamily);
-  tb.x += (before.width - after.width) / 2;
-  tb.y += (before.height - after.height) / 2;
   tb.text = text;
 
   const id = tb.id;

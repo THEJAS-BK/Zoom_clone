@@ -89,6 +89,7 @@ export function useSelection(
     setStrokeStyle,
     setEdgeStyle,
     selectedId,
+    setIsDashedBorderNeeded,
   } = useToolSettings();
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -230,6 +231,7 @@ export function useSelection(
       } else if (hitText) {
         isDragging.current = true;
         dragType.current = "textbox";
+        setIsDashedBorderNeeded(false);
         dragOffset.current = { x: x - hitText.x, y: y - hitText.y };
         syncToolSettingsToText(hitText, setters);
       } else if (hitLine) {
@@ -316,31 +318,35 @@ export function useSelection(
       }
 
       //!resize images
-if (isResizing.current && resizeCorner.current && resizeOrigin.current) {
-  const corner = resizeCorner.current;
-  const origin = resizeOrigin.current;
+      if (isResizing.current && resizeCorner.current && resizeOrigin.current) {
+        const corner = resizeCorner.current;
+        const origin = resizeOrigin.current;
 
-  if (dragType.current === "image") {
-    const image = images.current.find((img) => img.id === selectedId.current);
-    if (!image) return;
+        if (dragType.current === "image") {
+          const image = images.current.find(
+            (img) => img.id === selectedId.current,
+          );
+          if (!image) return;
 
-    const changes = computeShapeResize(image, corner, origin, x, y);
-    Object.assign(image, changes);
-    emitElementUpdate(roomId, image.id, changes);
-    doRedraw();
-    return;
-  }
+          const changes = computeShapeResize(image, corner, origin, x, y);
+          Object.assign(image, changes);
+          emitElementUpdate(roomId, image.id, changes);
+          doRedraw();
+          return;
+        }
 
-  //!resize shapes
-  const shape = shapesRef.current.find((s) => s.id === selectedId.current);
-  if (!shape) return;
+        //!resize shapes
+        const shape = shapesRef.current.find(
+          (s) => s.id === selectedId.current,
+        );
+        if (!shape) return;
 
-  const changes = computeShapeResize(shape, corner, origin, x, y);
-  Object.assign(shape, changes);
-  emitElementUpdate(roomId, shape.id, changes);
-  doRedraw();
-  return;
-}
+        const changes = computeShapeResize(shape, corner, origin, x, y);
+        Object.assign(shape, changes);
+        emitElementUpdate(roomId, shape.id, changes);
+        doRedraw();
+        return;
+      }
 
       //!moving shape/textbox
       if (dragType.current === "image") {
@@ -416,6 +422,7 @@ if (isResizing.current && resizeCorner.current && resizeOrigin.current) {
       if (hitText) {
         activeTextBox.current = { ...hitText };
         onEditTextBox?.();
+        setIsDashedBorderNeeded(true);
         doRedraw();
       }
     };

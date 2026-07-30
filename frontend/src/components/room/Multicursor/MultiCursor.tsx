@@ -110,7 +110,8 @@ export default function MultiCursor({
     fillColor,
     tabSize,
     boardColor,
-    strokes
+    strokes,
+    isDashedBorderNeeded
   } = useToolSettings();
 
   useEffect(() => {
@@ -158,8 +159,9 @@ export default function MultiCursor({
       strokeWidth,
       opacity,
       fillColor,
+      isDashedBorderNeeded
     );
-  }, [strokeColor, strokeWidth, opacity, fillColor]);
+  }, [strokeColor, strokeWidth, opacity, fillColor,isDashedBorderNeeded]);
 
   useEffect(() => {
     doRedrawRef.current = doRedraw;
