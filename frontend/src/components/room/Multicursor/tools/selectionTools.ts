@@ -32,7 +32,9 @@ const handleElementDelete = (
   } else if (textBoxesRef.current.some((t) => t.id === id)) {
     textBoxesRef.current = textBoxesRef.current.filter((t) => t.id !== id);
   } else if (boardImagesRef.current.some((img) => img.id === id)) {
-    boardImagesRef.current = boardImagesRef.current.filter((img) => img.id !== id);
+    boardImagesRef.current = boardImagesRef.current.filter(
+      (img) => img.id !== id,
+    );
   } else {
     return;
   }
@@ -206,13 +208,52 @@ function findElementAt(
   hitTestTextBox: typeof import("./hitTests").hitTestTextBox,
   hitTestImage: typeof import("./hitTests").hitTestImage,
 ): HitResult {
-  const hitShape = [...shapes].reverse().find((s) => hitTestShape(s, x, y));
-  const hitLine = [...lines].reverse().find((l) => hitTestLine(l, x, y, scale));
-  const hitText = [...textBoxes]
-    .reverse()
-    .find((t) => hitTestTextBox(t, x, y, ctx));
-  const hitImage = [...images].reverse().find((img) => hitTestImage(img, x, y));
-  return { hitShape, hitLine, hitText, hitImage };
+  type Sortable =
+    | { kind: "shape"; zIndex: number; el: Shape }
+    | { kind: "line"; zIndex: number; el: Line }
+    | { kind: "textbox"; zIndex: number; el: TextBox }
+    | { kind: "image"; zIndex: number; el: BoardImage };
+
+  const merged: Sortable[] = [
+    ...images.map((el) => ({
+      kind: "image" as const,
+      zIndex: el.zIndex ?? 0,
+      el,
+    })),
+    ...shapes.map((el) => ({
+      kind: "shape" as const,
+      zIndex: el.zIndex ?? 0,
+      el,
+    })),
+    ...lines.map((el) => ({
+      kind: "line" as const,
+      zIndex: el.zIndex ?? 0,
+      el,
+    })),
+    ...textBoxes.map((el) => ({
+      kind: "textbox" as const,
+      zIndex: el.zIndex ?? 0,
+      el,
+    })),
+  ].sort((a, b) => a.zIndex - b.zIndex);
+  for (let i = merged.length - 1; i >= 0; i--) {
+    const item = merged[i];
+    switch (item.kind) {
+      case "shape":
+        if (hitTestShape(item.el, x, y)) return { hitShape: item.el };
+        break;
+      case "line":
+        if (hitTestLine(item.el, x, y, scale)) return { hitLine: item.el };
+        break;
+      case "textbox":
+        if (hitTestTextBox(item.el, x, y, ctx)) return { hitText: item.el };
+        break;
+      case "image":
+        if (hitTestImage(item.el, x, y)) return { hitImage: item.el };
+        break;
+    }
+  }
+  return {};
 }
 
 function syncToolSettingsToShape(shape: Shape, s: ToolSetters) {
@@ -272,7 +313,11 @@ function computeTextBoxRotation(tb: TextBox, x: number, y: number): number {
   return Math.atan2(y - centerY, x - centerX) + Math.PI / 2;
 }
 
-function computeShapeRotation(shape: Positionable, x: number, y: number): number {
+function computeShapeRotation(
+  shape: Positionable,
+  x: number,
+  y: number,
+): number {
   const left = Math.min(shape.x, shape.x + shape.width);
   const top = Math.min(shape.y, shape.y + shape.height);
   const right = Math.max(shape.x, shape.x + shape.width);
@@ -303,7 +348,7 @@ function computeLineEndpointChanges(
 // ---- shape resize math (rotation-aware) ----
 function computeShapeResize(
   shape: Positionable,
-  corner: string|null,
+  corner: string | null,
   anchor: { x: number; y: number },
   x: number,
   y: number,
