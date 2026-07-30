@@ -40,7 +40,7 @@ export default function ToolBarContainer() {
   const displayTool = lastTool.current || activeTool  ;
 
   return (
-    <div >
+    <div className="z-9999" >
       {isCompactView ? (
         <CompactToolBar displayTool={displayTool} />
       ) : (

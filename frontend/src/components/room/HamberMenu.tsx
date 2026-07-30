@@ -140,7 +140,7 @@ export default function HamberMenu({
   return (
     <div
       ref={menuRef}
-      className="absolute top-16 left-5 bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl min-w-[220px] z-20"
+      className="absolute top-16 left-5 bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl min-w-[220px] z-9999"
     >
       <ul className="py-1">
         {/* Room ID row */}
