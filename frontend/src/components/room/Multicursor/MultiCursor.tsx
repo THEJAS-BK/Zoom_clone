@@ -49,7 +49,6 @@ export default function MultiCursor({
   setIsViewMode,
   camera,
   canvasRef,
-  roomPageRef
 }: {
   images: React.RefObject<BoardImage[]>;
   imageUpdate: number;
@@ -59,7 +58,6 @@ export default function MultiCursor({
   setIsViewMode: React.Dispatch<React.SetStateAction<boolean>>;
   camera: React.RefObject<any>;
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
-  roomPageRef:React.RefObject<HTMLDivElement | null>
 }) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const currentStroke = useRef<Point[]>([]);

@@ -19,16 +19,6 @@ import { socket } from "../services/socket";
 import api from "../utils/axios";
 import { useToolSettings } from "../context/ToolBarLeftContext.tsx";
 import { HistoryProvider } from "../context/LocalHistoryContext.tsx";
-type BoardImage = {
-  type: "image";
-  id: string;
-  image: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  rotation: number | 0;
-};
 
 export default function RoomPage() {
   const { roomId } = useParams();
@@ -58,7 +48,6 @@ function RoomContent({ roomId }: { roomId: string }) {
   const camera = useRef({ x: 0, y: 0, scale: 1 });
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const roomPageRef=useRef<HTMLDivElement>(null);
 
   const navigate = useNavigate();
   const pendingSaveRef = useRef<Promise<any> | null>(null);
@@ -118,7 +107,7 @@ function RoomContent({ roomId }: { roomId: string }) {
   }, [roomId]);
 
   return (
-    <div ref={roomPageRef} className="h-screen flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden">
       <main className="flex-1 flex static">
         {openCursor && (
           <>
@@ -185,7 +174,6 @@ function RoomContent({ roomId }: { roomId: string }) {
             setIsViewMode={setIsViewMode}
             camera={camera}
             canvasRef={canvasRef}
-            roomPageRef={roomPageRef}
           />
         )}
       </main>

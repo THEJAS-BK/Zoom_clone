@@ -6,7 +6,7 @@ import {
   useState,
 } from "react";
 import type { RefObject } from "react";
-const COLORS = ["#1f2937", "#f87171", "#22c55e", "#3b82f6", "#d97706"];
+const COLORS = ["#f87171", "#22c55e", "#3b82f6", "#d97706"];
 //helper function
 import { redraw } from "../room/Multicursor/canvas";
 
@@ -87,7 +87,7 @@ export default function OfflineMultiCursor({
     tabSize,
     boardColor,
     strokes,
-    isDashedBorderNeeded
+    isDashedBorderNeeded,
   } = useToolSettings();
 
   useEffect(() => {
@@ -124,7 +124,7 @@ export default function OfflineMultiCursor({
       strokeWidth,
       opacity,
       fillColor,
-      isDashedBorderNeeded
+      isDashedBorderNeeded,
     );
   }, [strokeColor, strokeWidth, opacity, fillColor]);
 
@@ -337,6 +337,33 @@ export default function OfflineMultiCursor({
       />
     );
   }
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    const canvas = canvasRef.current;
+    if (!wrapper || !canvas) return;
+
+    const resize = () => {
+      const { width, height } = wrapper.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+
+      const ctx = canvas.getContext("2d");
+      ctx?.setTransform(dpr, 0, 0, dpr, 0, 0); // keep drawing coords in CSS pixels
+
+      doRedraw();
+    };
+
+    resize(); // run once on mount too, in case initial size wasn't set yet
+
+    const observer = new ResizeObserver(resize);
+    observer.observe(wrapper);
+
+    return () => observer.disconnect();
+  }, [doRedraw]);
 
   return (
     <div
@@ -362,6 +389,8 @@ export default function OfflineMultiCursor({
           overscrollBehavior: "none",
           overflow: "hidden",
           backgroundColor: boardColor,
+          width: "100%",
+          height: "100%",
         }}
         onClick={handleCanvasClick}
       />
