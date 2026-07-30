@@ -17,7 +17,7 @@ const roomElements: Record<string, CanvasElement[]> = {};
 const roomBoards: Record<string, Stroke[]> = {};
 const roomBoardColors: Record<string, string> = {};
 const roomUserInfo: Record<string, Record<string, { color: string; name: string }>> = {};
-
+const roomMuteState: Record<string, Record<string, { videoMuted: boolean; audioMuted: boolean }>> = {};
 const setSocketConnection = (server: any) => {
   const io = new Server(server, {
     cors: {
@@ -46,8 +46,8 @@ const setSocketConnection = (server: any) => {
    
     console.log("user joined    ", socket.id);
     registerSwitchBoards(socket, roomBoards, roomElements,roomBoardColors,activeRooms);
-    registerRoomHandler(socket,io, activeRooms,roomUserInfo);
-    registerWebRtcHandler(socket, io, activeRooms);
+    registerRoomHandler(socket,io, activeRooms,roomUserInfo,roomMuteState);
+    registerWebRtcHandler(socket, io,roomMuteState);
     registerChatInterfaceHandler(socket, io);
     registerCanvasHandler(socket, roomBoards, roomElements,roomBoardColors,roomUserInfo);
     registerFollowUserCamera(socket,io)

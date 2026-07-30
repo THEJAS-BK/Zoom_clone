@@ -11,7 +11,7 @@ export const registerSwitchBoards = (
   // server
   socket.on("switch-room", async (roomId, fromBoardId, callback) => {
     if (activeRooms[roomId]) return callback({ success: false });
-
+      socket.join(roomId);
     activeRooms[roomId] = new Set();
     activeRooms[roomId].add(socket.id);
 

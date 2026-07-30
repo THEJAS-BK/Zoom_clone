@@ -20,7 +20,8 @@ export function registerRoomHandler(
   socket: Socket,
   io: Server,
   activeRooms: Record<string, Set<string>>,
-  roomUserInfo: Record<string, Record<string, { color: string; name: string }>>
+  roomUserInfo: Record<string, Record<string, { color: string; name: string }>>,
+  roomMuteState: Record<string, Record<string, { videoMuted: boolean; audioMuted: boolean }>>
 ) {
   socket.on("create-room", (roomId, callback) => {
     if (activeRooms[roomId]) {
@@ -51,15 +52,17 @@ export function registerRoomHandler(
 
     socket.join(roomId);
 
-    socket.emit(
-      "existing-peers",
-      [...activeRooms[roomId]]
-        .filter((id) => id !== socket.id)
-        .map((id) => ({
-          socketId: id,
-          name: io.sockets.sockets.get(id)?.data.name,
-        })),
-    );
+   socket.emit(
+  "existing-peers",
+  [...activeRooms[roomId]]
+    .filter((id) => id !== socket.id)
+    .map((id) => ({
+      socketId: id,
+      name: io.sockets.sockets.get(id)?.data.name,
+      videoMuted: roomMuteState[roomId]?.[id]?.videoMuted ?? true,
+      audioMuted: roomMuteState[roomId]?.[id]?.audioMuted ?? true,
+    })),
+);
 
     socket.data.roomId = roomId;
     activeRooms[roomId].add(socket.id);
@@ -92,6 +95,7 @@ export function registerRoomHandler(
     socket.to(roomId).emit("user-left", socket.id);
     if (activeRooms[roomId].size === 0) {
       delete activeRooms[roomId];
+      delete roomMuteState[roomId]?.[socket.id];
     }
   });
   socket.on("get-participants", (roomId: string) => {

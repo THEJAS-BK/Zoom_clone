@@ -47,6 +47,8 @@ export const useWebRTC = (roomId: string) => {
   };
 
   const createPC = (remoteId: string) => {
+      const existing = peerConnections.current[remoteId];
+  if (existing) return existing;
     const pc = new RTCPeerConnection(ICE_CONFIG);
 
     localStream.current
@@ -107,18 +109,22 @@ export const useWebRTC = (roomId: string) => {
 
     init();
     socket.on(
-      "existing-peers",
-      async (peers: { socketId: string; name: string }[]) => {
-        for (const { socketId, name } of peers) {
-          setUsers((prev) => ({ ...prev, [socketId]: name }));
+  "existing-peers",
+  async (peers: { socketId: string; name: string; videoMuted: boolean; audioMuted: boolean }[]) => {
+    for (const { socketId, name, videoMuted, audioMuted } of peers) {
+      setUsers((prev) => ({ ...prev, [socketId]: name }));
+      setRemoteVideoMuted((prev) => ({ ...prev, [socketId]: videoMuted }));
+      setRemoteAudioMuted((prev) => ({ ...prev, [socketId]: audioMuted }));
 
-          const pc = createPC(socketId);
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          socket.emit("offer", { to: socketId, offer });
-        }
-      },
-    );
+      if (peerConnections.current[socketId]) continue; 
+
+      const pc = createPC(socketId);
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      socket.emit("offer", { to: socketId, offer });
+    }
+  },
+);
 
     socket.on(
       "joined-user",
