@@ -9,19 +9,29 @@ const CURSOR_COLORS = [
   "#C084FC", // purple
 ];
 
-function getUnusedCursorColor(roomId: string, roomUserInfo: Record<string, Record<string, { color: string }>>): string {
-  const used = new Set(Object.values(roomUserInfo[roomId] ?? {}).map((u) => u.color));
+function getUnusedCursorColor(
+  roomId: string,
+  roomUserInfo: Record<string, Record<string, { color: string }>>,
+): string {
+  const used = new Set(
+    Object.values(roomUserInfo[roomId] ?? {}).map((u) => u.color),
+  );
   const available = CURSOR_COLORS.filter((c) => !used.has(c));
   const pool = available.length > 0 ? available : CURSOR_COLORS; // fallback if room is full and all 6 are taken
   return pool[Math.floor(Math.random() * pool.length)]!;
 }
+
+const pendingLeaves: Record<string, Map<string, NodeJS.Timeout>> = {};
 
 export function registerRoomHandler(
   socket: Socket,
   io: Server,
   activeRooms: Record<string, Set<string>>,
   roomUserInfo: Record<string, Record<string, { color: string; name: string }>>,
-  roomMuteState: Record<string, Record<string, { videoMuted: boolean; audioMuted: boolean }>>
+  roomMuteState: Record<
+    string,
+    Record<string, { videoMuted: boolean; audioMuted: boolean }>
+  >,
 ) {
   socket.on("create-room", (roomId, callback) => {
     if (activeRooms[roomId]) {
@@ -33,7 +43,10 @@ export function registerRoomHandler(
     activeRooms[roomId].add(socket.id);
     roomUserInfo[roomId] = {
       ...roomUserInfo[roomId],
-      [socket.id]: { color:getUnusedCursorColor(roomId, roomUserInfo), name: socket.data.name }
+      [socket.id]: {
+        color: getUnusedCursorColor(roomId, roomUserInfo),
+        name: socket.data.name,
+      },
     };
     socket.join(roomId);
     callback?.({ success: true });
@@ -41,28 +54,40 @@ export function registerRoomHandler(
 
   //join rooms logic
   socket.on("join-room", (roomId: string, callback) => {
+
+    const userId=socket.data.userId;
+    const pending=pendingLeaves[roomId]?.get(userId)
+    if(pending){
+      clearTimeout(pending)
+      pendingLeaves[roomId]?.delete(userId)
+    }
+
+
     if (!activeRooms[roomId]) {
       callback?.({ success: false, message: "Room dosent exist" });
       return;
     }
     roomUserInfo[roomId] = {
       ...roomUserInfo[roomId],
-      [socket.id]: { color:getUnusedCursorColor(roomId, roomUserInfo), name: socket.data.name }
+      [socket.id]: {
+        color: getUnusedCursorColor(roomId, roomUserInfo),
+        name: socket.data.name,
+      },
     };
 
     socket.join(roomId);
 
-   socket.emit(
-  "existing-peers",
-  [...activeRooms[roomId]]
-    .filter((id) => id !== socket.id)
-    .map((id) => ({
-      socketId: id,
-      name: io.sockets.sockets.get(id)?.data.name,
-      videoMuted: roomMuteState[roomId]?.[id]?.videoMuted ?? true,
-      audioMuted: roomMuteState[roomId]?.[id]?.audioMuted ?? true,
-    })),
-);
+    socket.emit(
+      "existing-peers",
+      [...activeRooms[roomId]]
+        .filter((id) => id !== socket.id)
+        .map((id) => ({
+          socketId: id,
+          name: io.sockets.sockets.get(id)?.data.name,
+          videoMuted: roomMuteState[roomId]?.[id]?.videoMuted ?? true,
+          audioMuted: roomMuteState[roomId]?.[id]?.audioMuted ?? true,
+        })),
+    );
 
     socket.data.roomId = roomId;
     activeRooms[roomId].add(socket.id);
@@ -92,12 +117,21 @@ export function registerRoomHandler(
       return;
     }
     activeRooms[roomId].delete(socket.id);
-    socket.to(roomId).emit("user-left", socket.id);
-    if (activeRooms[roomId].size === 0) {
-      delete activeRooms[roomId];
-      delete roomMuteState[roomId]?.[socket.id];
-    }
+
+    pendingLeaves[roomId] ??= new Map();
+
+    const timeout = setTimeout(() => {
+      socket.to(roomId).emit("user-left", socket.id);
+      if (activeRooms[roomId] && activeRooms[roomId].size === 0) {
+        delete activeRooms[roomId];
+        delete roomMuteState[roomId]?.[socket.id];
+      }
+      pendingLeaves[roomId]?.delete(socket.data.userId);
+    },3000);
+    pendingLeaves[roomId].set(socket.data.userId, timeout);
   });
+
+
   socket.on("get-participants", (roomId: string) => {
     const memberIds = activeRooms[roomId] ?? new Set<string>();
     const names = [...memberIds].map((id) => {
