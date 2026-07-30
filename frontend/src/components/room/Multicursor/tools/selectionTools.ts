@@ -123,44 +123,86 @@ function tryStartTextBoxHandleInteraction(
   scale: number,
   refs: InteractionRefs,
   hitTestTextBoxRotationHandle: typeof import("./hitTests").hitTestTextBoxRotationHandle,
+  textResizeOrigin: any,
 ): boolean {
   const { width, height } = measureTextBox(tb.text, tb.fontSize, tb.fontFamily);
 
   if (hitTestTextBoxRotationHandle(tb, x, y, width, height, scale)) {
     refs.isRotating.current = true;
-    refs.dragType.current = "textbox"; // <-- was missing
+    refs.dragType.current = "textbox";
     return true;
   }
 
-  const corner = hitTestTextBoxCorner(tb, x, y, scale);
-  if (corner) {
-    refs.isResizing.current = true;
-    refs.dragType.current = "textbox"; // <-- was missing
-    refs.resizeCorner.current = corner;
-    refs.resizeOrigin.current = computeTextResizeOrigin(tb, corner);
-    return true;
-  }
+ const corner = hitTestTextBoxCorner(tb, x, y, scale);
+if (corner) {
+  refs.isResizing.current = true;
+  refs.dragType.current = "textbox";
+  refs.resizeCorner.current = corner;
+
+  const origin = computeTextResizeOrigin(tb, corner); // anchor + fontSize, no click position
+const initialDist = getLocalResizeDist(tb.rotation || 0, corner, origin, x, y);
+textResizeOrigin.current = { ...origin, initialDist };
+  return true;
+}
 
   return false;
 }
-function computeTextResizeOrigin(tb: TextBox, corner: string) {
+// 1. PURE GEOMETRY — anchor point only, no click position involved
+function computeTextResizeOrigin(tb: TextBox, corner: string | null) {
   const { width, height } = measureTextBox(tb.text, tb.fontSize, tb.fontFamily);
   const centerX = tb.x + width / 2;
   const centerY = tb.y + height / 2;
   const rotation = tb.rotation || 0;
 
-  const localOx = corner.includes("l") ? width / 2 : -width / 2;
-  const localOy = corner.includes("t") ? height / 2 : -height / 2;
+  const localOx = corner?.includes("l") ? width / 2 : -width / 2;
+  const localOy = corner?.includes("t") ? height / 2 : -height / 2;
 
   const worldOx = localOx * Math.cos(rotation) - localOy * Math.sin(rotation);
   const worldOy = localOx * Math.sin(rotation) + localOy * Math.cos(rotation);
 
+  return { x: centerX + worldOx, y: centerY + worldOy, fontSize: tb.fontSize, width, height };
+}
+
+// helper — rotation-aware local distance from anchor to a point, using the same sign convention as the resize
+function getLocalResizeDist(rotation: number, corner: string | null, anchor: { x: number; y: number }, x: number, y: number) {
+  const dx = x - anchor.x;
+  const dy = y - anchor.y;
+  const localDx = dx * Math.cos(-rotation) - dy * Math.sin(-rotation);
+  const localDy = dx * Math.sin(-rotation) + dy * Math.cos(-rotation);
+  const signX = corner?.includes("r") ? 1 : -1;
+  const signY = corner?.includes("b") ? 1 : -1;
+  return Math.hypot(signX * localDx, signY * localDy);
+}
+
+// 2. LIVE RESIZE — called every mousemove tick
+function computeTextResize(
+  tb: TextBox,
+  corner: string | null,
+  anchor: { x: number; y: number },
+  x: number,
+  y: number,
+    origin: { fontSize: number; initialDist: number },
+): { x: number; y: number; fontSize: number } {
+  const rotation = tb.rotation || 0;
+  const minFont = 8, maxFont = 200;
+
+  const newLocalDist = getLocalResizeDist(rotation, corner, anchor, x, y);
+  const scaleFactor = newLocalDist / origin.initialDist;
+  const newFontSize = Math.min(maxFont, Math.max(minFont, origin.fontSize * scaleFactor));
+
+  const { width: newWidth, height: newHeight } = measureTextBox(tb.text, newFontSize, tb.fontFamily);
+  const signX = corner?.includes("r") ? 1 : -1;
+  const signY = corner?.includes("b") ? 1 : -1;
+
+  const anchorLocalX = -signX * (newWidth / 2);
+  const anchorLocalY = -signY * (newHeight / 2);
+  const offsetX = anchorLocalX * Math.cos(rotation) - anchorLocalY * Math.sin(rotation);
+  const offsetY = anchorLocalX * Math.sin(rotation) + anchorLocalY * Math.cos(rotation);
+
   return {
-    x: centerX + worldOx,
-    y: centerY + worldOy,
-    fontSize: tb.fontSize,
-    width,
-    height,
+    x: anchor.x - offsetX - newWidth / 2,
+    y: anchor.y - offsetY - newHeight / 2,
+    fontSize: newFontSize,
   };
 }
 
@@ -465,6 +507,7 @@ export {
   computeDragPosition,
   computeLineDragPosition,
   computeTextResizeOrigin,
-  tryStartTextBoxHandleInteraction
+  tryStartTextBoxHandleInteraction,
+  computeTextResize
 };
 export type { LineEndpoint };
