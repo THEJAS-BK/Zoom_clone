@@ -7,13 +7,19 @@ export const registerSwitchBoards = (
   roomElements: Record<string, CanvasElement[]>,
   roomBoardColors: Record<string, string>,
   activeRooms: Record<string, Set<string>>,
-) => {
+  roomMuteState: Record<string, Record<string, { videoMuted: boolean; audioMuted: boolean }>>) => {
   // server
   socket.on("switch-room", async (roomId, fromBoardId, callback) => {
     if (activeRooms[roomId]) return callback({ success: false });
-      socket.join(roomId);
     activeRooms[roomId] = new Set();
     activeRooms[roomId].add(socket.id);
+    socket.join(roomId);
+
+      const prevRoomId = socket.data.roomId;
+    const prevState = prevRoomId && roomMuteState[prevRoomId]?.[socket.id];
+    roomMuteState[roomId] = {
+      [socket.id]: prevState ?? { videoMuted: true, audioMuted: true },
+    };
 
     if (fromBoardId) {
       const board = await Board.findById(fromBoardId);

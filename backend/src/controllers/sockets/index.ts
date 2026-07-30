@@ -45,7 +45,7 @@ const setSocketConnection = (server: any) => {
   io.on("connection", (socket) => {
    
     console.log("user joined    ", socket.id);
-    registerSwitchBoards(socket, roomBoards, roomElements,roomBoardColors,activeRooms);
+    registerSwitchBoards(socket, roomBoards, roomElements,roomBoardColors,activeRooms,roomMuteState);
     registerRoomHandler(socket,io, activeRooms,roomUserInfo,roomMuteState);
     registerWebRtcHandler(socket, io,roomMuteState);
     registerChatInterfaceHandler(socket, io);

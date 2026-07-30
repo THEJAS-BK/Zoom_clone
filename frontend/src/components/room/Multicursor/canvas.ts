@@ -9,7 +9,6 @@ import type {
   TextBox,
 } from "./types";
 
-
 const getCanvasPoint = (
   e: MouseEvent,
   canvas: HTMLCanvasElement,
@@ -48,7 +47,7 @@ const redraw = (
   strokeWidth: number,
   opacity: number,
   fillColor: string,
-  isDashedBorderNeeded:boolean
+  isDashedBorderNeeded: boolean,
 ) => {
   console.log("redraw running");
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -77,12 +76,27 @@ const redraw = (
     ),
     ...(activeTextBox?.current ? [activeTextBox.current] : []),
   ];
+  const allActive = Object.entries(activeStrokes.current).map(
+    ([userId, activeStroke]) => ({
+      userId,
+      color: activeStroke.color,
+      strokeWidth: activeStroke.strokeWidth,
+      opacity: activeStroke.opacity,
+      points: activeStroke.points,
+    }),
+  );
+  const allStrokes = [
+    ...strokes.current,
+    { userId, points: currentStroke.current, color, strokeWidth, opacity },
+    ...allActive,
+  ];
 
   type Sortable =
     | { kind: "shape"; zIndex: number; el: Shape }
     | { kind: "line"; zIndex: number; el: Line }
     | { kind: "textbox"; zIndex: number; el: TextBox }
-    | { kind: "image"; zIndex: number; el: BoardImage };
+    | { kind: "image"; zIndex: number; el: BoardImage }
+    | { kind: "stroke"; zIndex: number; el: (typeof allStrokes)[number] };
 
   const merged: Sortable[] = [
     ...images.current.map((el) => ({
@@ -105,7 +119,13 @@ const redraw = (
       zIndex: el.zIndex ?? 0,
       el,
     })),
+    ...allStrokes.map((el) => ({
+      kind: "stroke" as const,
+      zIndex: (el as any).zIndex ?? 0,
+      el,
+    })),
   ].sort((a, b) => a.zIndex - b.zIndex);
+
   for (const item of merged) {
     switch (item.kind) {
       case "image": {
@@ -153,7 +173,7 @@ const redraw = (
               strokeWidth,
               opacity,
               fillColor,
-              isDashedBorderNeeded
+              isDashedBorderNeeded,
             );
           };
           img.src = imageData.image;
@@ -172,40 +192,25 @@ const redraw = (
       case "textbox":
         drawTextBox(ctx, item.el);
         break;
+      case "stroke": {
+        const stroke = item.el;
+        if (stroke.points.length === 0) break;
+        ctx.save();
+        ctx.globalAlpha = (stroke.opacity ?? 100) / 100;
+        ctx.beginPath();
+        ctx.strokeStyle = stroke.color;
+        ctx.lineWidth = stroke.strokeWidth ?? 4;
+        stroke.points.forEach((p, i) => {
+          if (i === 0) ctx.moveTo(p.x, p.y);
+          else ctx.lineTo(p.x, p.y);
+        });
+        ctx.stroke();
+        ctx.restore();
+        break;
+      }
     }
   }
 
-  // strokes on top
-  const allActive = Object.entries(activeStrokes.current).map(
-    ([userId, activeStroke]) => ({
-      userId,
-      color: activeStroke.color,
-      strokeWidth: activeStroke.strokeWidth,
-      opacity: activeStroke.opacity,
-      points: activeStroke.points,
-    }),
-  );
-
-  const allStrokes = [
-    ...strokes.current,
-    { userId, points: currentStroke.current, color, strokeWidth, opacity },
-    ...allActive,
-  ];
-
-  for (const stroke of allStrokes) {
-    if (stroke.points.length === 0) continue;
-    ctx.save();
-    ctx.globalAlpha = (stroke.opacity ?? 100) / 100;
-    ctx.beginPath();
-    ctx.strokeStyle = stroke.color;
-    ctx.lineWidth = stroke.strokeWidth ?? 4;
-    stroke.points.forEach((p, i) => {
-      if (i === 0) ctx.moveTo(p.x, p.y);
-      else ctx.lineTo(p.x, p.y);
-    });
-    ctx.stroke();
-    ctx.restore();
-  }
 
   //selection
   // ---- selection indicators ----
@@ -219,12 +224,12 @@ const redraw = (
       right: number,
       bottom: number,
       rotation = 0,
-       isDashedBorderNeeded = false, 
+      isDashedBorderNeeded = false,
     ) => {
       const w = right - left;
       const h = bottom - top;
       const PAD = 6 / scale;
-      const  cx = (left + right) / 2;
+      const cx = (left + right) / 2;
       const cy = (top + bottom) / 2;
 
       ctx.save();
@@ -234,9 +239,9 @@ const redraw = (
       // outline
       ctx.strokeStyle = "#7C6FF0";
       ctx.lineWidth = 2 / scale;
-       ctx.setLineDash(isDashedBorderNeeded ? [6 / scale, 4 / scale] : []);
+      ctx.setLineDash(isDashedBorderNeeded ? [6 / scale, 4 / scale] : []);
       ctx.strokeRect(-w / 2 - PAD, -h / 2 - PAD, w + PAD * 2, h + PAD * 2);
-        ctx.setLineDash([]); 
+      ctx.setLineDash([]);
 
       // rotation handle
       ctx.beginPath();
@@ -344,7 +349,7 @@ const redraw = (
         selectedText.x + width,
         selectedText.y + height,
         selectedText.rotation || 0,
-        isDashedBorderNeeded
+        isDashedBorderNeeded,
       );
     }
     const selectedImage = images?.current?.find((img) => img.id === id);
@@ -832,7 +837,6 @@ function measureTextBox(
   const height = lines.length * lineHeight;
   return { width, height, lineHeight, lines };
 }
-
 
 export {
   getCanvasPoint,
