@@ -29,7 +29,6 @@ export default function Offlineboard() {
 
 function OfflineboardContent() {
   const [isHambergerMenuOpen, setIsHambergerMenuOpen] = useState(false);
-  const images = useRef<BoardImage[]>([]);
   const [isImageUploadInterfaceOpen, setIsImageUploadInterfaceOpen] =
     useState(false);
   const [openBoardNotSavedInterface, setOpenBoardNotSavedInterface] =
@@ -46,6 +45,7 @@ function OfflineboardContent() {
     activeSavedBoardId,
     setBoardName,
     doRedrawRef,
+    images
   } = useToolSettings();
   const { id } = useParams();
   useEffect(() => {

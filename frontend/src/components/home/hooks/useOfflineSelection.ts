@@ -47,6 +47,7 @@ import {
   syncToolSettingsToLine,
   computeTextBoxRotation,
 } from "../../room/Multicursor/tools/selectionTools";
+import type { getFormControlLabelUtilityClasses } from "@mui/material/FormControlLabel";
 export function useOfflineSelection(
   canvasRef: RefObject<HTMLCanvasElement | null>,
   camera: RefObject<{ x: number; y: number; scale: number }>,
@@ -103,6 +104,7 @@ export function useOfflineSelection(
     setStrokeStyle,
     setEdgeStyle,
     selectedId,
+    setIsDashedBorderNeeded
   } = useToolSettings();
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -234,6 +236,7 @@ export function useOfflineSelection(
         dragOffset.current = { x: x - hitShape.x, y: y - hitShape.y };
         syncToolSettingsToShape(hitShape, setters);
       } else if (hitText) {
+        setIsDashedBorderNeeded(false)
         isDragging.current = true;
         dragType.current = "textbox";
         dragOffset.current = { x: x - hitText.x, y: y - hitText.y };
@@ -436,6 +439,7 @@ export function useOfflineSelection(
       if (hitText) {
         activeTextBox.current = { ...hitText };
         onEditTextBox?.();
+        setIsDashedBorderNeeded(true)
         doRedraw();
       }
     };

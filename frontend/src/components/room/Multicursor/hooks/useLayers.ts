@@ -50,9 +50,9 @@ export function useLayers() {
   const finish = () => doRedrawRef.current?.();
 
   const bringToFront = () => {
+    console.log("clicked")
     const all = getAllSorted();
     if (all.length === 0) return;
-    console.log("Bringing to front");
     const maxZ = all[all.length - 1].el.zIndex ?? 0;
     applyZIndex(selectedEle.id, selectedEle.type, maxZ + 1);
     finish();

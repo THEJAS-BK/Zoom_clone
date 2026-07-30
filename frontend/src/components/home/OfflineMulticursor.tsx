@@ -87,6 +87,7 @@ export default function OfflineMultiCursor({
     tabSize,
     boardColor,
     strokes,
+    isDashedBorderNeeded
   } = useToolSettings();
 
   useEffect(() => {
@@ -123,6 +124,7 @@ export default function OfflineMultiCursor({
       strokeWidth,
       opacity,
       fillColor,
+      isDashedBorderNeeded
     );
   }, [strokeColor, strokeWidth, opacity, fillColor]);
 
