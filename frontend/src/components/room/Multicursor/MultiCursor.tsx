@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import { socket } from "../../../services/socket";
 import { useNavigate } from "react-router-dom";
-const COLORS = ["#1f2937", "#f87171", "#22c55e", "#3b82f6", "#d97706"];
+const COLORS = ["#f87171", "#22c55e", "#3b82f6", "#d97706"];
 //helper function
 import { redraw, resolveFontFamily } from "./canvas";
 
@@ -49,6 +49,7 @@ export default function MultiCursor({
   setIsViewMode,
   camera,
   canvasRef,
+  roomPageRef
 }: {
   images: React.RefObject<BoardImage[]>;
   imageUpdate: number;
@@ -58,6 +59,7 @@ export default function MultiCursor({
   setIsViewMode: React.Dispatch<React.SetStateAction<boolean>>;
   camera: React.RefObject<any>;
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
+  roomPageRef:React.RefObject<HTMLDivElement | null>
 }) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const currentStroke = useRef<Point[]>([]);
@@ -375,7 +377,7 @@ export default function MultiCursor({
       const len = el.value.length;
       el.focus();
       el.setSelectionRange(len, len);
-    }, [box.id]); // re-run when switching to a different box (key already remounts, this covers first paint)
+    }, [box.id]); 
 
     return (
       <textarea
@@ -418,6 +420,34 @@ export default function MultiCursor({
     );
   }
 
+  useEffect(() => {
+  const wrapper = wrapperRef.current;
+  const canvas = canvasRef.current;
+  if (!wrapper || !canvas) return;
+
+  const resize = () => {
+    const { width, height } = wrapper.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+
+    const ctx = canvas.getContext("2d");
+    ctx?.setTransform(dpr, 0, 0, dpr, 0, 0); // keep drawing coords in CSS pixels
+
+    doRedraw();
+  };
+
+  resize(); // run once on mount too, in case initial size wasn't set yet
+
+  const observer = new ResizeObserver(resize);
+  observer.observe(wrapper);
+
+  return () => observer.disconnect();
+}, [doRedraw]);
+
   return (
     <div
       ref={wrapperRef}
@@ -425,8 +455,8 @@ export default function MultiCursor({
         position: "relative",
         touchAction: "none",
         overscrollBehavior: "none",
-        width: "100%",
-        height: "100%",
+        width:"100%",
+        height: "100%"
       }}
     >
       {toggleVideoTab && (
@@ -461,6 +491,7 @@ export default function MultiCursor({
           overscrollBehavior: "none",
           overflow: "hidden",
           backgroundColor: boardColor,
+          width:"100%"
         }}
         onClick={handleCanvasClick}
       />

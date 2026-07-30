@@ -49,7 +49,6 @@ const redraw = (
   fillColor: string,
   isDashedBorderNeeded: boolean,
 ) => {
-  console.log("redraw running");
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const dpr = window.devicePixelRatio || 1;

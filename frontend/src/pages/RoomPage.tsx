@@ -58,6 +58,8 @@ function RoomContent({ roomId }: { roomId: string }) {
   const camera = useRef({ x: 0, y: 0, scale: 1 });
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  const roomPageRef=useRef<HTMLDivElement>(null);
+
   const navigate = useNavigate();
   const pendingSaveRef = useRef<Promise<any> | null>(null);
   const {
@@ -116,7 +118,7 @@ function RoomContent({ roomId }: { roomId: string }) {
   }, [roomId]);
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
+    <div ref={roomPageRef} className="h-screen flex flex-col overflow-hidden">
       <main className="flex-1 flex static">
         {openCursor && (
           <>
@@ -183,6 +185,7 @@ function RoomContent({ roomId }: { roomId: string }) {
             setIsViewMode={setIsViewMode}
             camera={camera}
             canvasRef={canvasRef}
+            roomPageRef={roomPageRef}
           />
         )}
       </main>
