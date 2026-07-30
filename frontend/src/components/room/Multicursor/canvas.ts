@@ -833,29 +833,6 @@ function measureTextBox(
   return { width, height, lineHeight, lines };
 }
 
-function hitTestTextBoxRotationHandle(
-  tb: TextBox,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  scale: number,
-): boolean {
-  const PAD = 6 / scale;
-  const centerX = tb.x + width / 2;
-  const centerY = tb.y + height / 2;
-  const rotation = tb.rotation || 0;
-  const hh = height / 2 + PAD;
-
-  const dx = x - centerX;
-  const dy = y - centerY;
-  const localX = dx * Math.cos(-rotation) - dy * Math.sin(-rotation);
-  const localY = dx * Math.sin(-rotation) + dy * Math.cos(-rotation);
-
-  const ddx = localX;
-  const ddy = localY - (-hh - 20 / scale);
-  return ddx * ddx + ddy * ddy <= (10 / scale) * (10 / scale);
-}
 
 export {
   getCanvasPoint,
@@ -866,7 +843,6 @@ export {
   isPointNearStroke,
   drawShape,
   drawLine,
-  hitTestTextBoxRotationHandle,
   resolveFontFamily,
   measureTextBox,
 };

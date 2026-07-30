@@ -7,7 +7,7 @@ import type {
   ToolSetters,
   BoardImage,
 } from "../../room/Multicursor/types";
-import { hitTestTextBoxRotationHandle } from "../../room/Multicursor/canvas";
+// import { hitTestTextBoxRotationHandle } from "../../room/Multicursor/canvas";
 import {
   hitTestLine,
   hitTestShape,
@@ -138,20 +138,20 @@ export function useOfflineSelection(
             selectedText.fontSize,
             selectedText.fontFamily,
           );
-          if (
-            hitTestTextBoxRotationHandle(
-              selectedText,
-              x,
-              y,
-              width,
-              height,
-              camera.current.scale,
-            )
-          ) {
-            isRotating.current = true;
-            dragType.current = "textbox";
-            return;
-          }
+          // if (
+          //   hitTestTextBoxRotationHandle(
+          //     selectedText,
+          //     x,
+          //     y,
+          //     width,
+          //     height,
+          //     camera.current.scale,
+          //   )
+          // ) {
+          //   isRotating.current = true;
+          //   dragType.current = "textbox";
+          //   return;
+          // }
         }
 
         const selectedShape = shapesRef.current.find(

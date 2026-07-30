@@ -1,6 +1,6 @@
 // ---- hit tests ----
 
-import { resolveFontFamily } from "../canvas";
+import { measureTextBox, resolveFontFamily } from "../canvas";
 import type { Shape, TextBox,Line,BoardImage } from "../types";
 
 function hitTestShape(shape: Shape, x: number, y: number): boolean {
@@ -187,4 +187,61 @@ function hitTestCorner(
   }
   return null;
 }
-export {hitTestLine,hitTestShape,hitTestTextBox,hitTestImage,hitTestRotationHandle,hitTestCorner}
+function hitTestTextBoxCorner(
+  tb: TextBox,
+  x: number,
+  y: number,
+  scale: number,
+): "tl" | "tr" | "bl" | "br" | null {
+  const { width: w, height: h } = measureTextBox(tb.text, tb.fontSize, tb.fontFamily);
+  const PAD = 6 / scale;
+
+  const centerX = tb.x + w / 2;
+  const centerY = tb.y + h / 2;
+
+  const rotation = tb.rotation || 0;
+  const dx = x - centerX;
+  const dy = y - centerY;
+  const localX = dx * Math.cos(-rotation) - dy * Math.sin(-rotation);
+  const localY = dx * Math.sin(-rotation) + dy * Math.cos(-rotation);
+
+  const corners: { name: "tl" | "tr" | "bl" | "br"; x: number; y: number }[] = [
+    { name: "tl", x: -w / 2 - PAD, y: -h / 2 - PAD },
+    { name: "tr", x: w / 2 + PAD, y: -h / 2 - PAD },
+    { name: "bl", x: -w / 2 - PAD, y: h / 2 + PAD },
+    { name: "br", x: w / 2 + PAD, y: h / 2 + PAD },
+  ];
+
+  const hitRadius = (8 / scale) * (8 / scale);
+  for (const corner of corners) {
+    const ddx = localX - corner.x;
+    const ddy = localY - corner.y;
+    if (ddx * ddx + ddy * ddy <= hitRadius) return corner.name;
+  }
+  return null;
+}
+function hitTestTextBoxRotationHandle(
+  tb: TextBox,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  scale: number,
+): boolean {
+  const PAD = 6 / scale;
+  const centerX = tb.x + width / 2;
+  const centerY = tb.y + height / 2;
+  const rotation = tb.rotation || 0;
+  const hh = height / 2 + PAD;
+
+  const dx = x - centerX;
+  const dy = y - centerY;
+  const localX = dx * Math.cos(-rotation) - dy * Math.sin(-rotation);
+  const localY = dx * Math.sin(-rotation) + dy * Math.cos(-rotation);
+
+  const ddx = localX;
+  const ddy = localY - (-hh - 20 / scale);
+  return ddx * ddx + ddy * ddy <= (10 / scale) * (10 / scale);
+}
+
+export {hitTestLine,hitTestShape,hitTestTextBox,hitTestImage,hitTestRotationHandle,hitTestCorner,hitTestTextBoxCorner,hitTestTextBoxRotationHandle}

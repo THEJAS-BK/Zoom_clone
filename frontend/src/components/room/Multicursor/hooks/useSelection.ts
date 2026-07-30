@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Dispatch, RefObject, SetStateAction } from "react";
 import type { Shape, Line, TextBox, ToolSetters, BoardImage } from "../types";
-import { hitTestTextBoxRotationHandle } from "../canvas";
 import {
   hitTestLine,
   hitTestShape,
@@ -9,7 +8,11 @@ import {
   hitTestImage,
 } from "../tools/hitTests";
 import { socket } from "../../../../services/socket";
-import { hitTestCorner, hitTestRotationHandle } from "../tools/hitTests";
+import {
+  hitTestCorner,
+  hitTestRotationHandle,
+  hitTestTextBoxRotationHandle,
+} from "../tools/hitTests";
 import { useToolSettings } from "../../../../context/ToolBarLeftContext";
 //tools
 
@@ -39,6 +42,7 @@ import {
   syncToolSettingsToText,
   syncToolSettingsToLine,
   computeTextBoxRotation,
+  tryStartTextBoxHandleInteraction,
 } from "../tools/selectionTools";
 export function useSelection(
   roomId: string,
@@ -66,7 +70,13 @@ export function useSelection(
   //resize code
   const isResizing = useRef(false);
   const resizeCorner = useRef<"tl" | "tr" | "bl" | "br" | null>(null);
-  const resizeOrigin = useRef({ x: 0, y: 0 });
+  const resizeOrigin = useRef<{
+    x: number;
+    y: number;
+    fontSize?: number;
+    width?: number;
+    height?: number;
+  } | null>(null)
 
   //resize code for lines
   const lineEndpoint = useRef<"p1" | "p2" | "mid" | null>(null);
@@ -130,27 +140,18 @@ export function useSelection(
         const selectedText = textBoxesRef.current.find(
           (t) => t.id === selectedId.current,
         );
-        if (selectedText) {
-          const { width, height } = measureTextBox(
-            selectedText.text,
-            selectedText.fontSize,
-            selectedText.fontFamily,
-          );
-          if (
-            hitTestTextBoxRotationHandle(
-              selectedText,
-              x,
-              y,
-              width,
-              height,
-              camera.current.scale,
-            )
-          ) {
-            isRotating.current = true;
-            dragType.current = "textbox";
-            return;
-          }
-        }
+        if (
+          selectedText &&
+          tryStartTextBoxHandleInteraction(
+            selectedText,
+            x,
+            y,
+            camera.current.scale,
+            refs,
+            hitTestTextBoxRotationHandle,
+          )
+        )
+          return;
 
         const selectedShape = shapesRef.current.find(
           (s) => s.id === selectedId.current,
@@ -331,6 +332,50 @@ export function useSelection(
           const changes = computeShapeResize(image, corner, origin, x, y);
           Object.assign(image, changes);
           emitElementUpdate(roomId, image.id, changes);
+          doRedraw();
+          return;
+        }
+
+        //!resize textbox
+        if (dragType.current === "textbox") {
+          const tb = textBoxesRef.current.find(
+            (t) => t.id === selectedId.current,
+          );
+          if (!tb || origin.fontSize === undefined) return;
+
+          const anchorX =
+            corner === "tl" || corner === "bl"
+              ? origin.x + (origin.width ?? 0)
+              : origin.x;
+          const anchorY =
+            corner === "tl" || corner === "tr"
+              ? origin.y + (origin.height ?? 0)
+              : origin.y;
+
+          const initialDist = Math.hypot(origin.width ?? 1, origin.height ?? 1);
+          const newDist = Math.hypot(x - anchorX, y - anchorY);
+          const scaleFactor = newDist / initialDist;
+
+          const newFontSize = Math.min(
+            200,
+            Math.max(8, origin.fontSize * scaleFactor),
+          );
+          const { width, height } = measureTextBox(
+            tb.text,
+            newFontSize,
+            tb.fontFamily,
+          );
+
+          tb.fontSize = newFontSize;
+          tb.x = corner === "tl" || corner === "bl" ? anchorX - width : anchorX;
+          tb.y =
+            corner === "tl" || corner === "tr" ? anchorY - height : anchorY;
+
+          emitElementUpdate(roomId, tb.id, {
+            fontSize: newFontSize,
+            x: tb.x,
+            y: tb.y,
+          });
           doRedraw();
           return;
         }

@@ -2,6 +2,7 @@ import type { RefObject } from "react";
 import type { BoardImage, Line, Shape, TextBox, ToolSetters } from "../types";
 import { socket } from "../../../../services/socket";
 import { measureTextBox } from "../canvas";
+import { hitTestTextBoxCorner } from "./hitTests";
 const handleElementDelete = (
   e: KeyboardEvent,
   selectedId: React.RefObject<string | null>,
@@ -114,6 +115,53 @@ function tryStartShapeHandleInteraction(
   }
 
   return false;
+}
+function tryStartTextBoxHandleInteraction(
+  tb: TextBox,
+  x: number,
+  y: number,
+  scale: number,
+  refs: InteractionRefs,
+  hitTestTextBoxRotationHandle: typeof import("./hitTests").hitTestTextBoxRotationHandle,
+): boolean {
+  const { width, height } = measureTextBox(tb.text, tb.fontSize, tb.fontFamily);
+
+  if (hitTestTextBoxRotationHandle(tb, x, y, width, height, scale)) {
+    refs.isRotating.current = true;
+    refs.dragType.current = "textbox"; // <-- was missing
+    return true;
+  }
+
+  const corner = hitTestTextBoxCorner(tb, x, y, scale);
+  if (corner) {
+    refs.isResizing.current = true;
+    refs.dragType.current = "textbox"; // <-- was missing
+    refs.resizeCorner.current = corner;
+    refs.resizeOrigin.current = computeTextResizeOrigin(tb, corner);
+    return true;
+  }
+
+  return false;
+}
+function computeTextResizeOrigin(tb: TextBox, corner: string) {
+  const { width, height } = measureTextBox(tb.text, tb.fontSize, tb.fontFamily);
+  const centerX = tb.x + width / 2;
+  const centerY = tb.y + height / 2;
+  const rotation = tb.rotation || 0;
+
+  const localOx = corner.includes("l") ? width / 2 : -width / 2;
+  const localOy = corner.includes("t") ? height / 2 : -height / 2;
+
+  const worldOx = localOx * Math.cos(rotation) - localOy * Math.sin(rotation);
+  const worldOy = localOx * Math.sin(rotation) + localOy * Math.cos(rotation);
+
+  return {
+    x: centerX + worldOx,
+    y: centerY + worldOy,
+    fontSize: tb.fontSize,
+    width,
+    height,
+  };
 }
 
 // ---- 3. try to grab an endpoint/midpoint on the currently selected line ----
@@ -416,5 +464,7 @@ export {
   computeShapeResize,
   computeDragPosition,
   computeLineDragPosition,
+  computeTextResizeOrigin,
+  tryStartTextBoxHandleInteraction
 };
 export type { LineEndpoint };
