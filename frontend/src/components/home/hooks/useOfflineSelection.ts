@@ -31,6 +31,7 @@ import {
   computeLineEndpointChanges,
   computeShapeResize,
   computeShapeRotation,
+  computeTextResize,
   tryStartTextBoxHandleInteraction,
   type InteractionRefs,
 } from "../../room/Multicursor/tools/selectionTools";
@@ -71,13 +72,15 @@ export function useOfflineSelection(
   //resize code
   const isResizing = useRef(false);
   const resizeCorner = useRef<"tl" | "tr" | "bl" | "br" | null>(null);
-  const resizeOrigin = useRef<{
+  const resizeOrigin = useRef({ x: 0, y: 0 });
+  const textResizeOrigin = useRef<{
     x: number;
     y: number;
-    fontSize?: number;
-    width?: number;
-    height?: number;
-  } | null>(null)
+    fontSize: number;
+    width: number;
+    height: number;
+    initialDist: number;
+  } | null>(null);
 
   //resize code for lines
   const lineEndpoint = useRef<"p1" | "p2" | "mid" | null>(null);
@@ -149,6 +152,7 @@ export function useOfflineSelection(
             camera.current.scale,
             refs,
             hitTestTextBoxRotationHandle,
+            textResizeOrigin
           )
         )
           return;
@@ -329,42 +333,23 @@ export function useOfflineSelection(
           doRedraw();
           return;
         }
-         //!resize textbox
+        //!resize textbox
         if (dragType.current === "textbox") {
           const tb = textBoxesRef.current.find(
             (t) => t.id === selectedId.current,
           );
-          if (!tb || origin.fontSize === undefined) return;
+          const origin = textResizeOrigin.current;
+          if (!tb || !origin || !corner) return;
 
-          const anchorX =
-            corner === "tl" || corner === "bl"
-              ? origin.x + (origin.width ?? 0)
-              : origin.x;
-          const anchorY =
-            corner === "tl" || corner === "tr"
-              ? origin.y + (origin.height ?? 0)
-              : origin.y;
-
-          const initialDist = Math.hypot(origin.width ?? 1, origin.height ?? 1);
-          const newDist = Math.hypot(x - anchorX, y - anchorY);
-          const scaleFactor = newDist / initialDist;
-
-          const newFontSize = Math.min(
-            200,
-            Math.max(8, origin.fontSize * scaleFactor),
+          const changes = computeTextResize(
+            tb,
+            corner,
+            { x: origin.x, y: origin.y },
+            x,
+            y,
+            origin,
           );
-          const { width, height } = measureTextBox(
-            tb.text,
-            newFontSize,
-            tb.fontFamily,
-          );
-
-          tb.fontSize = newFontSize;
-          tb.x = corner === "tl" || corner === "bl" ? anchorX - width : anchorX;
-          tb.y =
-            corner === "tl" || corner === "tr" ? anchorY - height : anchorY;
-
-          
+          Object.assign(tb, changes);
           doRedraw();
           return;
         }

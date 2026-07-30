@@ -31,8 +31,6 @@ import {
   handleElementDelete,
   computeTextResize,
   type InteractionRefs,
-  
-
 } from "../tools/selectionTools";
 
 //mouse move
@@ -343,17 +341,26 @@ export function useSelection(
         }
 
         //!resize textbox
-       if (dragType.current === "textbox") {
-  const tb = textBoxesRef.current.find((t) => t.id === selectedId.current);
-  const origin = textResizeOrigin.current;
-  if (!tb || !origin || !corner) return;
+        if (dragType.current === "textbox") {
+          const tb = textBoxesRef.current.find(
+            (t) => t.id === selectedId.current,
+          );
+          const origin = textResizeOrigin.current;
+          if (!tb || !origin || !corner) return;
 
-  const changes = computeTextResize(tb, corner, { x: origin.x, y: origin.y }, x, y, origin);
-  Object.assign(tb, changes);
-  emitElementUpdate(roomId, tb.id, changes);
-  doRedraw();
-  return;
-}
+          const changes = computeTextResize(
+            tb,
+            corner,
+            { x: origin.x, y: origin.y },
+            x,
+            y,
+            origin,
+          );
+          Object.assign(tb, changes);
+          emitElementUpdate(roomId, tb.id, changes);
+          doRedraw();
+          return;
+        }
         //!resize shapes
         const shape = shapesRef.current.find(
           (s) => s.id === selectedId.current,
