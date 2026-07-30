@@ -1,6 +1,6 @@
 import { useToolSettings } from "../../../../context/ToolBarLeftContext";
 import { socket } from "../../../../services/socket";
-import type { BoardImage } from "../types";
+
 export function useLayers() {
   const {
     selectedEle,
@@ -52,6 +52,7 @@ export function useLayers() {
   const bringToFront = () => {
     const all = getAllSorted();
     if (all.length === 0) return;
+    console.log("Bringing to front");
     const maxZ = all[all.length - 1].el.zIndex ?? 0;
     applyZIndex(selectedEle.id, selectedEle.type, maxZ + 1);
     finish();

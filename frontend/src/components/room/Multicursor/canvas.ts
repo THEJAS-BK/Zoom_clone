@@ -48,7 +48,7 @@ const redraw = (
   opacity: number,
   fillColor: string,
 ) => {
-  console.log("redraw running")
+  console.log("redraw running");
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const dpr = window.devicePixelRatio || 1;
@@ -60,57 +60,6 @@ const redraw = (
     camera.current.x * dpr,
     camera.current.y * dpr,
   );
-
-  for (const imageData of images.current) {
-    const cached = imageCache.current.get(imageData.id);
-    if (cached) {
-      const centerX = imageData.x + imageData.width / 2;
-      const centerY = imageData.y + imageData.height / 2;
-      const rotation = imageData.rotation || 0;
-      console.log(imageData.x,imageData.y)
-      console.log(centerX,centerY)
-
-      ctx.save();
-      ctx.translate(centerX, centerY);
-      ctx.rotate(rotation);
-      ctx.drawImage(
-        cached,
-        -imageData.width / 2,
-        -imageData.height / 2,
-        imageData.width,
-        imageData.height,
-      );
-      ctx.restore();
-    } else {
-      const img = new Image();
-      img.onload = () => {
-        imageCache.current.set(imageData.id, img);
-        redraw(
-          canvas,
-          ctx,
-          camera,
-          images,
-          imageCache,
-          activeStrokes,
-          currentStroke,
-          strokes,
-          userId,
-          color,
-          shapesRef,
-          activeShape,
-          linesRef,
-          activeLine,
-          selectedId,
-          textBoxesRef,
-          activeTextBox,
-          strokeWidth,
-          opacity,
-          fillColor,
-        );
-      };
-      img.src = imageData.image;
-    }
-  }
 
   const allShapes = [
     ...shapesRef.current,
@@ -130,9 +79,15 @@ const redraw = (
   type Sortable =
     | { kind: "shape"; zIndex: number; el: Shape }
     | { kind: "line"; zIndex: number; el: Line }
-    | { kind: "textbox"; zIndex: number; el: TextBox };
+    | { kind: "textbox"; zIndex: number; el: TextBox }
+    | { kind: "image"; zIndex: number; el: BoardImage };
 
   const merged: Sortable[] = [
+    ...images.current.map((el) => ({
+      kind: "image" as const,
+      zIndex: el.zIndex ?? 0,
+      el,
+    })),
     ...allShapes.map((el) => ({
       kind: "shape" as const,
       zIndex: el.zIndex ?? 0,
@@ -149,11 +104,72 @@ const redraw = (
       el,
     })),
   ].sort((a, b) => a.zIndex - b.zIndex);
-
   for (const item of merged) {
-    if (item.kind === "shape") drawShape(ctx, item.el);
-    else if (item.kind === "line") drawLine(ctx, item.el);
-    else drawTextBox(ctx, item.el);
+    switch (item.kind) {
+      case "image": {
+        const imageData = item.el;
+        const cached = imageCache.current.get(imageData.id);
+
+        if (cached) {
+          const centerX = imageData.x + imageData.width / 2;
+          const centerY = imageData.y + imageData.height / 2;
+          const rotation = imageData.rotation || 0;
+
+          ctx.save();
+          ctx.translate(centerX, centerY);
+          ctx.rotate(rotation);
+          ctx.drawImage(
+            cached,
+            -imageData.width / 2,
+            -imageData.height / 2,
+            imageData.width,
+            imageData.height,
+          );
+          ctx.restore();
+        } else {
+          const img = new Image();
+          img.onload = () => {
+            imageCache.current.set(imageData.id, img);
+            redraw(
+              canvas,
+              ctx,
+              camera,
+              images,
+              imageCache,
+              activeStrokes,
+              currentStroke,
+              strokes,
+              userId,
+              color,
+              shapesRef,
+              activeShape,
+              linesRef,
+              activeLine,
+              selectedId,
+              textBoxesRef,
+              activeTextBox,
+              strokeWidth,
+              opacity,
+              fillColor,
+            );
+          };
+          img.src = imageData.image;
+        }
+        break;
+      }
+
+      case "shape":
+        drawShape(ctx, item.el);
+        break;
+
+      case "line":
+        drawLine(ctx, item.el);
+        break;
+
+      case "textbox":
+        drawTextBox(ctx, item.el);
+        break;
+    }
   }
 
   // strokes on top

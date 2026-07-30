@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import type { RefObject } from "react";
 const COLORS = ["#1f2937", "#f87171", "#22c55e", "#3b82f6", "#d97706"];
 //helper function
@@ -31,9 +37,15 @@ import { useOfflineDeleteElement } from "./hooks/useOfflineDeleteElement";
 import { useLayers } from "../room/Multicursor/hooks/useLayers";
 import ZoomAndRedoUndo from "../room/Multicursor/ZoomAndUndoRedo";
 
-export default function OfflineMultiCursor({images}: {images: RefObject<BoardImage[]>}) {
-  const camera = useRef({ x: 0, y: 0, scale: 1 });
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+export default function OfflineMultiCursor({
+  images,
+  camera,
+  canvasRef,
+}: {
+  images: RefObject<BoardImage[]>;
+  camera: RefObject<{ x: number; y: number; scale: number }>;
+  canvasRef: RefObject<HTMLCanvasElement | null>;
+}) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const currentStroke = useRef<Point[]>([]);
   const activeStrokes = useRef<Record<string, ActiveStroke>>({});
@@ -55,7 +67,6 @@ export default function OfflineMultiCursor({images}: {images: RefObject<BoardIma
   const [, forceUpdate] = useState(0);
   const triggerUpdate = () => forceUpdate((n) => n + 1);
 
-
   //shapes,textBoxes and lines
   const {
     shapesRef,
@@ -75,7 +86,7 @@ export default function OfflineMultiCursor({images}: {images: RefObject<BoardIma
     setIsOffline,
     tabSize,
     boardColor,
-    strokes
+    strokes,
   } = useToolSettings();
 
   useEffect(() => {
@@ -336,7 +347,11 @@ export default function OfflineMultiCursor({images}: {images: RefObject<BoardIma
         height: "100%",
       }}
     >
-      <ZoomAndRedoUndo canvasRef={canvasRef} camera={camera} doRedraw={doRedraw} />
+      <ZoomAndRedoUndo
+        canvasRef={canvasRef}
+        camera={camera}
+        doRedraw={doRedraw}
+      />
 
       <canvas
         ref={canvasRef}

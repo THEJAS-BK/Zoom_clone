@@ -35,6 +35,8 @@ function OfflineboardContent() {
   const [openBoardNotSavedInterface, setOpenBoardNotSavedInterface] =
     useState(false);
   const [openGoLiveInterface, setOpenGoLiveInterface] = useState(false);
+   const camera = useRef({ x: 0, y: 0, scale: 1 });
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const {
     linesRef,
     textBoxesRef,
@@ -102,6 +104,8 @@ function OfflineboardContent() {
           <ImageUploadInterface
             images={images}
             setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen}
+               camera={camera}
+            canvasRef={canvasRef}
           />
         </div>
       )}
@@ -124,7 +128,7 @@ function OfflineboardContent() {
           setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen}
         />
       </div>
-      <OfflineMultiCursor images={images} />
+      <OfflineMultiCursor images={images} camera={camera} canvasRef={canvasRef} />
     </main>
   );
 }
