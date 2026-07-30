@@ -16,6 +16,7 @@ let activeRooms: Record<string, Set<string>> = {};
 const roomElements: Record<string, CanvasElement[]> = {};
 const roomBoards: Record<string, Stroke[]> = {};
 const roomBoardColors: Record<string, string> = {};
+const roomUserInfo: Record<string, Record<string, { color: string; name: string }>> = {};
 
 const setSocketConnection = (server: any) => {
   const io = new Server(server, {
@@ -42,12 +43,13 @@ const setSocketConnection = (server: any) => {
     }
   });
   io.on("connection", (socket) => {
+   
     console.log("user joined    ", socket.id);
     registerSwitchBoards(socket, roomBoards, roomElements,roomBoardColors,activeRooms);
-    registerRoomHandler(socket,io, activeRooms);
+    registerRoomHandler(socket,io, activeRooms,roomUserInfo);
     registerWebRtcHandler(socket, io, activeRooms);
     registerChatInterfaceHandler(socket, io);
-    registerCanvasHandler(socket, roomBoards, roomElements,roomBoardColors);
+    registerCanvasHandler(socket, roomBoards, roomElements,roomBoardColors,roomUserInfo);
     registerFollowUserCamera(socket,io)
   });
   return io;

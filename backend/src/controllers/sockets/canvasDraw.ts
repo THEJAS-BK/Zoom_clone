@@ -5,24 +5,40 @@ export function registerCanvasHandler(
   socket: Socket,
   roomBoards: Record<string, Stroke[]>,
   roomElements: Record<string, CanvasElement[]>,
-  roomBoardColors:Record<string,string>
+  roomBoardColors: Record<string, string>,
+  roomUserInfo: Record<string, Record<string, { color: string; name: string }>>
 ) {
+  //cursor position
+  socket.on("cursor-move", ({ roomId, x, y }) => {
+    const info = roomUserInfo[roomId]?.[socket.id];
+    if(!info)return;
+    socket
+      .to(roomId)
+      .emit("cursor-move", {
+        userId: socket.id,
+        x,
+        y,
+        color: roomUserInfo[roomId]?.[socket.id]?.color || "#000000",
+        name: roomUserInfo[roomId]?.[socket.id]?.name || "Unknown",
+      });
+
+      socket.to(roomId).emit("cursor-move", { userId: socket.id, x, y, color: info.color, name: info.name });
+  });
   //intial state of the board
   socket.on("board-state", (roomId) => {
     socket.emit("board-state", roomBoards[roomId] ?? []);
     socket.emit("element-state", roomElements[roomId] ?? []);
-    socket.emit("board-color-change",roomBoardColors[roomId]??"#27272A")
+    socket.emit("board-color-change", roomBoardColors[roomId] ?? "#27272A");
   });
-  
-  socket.on("board-color-change",({roomId,color})=>{
-    roomBoardColors[roomId]=color;
-    socket.to(roomId).emit("board-color",color)
-  })
 
-  socket.on("board-color-request",(roomId)=>{
-     socket.emit("board-color", roomBoardColors[roomId] ?? "#27272A");
-  })
+  socket.on("board-color-change", ({ roomId, color }) => {
+    roomBoardColors[roomId] = color;
+    socket.to(roomId).emit("board-color", color);
+  });
 
+  socket.on("board-color-request", (roomId) => {
+    socket.emit("board-color", roomBoardColors[roomId] ?? "#27272A");
+  });
 
   socket.on("stroke-start", (data) => {
     socket.to(data.roomId).emit("stroke-start", data);

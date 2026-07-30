@@ -1,9 +1,26 @@
 import { Server, Socket } from "socket.io";
 
+const CURSOR_COLORS = [
+  "#F87171", // red
+  "#FB923C", // orange
+  "#FACC15", // yellow
+  "#4ADE80", // green
+  "#60A5FA", // blue
+  "#C084FC", // purple
+];
+
+function getUnusedCursorColor(roomId: string, roomUserInfo: Record<string, Record<string, { color: string }>>): string {
+  const used = new Set(Object.values(roomUserInfo[roomId] ?? {}).map((u) => u.color));
+  const available = CURSOR_COLORS.filter((c) => !used.has(c));
+  const pool = available.length > 0 ? available : CURSOR_COLORS; // fallback if room is full and all 6 are taken
+  return pool[Math.floor(Math.random() * pool.length)]!;
+}
+
 export function registerRoomHandler(
   socket: Socket,
   io: Server,
   activeRooms: Record<string, Set<string>>,
+  roomUserInfo: Record<string, Record<string, { color: string; name: string }>>
 ) {
   socket.on("create-room", (roomId, callback) => {
     if (activeRooms[roomId]) {
@@ -13,6 +30,10 @@ export function registerRoomHandler(
     socket.data.roomId = roomId;
     activeRooms[roomId] = new Set();
     activeRooms[roomId].add(socket.id);
+    roomUserInfo[roomId] = {
+      ...roomUserInfo[roomId],
+      [socket.id]: { color:getUnusedCursorColor(roomId, roomUserInfo), name: socket.data.name }
+    };
     socket.join(roomId);
     callback?.({ success: true });
   });
@@ -23,6 +44,11 @@ export function registerRoomHandler(
       callback?.({ success: false, message: "Room dosent exist" });
       return;
     }
+    roomUserInfo[roomId] = {
+      ...roomUserInfo[roomId],
+      [socket.id]: { color:getUnusedCursorColor(roomId, roomUserInfo), name: socket.data.name }
+    };
+
     socket.join(roomId);
 
     socket.emit(

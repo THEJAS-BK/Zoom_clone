@@ -22,6 +22,7 @@ import { useImage } from "./hooks/useImage";
 import { getCursorStyle } from "./tools/CustomCursor";
 import { useTextBox } from "./hooks/useTextBox";
 import { useHandTool } from "./hooks/useHandTool";
+import { useUserCursor } from "./hooks/useUserCursor";
 //tools
 import { autoPanIfNeeded } from "./tools/autoPanTextBox";
 import { useShapes } from "./hooks/useShape";
@@ -47,7 +48,7 @@ export default function MultiCursor({
   setOpenCursor,
   setIsViewMode,
   camera,
-  canvasRef
+  canvasRef,
 }: {
   images: React.RefObject<BoardImage[]>;
   imageUpdate: number;
@@ -55,8 +56,8 @@ export default function MultiCursor({
   openCursor: boolean;
   setOpenCursor: React.Dispatch<React.SetStateAction<boolean>>;
   setIsViewMode: React.Dispatch<React.SetStateAction<boolean>>;
-  camera: React.RefObject<any>,
-  canvasRef: React.RefObject<HTMLCanvasElement | null>
+  camera: React.RefObject<any>;
+  canvasRef: React.RefObject<HTMLCanvasElement | null>;
 }) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const currentStroke = useRef<Point[]>([]);
@@ -82,14 +83,19 @@ export default function MultiCursor({
   const [, forceUpdate] = useState(0);
   const triggerUpdate = () => forceUpdate((n) => n + 1);
 
+  const [remoteCursors, setRemoteCursors] = useState<
+    Record<string, { x: number; y: number; color: string; name: string }>
+  >({});
+
+  useUserCursor(roomId, canvasRef, camera, setRemoteCursors);
+
   //edit stroke color
   const { strokeColor, setStrokeColor, viewMode } = useToolSettings();
   useEffect(() => {
     setStrokeColor(color);
   }, []);
-  const { activeTool, selectedId, } = useToolSettings();
+  const { activeTool, selectedId } = useToolSettings();
 
-  
   //view mode
   useEffect(() => {
     setIsViewMode(viewMode);
@@ -111,7 +117,7 @@ export default function MultiCursor({
     tabSize,
     boardColor,
     strokes,
-    isDashedBorderNeeded
+    isDashedBorderNeeded,
   } = useToolSettings();
 
   useEffect(() => {
@@ -159,9 +165,9 @@ export default function MultiCursor({
       strokeWidth,
       opacity,
       fillColor,
-      isDashedBorderNeeded
+      isDashedBorderNeeded,
     );
-  }, [strokeColor, strokeWidth, opacity, fillColor,isDashedBorderNeeded]);
+  }, [strokeColor, strokeWidth, opacity, fillColor, isDashedBorderNeeded]);
 
   useEffect(() => {
     doRedrawRef.current = doRedraw;
@@ -246,7 +252,14 @@ export default function MultiCursor({
     doRedraw,
   );
 
-  useStrokeEraser(roomId ?? "", canvasRef, camera, strokes, activeTool, doRedraw);
+  useStrokeEraser(
+    roomId ?? "",
+    canvasRef,
+    camera,
+    strokes,
+    activeTool,
+    doRedraw,
+  );
   useCanvasZoom(
     wrapperRef,
     canvasRef,
@@ -257,12 +270,7 @@ export default function MultiCursor({
   );
 
   //image transformations
-  useImage(
-    roomId,
-    images,
-    imageCache,
-    doRedraw,
-  );
+  useImage(roomId, images, imageCache, doRedraw);
 
   useLines(
     roomId ?? "",
@@ -344,17 +352,21 @@ export default function MultiCursor({
   }) {
     const scale = camera.current.scale;
 
-   const resizeTextarea = (el: HTMLTextAreaElement) => {
-  const { width, height } = measureTextBox(el.value, box.fontSize, box.fontFamily);
+    const resizeTextarea = (el: HTMLTextAreaElement) => {
+      const { width, height } = measureTextBox(
+        el.value,
+        box.fontSize,
+        box.fontFamily,
+      );
 
-  el.style.width = width * scale + 20 + "px";
-  el.style.height = height * scale + 6 + "px";
-  el.style.transformOrigin = `${(width * scale) / 2}px ${(height * scale) / 2}px`;
+      el.style.width = width * scale + 20 + "px";
+      el.style.height = height * scale + 6 + "px";
+      el.style.transformOrigin = `${(width * scale) / 2}px ${(height * scale) / 2}px`;
 
-  // keep textarea position synced to the same centering the ref undergoes
-  el.style.left = box.x * scale + camera.current.x + "px";
-  el.style.top = box.y * scale + camera.current.y + "px";
-};
+      // keep textarea position synced to the same centering the ref undergoes
+      el.style.left = box.x * scale + camera.current.x + "px";
+      el.style.top = box.y * scale + camera.current.y + "px";
+    };
 
     useLayoutEffect(() => {
       const el = textareaRef.current;
@@ -381,7 +393,7 @@ export default function MultiCursor({
           transform: `rotate(${box.rotation ?? 0}rad)`,
 
           border: "none",
-          outline:"none",
+          outline: "none",
           boxShadow: "none",
           fontSize: box.fontSize * scale,
           fontFamily: resolveFontFamily(box.fontFamily),
@@ -448,7 +460,7 @@ export default function MultiCursor({
           cursor: getCursorStyle(activeTool),
           overscrollBehavior: "none",
           overflow: "hidden",
-          backgroundColor:boardColor
+          backgroundColor: boardColor,
         }}
         onClick={handleCanvasClick}
       />
@@ -478,6 +490,42 @@ export default function MultiCursor({
           textareaRef={textareaRef}
         />
       )}
+
+      {Object.entries(remoteCursors).map(([id, cursor]) => (
+        <div
+          key={id}
+          style={{
+            position: "absolute",
+            left: cursor.x * camera.current.scale + camera.current.x,
+            top: cursor.y * camera.current.scale + camera.current.y,
+            pointerEvents: "none", // critical — don't let it block real clicks
+            transition: "left 0.05s linear, top 0.05s linear", // smooths jitter between updates
+            zIndex: 1000,
+          }}
+        >
+          {/* cursor arrow shape */}
+          <svg width="20" height="20" viewBox="0 0 20 20">
+            <path
+              d="M2,2 L2,16 L6,12 L9,18 L11,17 L8,11 L14,11 Z"
+              fill={cursor.color}
+            />
+          </svg>
+          {/* name label */}
+          <div
+            style={{
+              background: cursor.color,
+              color: "white",
+              fontSize: 11,
+              padding: "1px 6px",
+              borderRadius: 4,
+              marginTop: 2,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {cursor.name}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
