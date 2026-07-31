@@ -97,6 +97,34 @@ const login:RequestHandler = async (
   }
 };
 
+const refresh: RequestHandler = async (
+  req: Request<{}, any, { refreshToken: string }>,
+  res: Response
+) => {
+  try {
+    const { refreshToken } = req.body;
+
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string);
+
+  
+    const decoded = jwt.decode(refreshToken) as { userId: string; name: string };
+    const { userId, name } = decoded;
+
+    const accessToken = jwt.sign(
+      { userId, name },
+      process.env.ACCESS_TOKEN_SECRET as string,
+      {
+        expiresIn: "1hr",
+      }
+    );
+
+    res.json({ accessToken });
+  } catch (err) {
+    console.error(err);
+    res.status(401).json({ error: "Invalid refresh token" });
+  }
+};
+
 export const authController = {
   register,
   login
