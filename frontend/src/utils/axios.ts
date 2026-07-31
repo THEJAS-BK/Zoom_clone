@@ -32,7 +32,6 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
-        // a refresh is already in flight — wait for it instead of firing another
         return new Promise((resolve, reject) => {
           queue.push({
             resolve: (token) => {

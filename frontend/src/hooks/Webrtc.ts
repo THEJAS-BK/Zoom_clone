@@ -48,7 +48,10 @@ export const useWebRTC = (roomId: string) => {
 
   const createPC = (remoteId: string) => {
     const existing = peerConnections.current[remoteId];
-    if (existing) return existing;
+    if (existing){
+      return existing;
+    } 
+      
     const pc = new RTCPeerConnection(ICE_CONFIG);
 
     localStream.current

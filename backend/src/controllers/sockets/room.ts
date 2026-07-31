@@ -9,6 +9,8 @@ const CURSOR_COLORS = [
   "#C084FC", // purple
 ];
 
+const ROOM_CAPACITY = 6;
+
 function getUnusedCursorColor(
   roomId: string,
   roomUserInfo: Record<string, Record<string, { color: string }>>,
@@ -61,12 +63,17 @@ export function registerRoomHandler(
       clearTimeout(pending)
       pendingLeaves[roomId]?.delete(userId)
     }
-
-
     if (!activeRooms[roomId]) {
-      callback?.({ success: false, message: "Room dosent exist" });
+      callback?.({ success: false,reason:"ROOM_NOT_FOUND", message: "Room dosent exist" });
       return;
     }
+
+    const room =activeRooms[roomId];
+    if(room.size>=ROOM_CAPACITY){
+      callback?.({ success: false,reason:"ROOM_FULL", message: "Room is full" });
+      return;
+    }
+
     roomUserInfo[roomId] = {
       ...roomUserInfo[roomId],
       [socket.id]: {

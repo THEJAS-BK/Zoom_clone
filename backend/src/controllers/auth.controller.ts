@@ -127,5 +127,6 @@ const refresh: RequestHandler = async (
 
 export const authController = {
   register,
-  login
+  login,
+  refresh
 };

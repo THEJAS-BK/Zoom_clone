@@ -105,7 +105,7 @@ export default function Hero({ myBoardsRef }: { myBoardsRef: React.RefObject<HTM
       socket.emit("join-room", roomCode, (res: CreateRoomResponse) => {
         if (!res.success) {
           setLoading(null);
-          setToast({ open: true, message: "Room not found" });
+          setToast({ open: true, message: res.message! });
           setRoomId("");
         } else {
           navigate(`/room/${roomCode}`);

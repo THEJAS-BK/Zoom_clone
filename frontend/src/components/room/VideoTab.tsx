@@ -23,10 +23,10 @@ export default function VideoTab({
     (isReady && localStream.current ? 1 : 0) +
     Object.keys(remoteStreams).length;
 
-  const { remoteVideoMuted, remoteAudioMuted, isAudioMuted, users, mySocketId } =
+  const { remoteVideoMuted, remoteAudioMuted, isAudioMuted, users } =
     useWebRtcContext();
   
-    const [curUserName,setCurUserName]=useState("")
+    const [curUserName,setCurUserName]=useState("");
 
     useEffect(()=>{
       socket.emit("my-info", (cb: { userId: string; name: string }) => {
@@ -80,7 +80,7 @@ export default function VideoTab({
 
       {openCursor && (
         <div
-          className={`p-2 flex flex-col flex-wrap h-full w-full  items-center justify-center content-center gap-2 `}
+        className="p-2 flex flex-col gap-2 w-full overflow-y-auto max-h-[calc(4*12rem+1.5rem)]"
         >
           {isReady && localStream.current && (
             <div>

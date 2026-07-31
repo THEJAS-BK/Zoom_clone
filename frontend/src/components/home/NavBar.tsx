@@ -45,14 +45,10 @@ export default function NavBar({setMyImageInterfaceOpen,scrollToBoards}:{setMyIm
   }, []);
 
   const handleLogout = async () => {
-    try {
-      await api.post("/auth/logout");
-    } catch (err) {
-      console.error(err);
-    } finally {
-      navigate("/login");
-    }
-  };
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    navigate("/login");
+  }
 
   return (
     <div
