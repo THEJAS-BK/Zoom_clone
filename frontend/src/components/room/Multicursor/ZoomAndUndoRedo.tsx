@@ -63,7 +63,7 @@ export default function ZoomAndRedoUndo({
     <>
       {viewMode && (
         <div className="absolute md:bottom-3 bottom-17  md:left-5.5 flex items-center gap-3 ">
-          <div className="flex items-center gap-1 bg-black rounded-2xl border border-gray-800 shadow-lg px-2 py-1 text-white">
+          <div className="zoom-controls flex items-center gap-1 bg-black rounded-2xl border border-gray-800 shadow-lg px-2 py-1 text-white">
             <button
               onClick={zoomOut}
               title="Zoom out"

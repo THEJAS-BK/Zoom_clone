@@ -39,6 +39,7 @@ import ZoomControls from "./ZoomAndUndoRedo";
 import { useLayers } from "./hooks/useLayers";
 import OptionsFooter from "../OptionsFooter";
 import { useFollowUserCamera } from "./hooks/useFollowUserCamera";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 export default function MultiCursor({
   images,
@@ -77,6 +78,8 @@ export default function MultiCursor({
   const measureRef = useRef<HTMLSpanElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [panTick, setPanTick] = useState(0);
+
+  const isSmallView=useMediaQuery("(max-width: 550px)")
 
   const editingExistingRef = useRef(false);
 
@@ -478,7 +481,7 @@ useEffect(() => {
         height: "100%"
       }}
     >
-      {toggleVideoTab && (
+      {toggleVideoTab&&!isSmallView && (
         <div
           className={`absolute right-0 top-10 ${tabSizeMap[tabSize] ?? tabSizeMap.medium} bg-zinc-900 border border-zinc-600 rounded-2xl`}
         >

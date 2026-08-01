@@ -11,14 +11,23 @@ import {
 } from "lucide-react";
 import { Image, Eraser, MousePointer, Hand } from "lucide-react";
 import { useToolSettings } from "../../context/ToolBarLeftContext";
-
-export default function Tools({ setIsImageUploadInterfaceOpen }: { setIsImageUploadInterfaceOpen: React.Dispatch<React.SetStateAction<boolean>> }) {
+import useMediaQuery from "@mui/material/useMediaQuery";
+import {ToolGroupDropdown} from "./ToolGroupDropDown"
+export default function Tools({
+  setIsImageUploadInterfaceOpen,
+}: {
+  setIsImageUploadInterfaceOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   const { activeTool, setActiveTool, selectedEle, setSelectedEle } =
     useToolSettings();
-
+  const isNarrow = useMediaQuery("(min-width: 350px) and (max-width: 550px)");
+  function selectTool(tool: string) {
+    if (selectedEle) setSelectedEle(null);
+    setActiveTool(tool);
+  }
   return (
     <>
-    <div className="toolbar-compact flex items-center gap-0.5 bg-black rounded-xl border border-gray-800 px-1.5 py-1.5 shadow-lg">
+      <div className="toolbar-compact flex items-center gap-0.5 bg-black rounded-xl border border-gray-800 px-1.5 py-1.5 shadow-lg">
         {/* Selection / navigation */}
         <div className="flex items-center gap-1">
           <button
@@ -79,70 +88,96 @@ export default function Tools({ setIsImageUploadInterfaceOpen }: { setIsImageUpl
         <div className="w-px h-6 bg-gray-700 mx-1" />
 
         {/* Lines / arrows */}
-        <div className="flex items-center gap-1">
-          <button
-            title="Arrow (A)"
-            onClick={() => {
-              if (selectedEle) setSelectedEle(null);
-              setActiveTool("arrow");
-            }}
-            className={activeTool === "arrow" ? "tool-btn-active" : "tool-btn"}
-          >
-            <MoveRight size={18} />
-          </button>
-          <button
-            title="Line (L)"
-            onClick={() => {
-              if (selectedEle) setSelectedEle(null);
-              setActiveTool("line");
-            }}
-            className={activeTool === "line" ? "tool-btn-active" : "tool-btn"}
-          >
-            <Minus size={18} />
-          </button>
-        </div>
+        {isNarrow ? (
+          <ToolGroupDropdown
+            activeTool={activeTool}
+            onSelect={selectTool}
+            tools={[
+              {
+                name: "arrow",
+                title: "Arrow (A)",
+                icon: <MoveRight size={18} />,
+              },
+              { name: "line", title: "Line (L)", icon: <Minus size={18} /> },
+            ]}
+          />
+        ) : (
+          <div className="flex items-center gap-1">
+            <button
+              title="Arrow (A)"
+              onClick={() => selectTool("arrow")}
+              className={
+                activeTool === "arrow" ? "tool-btn-active" : "tool-btn"
+              }
+            >
+              <MoveRight size={18} />
+            </button>
+            <button
+              title="Line (L)"
+              onClick={() => selectTool("line")}
+              className={activeTool === "line" ? "tool-btn-active" : "tool-btn"}
+            >
+              <Minus size={18} />
+            </button>
+          </div>
+        )}
+
+        {isNarrow ? (
+          <ToolGroupDropdown
+            activeTool={activeTool}
+            onSelect={selectTool}
+            tools={[
+              {
+                name: "square",
+                title: "Rectangle (R)",
+                icon: <Square size={18} />,
+              },
+              {
+                name: "diamond",
+                title: "Diamond (D)",
+                icon: <Diamond size={18} />,
+              },
+              {
+                name: "circle",
+                title: "Circle (O)",
+                icon: <Circle size={18} />,
+              },
+            ]}
+          />
+        ) : (
+          <div className="flex items-center gap-1">
+            <button
+              title="Rectangle (R)"
+              onClick={() => selectTool("square")}
+              className={
+                activeTool === "square" ? "tool-btn-active" : "tool-btn"
+              }
+            >
+              <Square size={18} />
+            </button>
+            <button
+              title="Diamond (D)"
+              onClick={() => selectTool("diamond")}
+              className={
+                activeTool === "diamond" ? "tool-btn-active" : "tool-btn"
+              }
+            >
+              <Diamond size={18} />
+            </button>
+            <button
+              title="Circle (O)"
+              onClick={() => selectTool("circle")}
+              className={
+                activeTool === "circle" ? "tool-btn-active" : "tool-btn"
+              }
+            >
+              <Circle size={18} />
+            </button>
+          </div>
+        )}
 
         <div className="w-px h-6 bg-gray-700 mx-1" />
 
-        {/* Shapes */}
-        <div className="flex items-center gap-1">
-          <button
-            title="Rectangle (R)"
-            onClick={() => {
-              if (selectedEle) setSelectedEle(null);
-              setActiveTool("square");
-            }}
-            className={activeTool === "square" ? "tool-btn-active" : "tool-btn"}
-          >
-            <Square size={18} />
-          </button>
-          <button
-            title="Diamond (D)"
-            onClick={() => {
-              if (selectedEle) setSelectedEle(null);
-              setActiveTool("diamond");
-            }}
-            className={
-              activeTool === "diamond" ? "tool-btn-active" : "tool-btn"
-            }
-          >
-            <Diamond size={18} />
-          </button>
-          <button
-            title="Circle (O)"
-            onClick={() => {
-              if (selectedEle) setSelectedEle(null);
-              setActiveTool("circle");
-            }}
-            className={activeTool === "circle" ? "tool-btn-active" : "tool-btn"}
-          >
-            <Circle size={18} />
-          </button>
-        </div>
-
-        <div className="w-px h-6 bg-gray-700 mx-1" />
-
-        {/* Image upload */}
         <div
           title="Insert image"
           className="tool-btn flex items-center justify-center cursor-pointer"

@@ -3,9 +3,12 @@ import { useToolSettings } from "../../../context/ToolBarLeftContext";
 import CompactToolBar from "./Layouts/CompactToolBar";
 import { useEffect, useRef, useState } from "react";
 import LayerControls from "./controls/LayerControls";
+import SmallToolBar from "./Layouts/smallToolBar";
 
 function useMediaQuery(query: string) {
-  const [matches, setMatches] = useState(() => window.matchMedia(query).matches);
+  const [matches, setMatches] = useState(
+    () => window.matchMedia(query).matches,
+  );
 
   useEffect(() => {
     const mql = window.matchMedia(query);
@@ -18,10 +21,13 @@ function useMediaQuery(query: string) {
 }
 
 export default function ToolBarContainer() {
-  const { activeTool, selectedEle  } = useToolSettings();
+  const { activeTool, selectedEle } = useToolSettings();
   const lastTool = useRef<string | null>(null);
-  
-  const isCompactView = useMediaQuery("(max-width: 1024px)");
+
+  const isCompactView = useMediaQuery(
+    "(min-width: 768px) and (max-width: 1024px)",
+  );
+  const isSmallView = useMediaQuery("(max-width: 767px)");
 
   if (selectedEle?.type === "shape") {
     lastTool.current = selectedEle.shapeType;
@@ -29,26 +35,29 @@ export default function ToolBarContainer() {
     lastTool.current = selectedEle.lineType;
   } else if (selectedEle?.type === "textbox") {
     lastTool.current = "text";
-  } else if(selectedEle?.type==="image"){
-    lastTool.current="image"
-  }
-  
-  if (selectedEle === null||activeTool!=="mouse") {
-    lastTool.current = null; 
+  } else if (selectedEle?.type === "image") {
+    lastTool.current = "image";
   }
 
-  const displayTool = lastTool.current || activeTool  ;
+  if (selectedEle === null || activeTool !== "mouse") {
+    lastTool.current = null;
+  }
+
+  const displayTool = lastTool.current || activeTool;
 
   return (
-    <div className="z-9999" >
-      {isCompactView ? (
+    <div className="z-9999">
+      {isSmallView ? (
+        <SmallToolBar displayTool={displayTool} />
+      ) : isCompactView ? (
         <CompactToolBar displayTool={displayTool} />
       ) : (
         <FullToolBar displayTool={displayTool} />
       )}
 
-      {selectedEle?.type==="image"?<LayerControls activeTool={"image"} />:null}
-    
+      {selectedEle?.type === "image" ? (
+        <LayerControls activeTool={"image"} />
+      ) : null}
     </div>
   );
 }
