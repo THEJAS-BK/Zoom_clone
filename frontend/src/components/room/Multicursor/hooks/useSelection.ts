@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import type { Dispatch, RefObject, SetStateAction } from "react";
+import { useEffect, useRef } from "react";
+import type {  RefObject } from "react";
 import type { Shape, Line, TextBox, ToolSetters, BoardImage } from "../types";
 import {
   hitTestLine,
@@ -7,18 +7,12 @@ import {
   hitTestTextBox,
   hitTestImage,
 } from "../tools/hitTests";
-import { socket } from "../../../../services/socket";
 import {
   hitTestCorner,
   hitTestRotationHandle,
   hitTestTextBoxRotationHandle,
 } from "../tools/hitTests";
 import { useToolSettings } from "../../../../context/ToolBarLeftContext";
-//tools
-
-import { measureTextBox } from "../canvas";
-
-type DragType = "shape" | "textbox" | "line" | "image" | null;
 
 //mousedown
 import {
@@ -86,6 +80,7 @@ export function useSelection(
 
   //isRotation
   const isRotating = useRef(false);
+      const lastTap = useRef<{ time: number; x: number; y: number } | null>(null);
 
   //edit mode
   const {
@@ -467,18 +462,74 @@ export function useSelection(
         activeTool,
       );
     };
+    //touch events
+    const handleTouchStart=(e:TouchEvent)=>{
+      if(e.touches.length!==1) return;
+      e.preventDefault();
+      onMouseDown(e.touches[0] as unknown as MouseEvent);
+    }
+    const handleTouchMove=(e:TouchEvent)=>{
+      if(e.touches.length!==1) return;
+      e.preventDefault();
+      onMouseMove(e.touches[0] as unknown as MouseEvent);
+    }
+    const handleTouchEnd=(e:TouchEvent)=>{
+      if(e.touches.length!==0) return;
+      e.preventDefault();
+      onMouseUp();
+    }
+
+
+
+const handleTouchDblClick = (e: TouchEvent) => {
+  if (e.touches.length !== 1) return;
+
+  const touch = e.touches[0];
+  const now = Date.now();
+
+  if (lastTap.current) {
+    const dt = now - lastTap.current.time;
+    const dx = touch.clientX - lastTap.current.x;
+    const dy = touch.clientY - lastTap.current.y;
+    const distSq = dx * dx + dy * dy;
+
+    // within 300ms and within ~25px of the previous tap = double tap
+    if (dt < 300 && distSq < 625) {
+      e.preventDefault();
+      onDblClick(touch as unknown as MouseEvent);
+      lastTap.current = null; // reset so a third tap doesn't chain into another double
+      return;
+    }
+  }
+
+  lastTap.current = { time: now, x: touch.clientX, y: touch.clientY };
+};
+
 
     canvas.addEventListener("mousedown", onMouseDown);
     canvas.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
     canvas.addEventListener("dblclick", onDblClick);
     window.addEventListener("keydown", onKeyDown);
+    //touch events
+    canvas.addEventListener("touchstart", handleTouchStart);
+    canvas.addEventListener("touchmove", handleTouchMove);
+    canvas.addEventListener("touchend", handleTouchEnd);
+    canvas.addEventListener("touchcancel", handleTouchEnd);
+    canvas.addEventListener("touchstart", handleTouchDblClick, { passive: false });
+
     return () => {
       canvas.removeEventListener("mousedown", onMouseDown);
       canvas.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseup", onMouseUp);
       canvas.removeEventListener("dblclick", onDblClick);
       window.removeEventListener("keydown", onKeyDown);
+      //touch events
+      canvas.removeEventListener("touchstart", handleTouchStart);
+      canvas.removeEventListener("touchmove", handleTouchMove);
+      canvas.removeEventListener("touchend", handleTouchEnd);
+        canvas.removeEventListener("touchcancel", handleTouchEnd);
+          canvas.removeEventListener("touchstart", handleTouchDblClick);
     };
   }, [activeTool, color, doRedraw]);
 

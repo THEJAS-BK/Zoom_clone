@@ -212,12 +212,7 @@ export default function MultiCursor({
     if (!roomId) navigate("/dashboard");
   }, [roomId]);
 
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (activeTool === "text") {
-      placeTextBox(e.clientX, e.clientY);
-      triggerUpdate();
-    }
-  };
+
 
   useLayers();
 
@@ -336,6 +331,32 @@ export default function MultiCursor({
     medium: "w-[14%]",
     large: "w-[20%]",
   };
+
+    const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (activeTool === "text") {
+      placeTextBox(e.clientX, e.clientY);
+      triggerUpdate();
+    }
+  };
+
+useEffect(() => {
+  const canvas = canvasRef.current;
+  if (!canvas) return;
+
+  const handleTouchStart = (e: TouchEvent) => {
+    if (activeTool !== "text") return;
+    e.preventDefault(); // works now — real listener, not passive
+    const touch = e.touches[0];
+    placeTextBox(touch.clientX, touch.clientY);
+    triggerUpdate();
+  };
+
+  canvas.addEventListener("touchstart", handleTouchStart, { passive: false });
+
+  return () => {
+    canvas.removeEventListener("touchstart", handleTouchStart);
+  };
+}, [activeTool]);
 
   function TextBoxEditor({
     box,
@@ -480,7 +501,6 @@ export default function MultiCursor({
         </div>
       )}
 
-      <ZoomControls canvasRef={canvasRef} camera={camera} doRedraw={doRedraw} />
 
       <canvas
         ref={canvasRef}
@@ -492,6 +512,7 @@ export default function MultiCursor({
           width:"100%"
         }}
         onClick={handleCanvasClick}
+
       />
 
       {activeTextBox.current && (

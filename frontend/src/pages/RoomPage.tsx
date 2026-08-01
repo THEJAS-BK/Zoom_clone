@@ -19,7 +19,7 @@ import { socket } from "../services/socket";
 import api from "../utils/axios";
 import { useToolSettings } from "../context/ToolBarLeftContext.tsx";
 import { HistoryProvider } from "../context/LocalHistoryContext.tsx";
-
+import ZoomAndRedoUndo from "../components/room/Multicursor/ZoomAndUndoRedo.tsx";
 export default function RoomPage() {
   const { roomId } = useParams();
   if (!roomId) return <div>Not found</div>;
@@ -36,7 +36,7 @@ export default function RoomPage() {
 }
 
 function RoomContent({ roomId }: { roomId: string }) {
-  const [openCursor, setOpenCursor] = useState(false);
+  const [openCursor, setOpenCursor] = useState(true);
 
   const [redrawVersion, setRedrawVersion] = useState(0);
   const [isHambergerMenuOpen, setIsHambergerMenuOpen] = useState(false);
@@ -57,6 +57,7 @@ function RoomContent({ roomId }: { roomId: string }) {
     boardName,
     setBoardName,
     images,
+    doRedrawRef,
   } = useToolSettings();
 
   useEffect(() => {
@@ -85,7 +86,9 @@ function RoomContent({ roomId }: { roomId: string }) {
       initiatorName: string;
       boardName: string;
     }) => {
-      setBoardSwitching(`${initiatorName} is opening board "${incomingBoardName}"`);
+      setBoardSwitching(
+        `${initiatorName} is opening board "${incomingBoardName}"`,
+      );
       pendingSaveRef.current = saveOwnCopy();
     };
 
@@ -95,7 +98,7 @@ function RoomContent({ roomId }: { roomId: string }) {
       newRoomId: string;
     }) => {
       if (pendingSaveRef.current) await pendingSaveRef.current;
-      setBoardSwitching(null)
+      setBoardSwitching(null);
       navigate(`/room/${newRoomId}`);
     };
 
@@ -134,17 +137,16 @@ function RoomContent({ roomId }: { roomId: string }) {
         )}
 
         {boardSwitching && (
-  <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
-    <div className="rounded-xl bg-white px-8 py-6 shadow-2xl border border-gray-200">
-      <p className="text-lg font-semibold text-gray-900">
-        {boardSwitching}
-      </p>
-    </div>
-  </div>
-)}  
-
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
+            <div className="rounded-xl bg-white px-8 py-6 shadow-2xl border border-gray-200">
+              <p className="text-lg font-semibold text-gray-900">
+                {boardSwitching}
+              </p>
+            </div>
+          </div>
+        )}
         {openCursor && isViewMode && (
-          <div className="absolute top-10 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded text-white shadow-lg z-20 ">
+          <div className="absolute bottom-2 left-0 md:left-1/2 md:-translate-x-1/2 md:top-10 md:bottom-auto md:-translate-y-1/2 rounded text-white shadow-lg z-20">
             <Tools
               setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen}
             />
@@ -186,6 +188,10 @@ function RoomContent({ roomId }: { roomId: string }) {
             camera={camera}
             canvasRef={canvasRef}
           />
+        )}
+
+        {openCursor && (
+          <ZoomAndRedoUndo canvasRef={canvasRef} camera={camera} />
         )}
       </main>
     </div>

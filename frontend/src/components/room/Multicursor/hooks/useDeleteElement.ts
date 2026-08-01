@@ -77,13 +77,30 @@ export function useDeleteElement(
       isShapeEraser.current = false;
     };
 
+    //touch events
+    const handleTouchMove=(e:TouchEvent)=>{
+      if(e.touches.length!==1) return;
+      e.preventDefault();
+      onMouseMove(e.touches[0] as unknown as MouseEvent);
+    }
+
     canvas.addEventListener("mousedown", onMouseDown);
     canvas.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
+    //touch events
+    canvas.addEventListener("touchstart", onMouseDown);
+    canvas.addEventListener("touchmove", handleTouchMove);
+    canvas.addEventListener("touchend", onMouseUp);
+    canvas.addEventListener("touchcancel", onMouseUp);
     return () => {
       canvas.removeEventListener("mousedown", onMouseDown);
       canvas.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseup", onMouseUp);
+      //touch events
+      canvas.removeEventListener("touchstart", onMouseDown);
+      canvas.removeEventListener("touchmove", handleTouchMove);
+      canvas.removeEventListener("touchend", onMouseUp);
+      canvas.removeEventListener("touchcancel", onMouseUp);
     };
   }, [activeTool,doRedraw]);
 }

@@ -10,7 +10,6 @@ import {
   TypeOutline,
 } from "lucide-react";
 import { Image, Eraser, MousePointer, Hand } from "lucide-react";
-import { useEffect, useState } from "react";
 import { useToolSettings } from "../../context/ToolBarLeftContext";
 
 export default function Tools({ setIsImageUploadInterfaceOpen }: { setIsImageUploadInterfaceOpen: React.Dispatch<React.SetStateAction<boolean>> }) {
@@ -19,7 +18,7 @@ export default function Tools({ setIsImageUploadInterfaceOpen }: { setIsImageUpl
 
   return (
     <>
-      <div className="flex items-center gap-1 bg-black rounded-2xl border border-gray-800 px-2 py-2 shadow-lg">
+    <div className="toolbar-compact flex items-center gap-0.5 bg-black rounded-xl border border-gray-800 px-1.5 py-1.5 shadow-lg">
         {/* Selection / navigation */}
         <div className="flex items-center gap-1">
           <button

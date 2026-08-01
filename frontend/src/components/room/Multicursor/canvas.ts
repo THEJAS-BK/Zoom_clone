@@ -296,7 +296,7 @@ const redraw = (
     const selectedLine = linesRef?.current?.find((l) => l.id === id);
     if (selectedLine) {
       ctx.save();
-      ctx.strokeStyle = "blue";
+      ctx.strokeStyle = "#C4B5FD";
       ctx.lineWidth = 2 / scale;
       ctx.setLineDash([]);
 
@@ -307,7 +307,7 @@ const redraw = (
       ]) {
         ctx.beginPath();
         ctx.arc(pt.x, pt.y, 5 / scale, 0, Math.PI * 2);
-        ctx.fillStyle = "white";
+        ctx.fillStyle = "#7C6FF0";
         ctx.fill();
         ctx.stroke();
       }
@@ -327,7 +327,7 @@ const redraw = (
           : (selectedLine.y1 + selectedLine.y2) / 2;
       ctx.beginPath();
       ctx.arc(handleX, handleY, 5 / scale, 0, Math.PI * 2);
-      ctx.fillStyle = "white";
+      ctx.strokeStyle = "#7C6FF0";
       ctx.fill();
       ctx.stroke();
 
@@ -418,62 +418,7 @@ function drawTextBox(ctx: CanvasRenderingContext2D, tb: TextBox) {
   ctx.restore();
 }
 
-const getSelectionLineForImage = (
-  ctx: CanvasRenderingContext2D,
-  images: React.RefObject<BoardImage[]>,
-  selectedImageIdx: number,
-) => {
-  if (selectedImageIdx != null) {
-    const image = images.current[selectedImageIdx];
 
-    if (image) {
-      const centerX = image.x + image.width / 2;
-      const centerY = image.y + image.height / 2;
-      const rotation = image.rotation || 0;
-
-      ctx.save();
-      ctx.translate(centerX, centerY);
-      ctx.rotate(rotation);
-
-      ctx.strokeStyle = "blue";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(
-        -image.width / 2,
-        -image.height / 2,
-        image.width,
-        image.height,
-      );
-
-      const handleX = 0;
-      const handleY = -image.height / 2 - 20;
-
-      ctx.beginPath();
-      ctx.arc(handleX, handleY, 8, 0, Math.PI * 2);
-      ctx.fillStyle = "white";
-      ctx.fill();
-      ctx.strokeStyle = "blue";
-      ctx.stroke();
-
-      const corners = [
-        { x: -image.width / 2, y: -image.height / 2 }, // top-left
-        { x: image.width / 2, y: -image.height / 2 }, // top-right
-        { x: -image.width / 2, y: image.height / 2 }, // bottom-left
-        { x: image.width / 2, y: image.height / 2 }, // bottom-right
-      ];
-
-      corners.forEach((corner) => {
-        ctx.beginPath();
-        ctx.rect(corner.x - 5, corner.y - 5, 10, 10);
-        ctx.fillStyle = "white";
-        ctx.fill();
-        ctx.strokeStyle = "blue";
-        ctx.stroke();
-      });
-
-      ctx.restore();
-    }
-  }
-};
 
 const isRotationHandlerClicked = (image: BoardImage, point: Point): boolean => {
   const centerX = image.x + image.width / 2;
@@ -840,7 +785,6 @@ function measureTextBox(
 export {
   getCanvasPoint,
   redraw,
-  getSelectionLineForImage,
   isRotationHandlerClicked,
   getClickedResizeHandle,
   isPointNearStroke,

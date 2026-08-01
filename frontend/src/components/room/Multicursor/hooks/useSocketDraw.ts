@@ -21,7 +21,7 @@ export function useSocketDraw(
   strokeColor: string,
   doRedraw: () => void,
 ) {
-  const { strokeWidth,opacity,selectedEle } = useToolSettings();
+  const { strokeWidth, opacity, selectedEle } = useToolSettings();
 
   useEffect(() => {
     //handle drawing
@@ -48,7 +48,7 @@ export function useSocketDraw(
         roomId,
         strokeColor,
         strokeWidth,
-        opacity
+        opacity,
       });
       doRedraw();
     };
@@ -58,8 +58,8 @@ export function useSocketDraw(
         x: e.clientX,
         y: e.clientY,
       });
-      if (!isDrawing.current||selectedEle) return;
-    
+      if (!isDrawing.current || selectedEle) return;
+
       const { x, y } = getCanvasPoint(e, canvas, camera);
       currentStroke.current.push({ x, y });
 
@@ -87,8 +87,8 @@ export function useSocketDraw(
           userId: userIdRef.current,
           roomId,
           strokes: completedStrokes,
-          strokeWidth, 
-          opacity
+          strokeWidth,
+          opacity,
         });
       }
       currentStroke.current = [];
@@ -148,9 +148,30 @@ export function useSocketDraw(
       doRedraw();
     });
 
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      e.preventDefault();
+      startDrawing(e.touches[0] as unknown as MouseEvent);
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      e.preventDefault();
+      draw(e.touches[0] as unknown as MouseEvent);
+    };
+    const handleTouchEnd = () => {
+      stopDrawing();
+    };
+
     canvas.addEventListener("mousedown", startDrawing);
     canvas.addEventListener("mousemove", draw);
     window.addEventListener("mouseup", stopDrawing);
+
+    //touch
+    canvas.addEventListener("touchstart", handleTouchStart);
+    canvas.addEventListener("touchmove", handleTouchMove);
+    canvas.addEventListener("touchend", handleTouchEnd);
+    canvas.addEventListener("touchcancel", handleTouchEnd);
     return () => {
       socket.off("stroke-start");
       socket.off("stroke-points");
@@ -159,6 +180,11 @@ export function useSocketDraw(
       canvas.removeEventListener("mousedown", startDrawing);
       canvas.removeEventListener("mousemove", draw);
       window.removeEventListener("mouseup", stopDrawing);
+      //touch
+      canvas.removeEventListener("touchstart", handleTouchStart);
+      canvas.removeEventListener("touchmove", handleTouchMove);
+      canvas.removeEventListener("touchend", handleTouchEnd);
+      canvas.removeEventListener("touchcancel", handleTouchEnd);
     };
-  }, [activeTool, doRedraw, strokeWidth,opacity,strokeColor]);
+  }, [activeTool, doRedraw, strokeWidth, opacity, strokeColor]);
 }

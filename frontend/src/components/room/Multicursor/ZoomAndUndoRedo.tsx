@@ -10,15 +10,13 @@ const ZOOM_STEP = 0.1;
 export default function ZoomAndRedoUndo({
   canvasRef,
   camera,
-  doRedraw,
 }: {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   camera: React.RefObject<{ x: number; y: number; scale: number }>;
-  doRedraw: () => void;
 }) {
   const [, forceUpdate] = useState(0);
 
-  const { viewMode } = useToolSettings();
+  const { viewMode,doRedrawRef } = useToolSettings();
   const { undo, redo, canUndo, canRedo } = useHistory();
 
   const zoomBy = (delta: number) => {
@@ -40,7 +38,7 @@ export default function ZoomAndRedoUndo({
     camera.current.x = centerX - worldX * newScale;
     camera.current.y = centerY - worldY * newScale;
 
-    doRedraw();
+    doRedrawRef.current?.();
     forceUpdate((n) => n + 1);
   };
 
@@ -64,7 +62,7 @@ export default function ZoomAndRedoUndo({
   return (
     <>
       {viewMode && (
-        <div className="absolute bottom-3 left-5.5 flex items-center gap-3">
+        <div className="absolute md:bottom-3 bottom-17  md:left-5.5 flex items-center gap-3 ">
           <div className="flex items-center gap-1 bg-black rounded-2xl border border-gray-800 shadow-lg px-2 py-1 text-white">
             <button
               onClick={zoomOut}

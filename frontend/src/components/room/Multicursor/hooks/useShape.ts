@@ -126,15 +126,36 @@ export function useShapes(
       shapesRef.current = [...shapesRef.current, shape];
       doRedraw();
     };
+    //touch events
+    const handleTouchStart=(e: TouchEvent)=>{
+      if(e.touches.length!==1) return;
+      e.preventDefault();
+      onMouseDown(e.touches[0] as unknown as MouseEvent);
+    }
+    const handleTouchMove=(e: TouchEvent)=>{
+      if(e.touches.length!==1) return;
+      e.preventDefault();
+      onMouseMove(e.touches[0] as unknown as MouseEvent);
+    }
 
     canvas.addEventListener("mousedown", onMouseDown);
     canvas.addEventListener("mousemove", onMouseMove);
     canvas.addEventListener("mouseup", onMouseUp);
+    //touch events
+    canvas.addEventListener("touchstart", handleTouchStart);
+    canvas.addEventListener("touchmove", handleTouchMove);
+    canvas.addEventListener("touchend", onMouseUp);
+    canvas.addEventListener("touchcancel", onMouseUp);
 
     return () => {
       canvas.removeEventListener("mousedown", onMouseDown);
       canvas.removeEventListener("mousemove", onMouseMove);
       canvas.removeEventListener("mouseup", onMouseUp);
+      //touch events
+      canvas.removeEventListener("touchstart", handleTouchStart);
+      canvas.removeEventListener("touchmove", handleTouchMove);
+      canvas.removeEventListener("touchend", onMouseUp);
+      canvas.removeEventListener("touchcancel", onMouseUp);
     };
   }, [
     activeTool,
