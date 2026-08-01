@@ -117,6 +117,7 @@ export default function ColorGrid({
   return (
     <div
       className={`absolute text-white bottom-15 md:left-[110%] w-[210px] md:top-5 flex flex-col justify-center rounded-2xl bg-[#1f1f2b] shadow-xl p-5 z-20`}
+      style={{height:"fit-content"}}
     >
       {isMostUsedColorsNeeded && (
         <>
