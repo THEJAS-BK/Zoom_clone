@@ -1,5 +1,4 @@
-import { Pipette } from "lucide-react";
-import { useEffect, useState, useRef, Fragment } from "react";
+import { useEffect, useState } from "react";
 import { useToolSettings } from "../../../../context/ToolBarLeftContext";
 
 import { colorShades, transparentPattern } from "../tools/colors";
@@ -15,15 +14,47 @@ export default function ColorGrid({
     setShadeIdx,
     setFillColor,
     fillColor,
-    selectedEle
+    selectedEle,
   } = useToolSettings();
-   const { handleEditShapeOutlineColor, handleEditShapeFillColor } =
-      useEditElements();
+  const { handleEditShapeOutlineColor, handleEditShapeFillColor } =
+    useEditElements();
   const [colorList, setColorList] = useState<{ char: string; color: string }[]>(
     [],
   );
   const [selectedChar, setSelectedChar] = useState<string>("");
   const [currentShade, setCurrentShade] = useState([""]);
+
+  const [hexCode, setHexcode] = useState<string>("");
+  const [isHexInputActive, setIsHexInputActive] = useState(false);
+
+  const isValidHex = (hex: string): boolean =>
+    /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{8})$/.test(
+      hex,
+    );
+
+  const handleHexCode = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = isValidHex(e.target.value);
+    setHexcode(e.target.value);
+    if (val) {
+      if(!isMostUsedColorsNeeded){
+        setFillColor(e.target.value)
+        return;
+      }
+      setStrokeColor(e.target.value);
+    }
+  };
+  const handleHexKeyDown=(e: React.KeyboardEvent<HTMLInputElement>)=>{
+    if(e.key==="Enter"){
+      const val = isValidHex(hexCode);
+    if (val) {
+      if(!isMostUsedColorsNeeded){
+        setFillColor(hexCode)
+        return;
+      }
+      setStrokeColor(hexCode);
+    }
+    }
+  }
 
   useEffect(() => {
     setCurrentShade(colorShades[selectedChar] ?? []);
@@ -41,6 +72,7 @@ export default function ColorGrid({
 
   useEffect(() => {
     const handleQuickColorChange = (e: KeyboardEvent) => {
+      if (isHexInputActive) return;
       const shadeCodeMap: Record<string, number> = {
         Digit1: 0,
         Digit2: 1,
@@ -115,12 +147,12 @@ export default function ColorGrid({
               if (!isMostUsedColorsNeeded) {
                 setFillColor(stroke.color);
                 setSelectedChar(stroke.char);
-                handleEditShapeFillColor(stroke.color)
+                handleEditShapeFillColor(stroke.color);
                 return;
               }
               setStrokeColor(stroke.color);
               setSelectedChar(stroke.char);
-               if (selectedEle) handleEditShapeOutlineColor(stroke.color);
+              if (selectedEle) handleEditShapeOutlineColor(stroke.color);
             }}
           >
             <span className="text-sm flex items-end mt-2 ml-0.5">
@@ -135,13 +167,13 @@ export default function ColorGrid({
             className={`w-6 h-6 rounded cursor-pointer `}
             onClick={() => {
               setFillColor("transparent");
-              handleEditShapeFillColor("transparent")
+              handleEditShapeFillColor("transparent");
             }}
           />
         )}
       </div>
 
-      <span className="mb-1 text-[12px]  text-white mt-4">Shades</span>
+     {currentShade&&<> <span className="mb-1 text-[12px]  text-white mt-4">Shades</span>
       <div className="grid grid-cols-5 gap-1 w-fit">
         {currentShade.map((color, idx) => (
           <div
@@ -156,7 +188,7 @@ export default function ColorGrid({
               setShadeIdx(idx);
               if (!isMostUsedColorsNeeded) {
                 setFillColor(color);
-                handleEditShapeFillColor(color)
+                handleEditShapeFillColor(color);
                 return;
               }
               setStrokeColor(color);
@@ -165,17 +197,24 @@ export default function ColorGrid({
           />
         ))}
       </div>
+     </>
+     }
 
       <span className="mb-1 text-[12px]  text-white mt-4">Hex Code</span>
-      <div className="flex w-full border border-gray-500 focus:outline-none ">
+      <div className="flex  border border-gray-500 focus:outline-none w-[95%] ">
         <input
-          className="text-white bg-[#1f1f2b] w-[80%]"
+          className="text-white bg-[#1f1f2b] p-1 w-full "
           type="text"
           name=""
-          placeholder="#tyfd32"
+          placeholder="#121212"
           id=""
+          value={hexCode}
+          onChange={(e) => handleHexCode(e)}
+          onKeyDown={(e)=>handleHexKeyDown(e)}
+          onFocus={() => setIsHexInputActive(true)}
+          onBlur={() => setIsHexInputActive(false)}
+          maxLength={7}
         />
-        <Pipette className="bg-white z-20 w-6 h-fit flex-1" />
       </div>
     </div>
   );
