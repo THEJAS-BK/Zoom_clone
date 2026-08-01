@@ -53,7 +53,7 @@ function RoomContent({ roomId }: { roomId: string }) {
   const pendingSaveRef = useRef<Promise<any> | null>(null);
   //small screen size video
   const isMobileScreen = useMediaQuery("(max-width: 550px)");
-  const [isMobileScreenTabOpen, setIsMobileScreenTabOpen] = useState(true);
+  const [isMobileScreenTabOpen, setIsMobileScreenTabOpen] = useState(false);
 
   const {
     activeSavedBoardId,
