@@ -23,7 +23,10 @@ function getUnusedCursorColor(
   return pool[Math.floor(Math.random() * pool.length)]!;
 }
 
-const pendingLeaves: Record<string, Map<string, NodeJS.Timeout>> = {};
+const pendingLeaves: Record<
+  string,
+  Map<string, { timeout: NodeJS.Timeout; socketId: string }>
+> = {};
 
 export function registerRoomHandler(
   socket: Socket,
@@ -56,21 +59,29 @@ export function registerRoomHandler(
 
   //join rooms logic
   socket.on("join-room", (roomId: string, callback) => {
-
-    const userId=socket.data.userId;
-    const pending=pendingLeaves[roomId]?.get(userId)
-    if(pending){
-      clearTimeout(pending)
-      pendingLeaves[roomId]?.delete(userId)
+    const userId = socket.data.userId;
+    const pending = pendingLeaves[roomId]?.get(userId);
+    if (pending) {
+      clearTimeout(pending.timeout);
+      pendingLeaves[roomId]?.delete(userId);
+      socket.to(roomId).emit("user-left", pending.socketId);
     }
     if (!activeRooms[roomId]) {
-      callback?.({ success: false,reason:"ROOM_NOT_FOUND", message: "Room dosent exist" });
+      callback?.({
+        success: false,
+        reason: "ROOM_NOT_FOUND",
+        message: "Room dosent exist",
+      });
       return;
     }
 
-    const room =activeRooms[roomId];
-    if(room.size>=ROOM_CAPACITY){
-      callback?.({ success: false,reason:"ROOM_FULL", message: "Room is full" });
+    const room = activeRooms[roomId];
+    if (room.size >= ROOM_CAPACITY) {
+      callback?.({
+        success: false,
+        reason: "ROOM_FULL",
+        message: "Room is full",
+      });
       return;
     }
 
@@ -134,10 +145,12 @@ export function registerRoomHandler(
         delete roomMuteState[roomId]?.[socket.id];
       }
       pendingLeaves[roomId]?.delete(socket.data.userId);
-    },3000);
-    pendingLeaves[roomId].set(socket.data.userId, timeout);
+    }, 3000);
+    pendingLeaves[roomId].set(socket.data.userId, {
+      timeout,
+      socketId: socket.id,
+    });
   });
-
 
   socket.on("get-participants", (roomId: string) => {
     const memberIds = activeRooms[roomId] ?? new Set<string>();

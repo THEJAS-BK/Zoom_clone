@@ -48,9 +48,9 @@ function RoomContent({ roomId }: { roomId: string }) {
   const camera = useRef({ x: 0, y: 0, scale: 1 });
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-
   const navigate = useNavigate();
   const pendingSaveRef = useRef<Promise<any> | null>(null);
+
   const {
     activeSavedBoardId,
     activeBoardName,
@@ -85,7 +85,7 @@ function RoomContent({ roomId }: { roomId: string }) {
       initiatorName: string;
       boardName: string;
     }) => {
-      setBoardSwitching(`${initiatorName} is opening "${incomingBoardName}"`);
+      setBoardSwitching(`${initiatorName} is opening board "${incomingBoardName}"`);
       pendingSaveRef.current = saveOwnCopy();
     };
 
@@ -95,6 +95,7 @@ function RoomContent({ roomId }: { roomId: string }) {
       newRoomId: string;
     }) => {
       if (pendingSaveRef.current) await pendingSaveRef.current;
+      setBoardSwitching(null)
       navigate(`/room/${newRoomId}`);
     };
 
@@ -131,6 +132,16 @@ function RoomContent({ roomId }: { roomId: string }) {
             setIsMyBoardsInterfaceOpen={setIsMyBoardsInterfaceOpen}
           />
         )}
+
+        {boardSwitching && (
+  <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
+    <div className="rounded-xl bg-white px-8 py-6 shadow-2xl border border-gray-200">
+      <p className="text-lg font-semibold text-gray-900">
+        {boardSwitching}
+      </p>
+    </div>
+  </div>
+)}  
 
         {openCursor && isViewMode && (
           <div className="absolute top-10 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded text-white shadow-lg z-20 ">

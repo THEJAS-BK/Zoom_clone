@@ -24,6 +24,8 @@ export const useWebRTC = (roomId: string) => {
     [socketId: string]: boolean;
   }>({});
 
+  const localStreamReady = useRef<Promise<void>>(Promise.resolve());
+
   const [mySocketId, setMySocketId] = useState<string | undefined>(socket.id);
 
   const [users, setUsers] = useState<{ [socketId: string]: string }>({});
@@ -48,10 +50,10 @@ export const useWebRTC = (roomId: string) => {
 
   const createPC = (remoteId: string) => {
     const existing = peerConnections.current[remoteId];
-    if (existing){
+    if (existing) {
       return existing;
-    } 
-      
+    }
+
     const pc = new RTCPeerConnection(ICE_CONFIG);
 
     localStream.current
@@ -71,6 +73,11 @@ export const useWebRTC = (roomId: string) => {
   };
 
   useEffect(() => {
+    let resolveReady!: () => void;
+    localStreamReady.current = new Promise((resolve) => {
+      resolveReady = resolve;
+    });
+
     const init = async () => {
       if (localStream.current) return;
 
@@ -90,7 +97,8 @@ export const useWebRTC = (roomId: string) => {
       videoTrack.enabled = false;
       setIsVideoMuted(true);
 
-      setIsReady(true); // trigger re-render so local video shows up
+      setIsReady(true);
+      resolveReady(); // trigger re-render so local video shows up
       const join = () => {
         setMySocketId(socket.id);
         socket.emit("join-room", roomId, (res: any) => {
@@ -121,6 +129,7 @@ export const useWebRTC = (roomId: string) => {
           audioMuted: boolean;
         }[],
       ) => {
+        await localStreamReady.current;
         for (const { socketId, name, videoMuted, audioMuted } of peers) {
           setUsers((prev) => ({ ...prev, [socketId]: name }));
           setRemoteVideoMuted((prev) => ({ ...prev, [socketId]: videoMuted }));
@@ -138,7 +147,8 @@ export const useWebRTC = (roomId: string) => {
 
     socket.on(
       "joined-user",
-      ({ socketId, name }: { socketId: string; name: string }) => {
+      async ({ socketId, name }: { socketId: string; name: string }) => {
+        await localStreamReady.current;
         setUsers((prev) => ({ ...prev, [socketId]: name }));
         createPC(socketId);
       },
@@ -160,6 +170,7 @@ export const useWebRTC = (roomId: string) => {
     });
 
     socket.on("receive-answer", async ({ from, answer }: any) => {
+      await localStreamReady.current;
       await peerConnections.current[from].setRemoteDescription(answer);
     });
 

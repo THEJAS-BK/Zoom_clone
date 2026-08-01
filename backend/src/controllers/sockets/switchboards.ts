@@ -33,8 +33,8 @@ export const registerSwitchBoards = (
     callback({ success: true });
   });
 
-  socket.on("board-switch-start", ({ roomId, boardName, initiatorName }) => {
-    socket.to(roomId).emit("board-switch-start", { boardName, initiatorName });
+  socket.on("board-switch-start", ({ roomId, boardName }) => {
+    socket.to(roomId).emit("board-switch-start", { boardName, initiatorName:socket.data.name });
   });
 
   socket.on("board-switch-complete", ({ roomId, newRoomId }) => {

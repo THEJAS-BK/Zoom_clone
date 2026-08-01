@@ -1,5 +1,6 @@
 import { Request, RequestHandler, Response } from "express";
 import Image from "../models/image.model";
+import mongoose from "mongoose";
 
 const uploadImage = async (req: Request, res: Response) => {
   try {
@@ -47,6 +48,15 @@ const deleteImages: RequestHandler = async (req, res) => {
   if (!req.userId) {
     return res.status(401).json({ message: "Unauthorized" });
   }
+
+  if(!req.params.id) {
+    return res.status(400).json({ message: "Image ID is required" });
+  }
+
+  if(!mongoose.Types.ObjectId.isValid(req.params.id as string)) {
+    return res.status(400).json({ message: "Invalid image ID" });
+  }
+
   const imgId = req.params.id;
 
   await Image.updateMany(

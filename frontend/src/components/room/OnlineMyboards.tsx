@@ -5,12 +5,14 @@ import { useToolSettings } from "../../context/ToolBarLeftContext";
 import { useNavigate } from "react-router-dom";
 import { socket } from "../../services/socket";
 import { generateRoomId } from "../../utils/RoomId";
+import { useWebRTC } from "../../hooks/Webrtc";
 
 interface BoardDoc {
   _id: string;
   name: string;
   updatedAt: string;
 }
+
 
 export default function OnlineMyboards({
   setIsMyBoardsInterfaceOpen,
@@ -22,7 +24,7 @@ export default function OnlineMyboards({
   const [boards, setBoards] = useState<BoardDoc[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-const { roomId,activeBoardName,activeSavedBoardId,boardName,setBoardName,linesRef,textBoxesRef,strokes,shapesRef,doRedrawRef } = useToolSettings();
+const { roomId,activeBoardName,activeSavedBoardId,boardName,setBoardName } = useToolSettings();
 
   useEffect(() => {
     const fetchBoards = async () => {
