@@ -173,7 +173,7 @@ export default function ColorGrid({
         )}
       </div>
 
-     {currentShade&&<> <span className="mb-1 text-[12px]  text-white mt-4">Shades</span>
+     {fillColor!=="transparent"&&<> <span className="mb-1 text-[12px]  text-white mt-4">Shades</span>
       <div className="grid grid-cols-5 gap-1 w-fit">
         {currentShade.map((color, idx) => (
           <div
