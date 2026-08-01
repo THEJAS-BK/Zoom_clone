@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { MoveRight, Minus, Square, Diamond, Circle, Image, ChevronDown } from "lucide-react";
+import {  ChevronUp } from "lucide-react";
 
 // Reusable collapsed tool-group dropdown
 export function ToolGroupDropdown({
@@ -35,7 +35,7 @@ export function ToolGroupDropdown({
       >
         <span className="flex items-center gap-0.5">
           {active.icon}
-          <ChevronDown size={12} />
+          <ChevronUp size={12} />
         </span>
       </button>
 

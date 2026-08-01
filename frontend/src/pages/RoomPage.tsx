@@ -7,7 +7,7 @@ import MultiCursor from "../components/room/Multicursor/MultiCursor";
 
 //image upload function
 
-import { Menu } from "lucide-react";
+import { Menu, SquarePlay } from "lucide-react";
 
 import Tools from "../components/room/Tools.tsx";
 import ToolBarContainer from "../components/room/LeftToolBar/ToolBarContainer.tsx";
@@ -20,6 +20,8 @@ import api from "../utils/axios";
 import { useToolSettings } from "../context/ToolBarLeftContext.tsx";
 import { HistoryProvider } from "../context/LocalHistoryContext.tsx";
 import ZoomAndRedoUndo from "../components/room/Multicursor/ZoomAndUndoRedo.tsx";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import MobileScreenVideo from "../components/room/MobileScreenVideo.tsx";
 export default function RoomPage() {
   const { roomId } = useParams();
   if (!roomId) return <div>Not found</div>;
@@ -49,6 +51,9 @@ function RoomContent({ roomId }: { roomId: string }) {
 
   const navigate = useNavigate();
   const pendingSaveRef = useRef<Promise<any> | null>(null);
+  //small screen size video
+  const isMobileScreen = useMediaQuery("(max-width: 550px)");
+  const [isMobileScreenTabOpen, setIsMobileScreenTabOpen] = useState(true);
 
   const {
     activeSavedBoardId,
@@ -132,6 +137,26 @@ function RoomContent({ roomId }: { roomId: string }) {
             setIsHambergerMenuOpen={setIsHambergerMenuOpen}
             setIsMyBoardsInterfaceOpen={setIsMyBoardsInterfaceOpen}
           />
+        )}
+
+        {isMobileScreen && (
+          <div
+            onClick={() => setIsMobileScreenTabOpen(!isMobileScreenTabOpen)}
+            className="absolute text-white z-20 right-5 top-5 bg-slate-800 p-2 rounded"
+          >
+            <SquarePlay />
+          </div>
+        )}
+
+        {isMobileScreenTabOpen && (
+          <div className="absolute text-white z-20 right-5 top-20 bg-slate-800 p-2 rounded">
+            <MobileScreenVideo
+              setIsMobileScreenTabOpen={setIsMobileScreenTabOpen}
+              roomId={roomId}
+              openCursor={openCursor}
+              setOpenCursor={setOpenCursor}
+            />
+          </div>
         )}
 
         {boardSwitching && (
