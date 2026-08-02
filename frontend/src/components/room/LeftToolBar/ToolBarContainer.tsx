@@ -25,9 +25,9 @@ export default function ToolBarContainer() {
   const lastTool = useRef<string | null>(null);
 
   const isCompactView = useMediaQuery(
-    "(min-width: 768px) and (max-width: 1024px)",
+    "(min-width: 601px) and (max-width: 1024px)",
   );
-  const isSmallView = useMediaQuery("(max-width: 767px)");
+  const isSmallView = useMediaQuery("(max-width: 600px)");
 
   if (selectedEle?.type === "shape") {
     lastTool.current = selectedEle.shapeType;
@@ -46,7 +46,7 @@ export default function ToolBarContainer() {
   const displayTool = lastTool.current || activeTool;
 
   return (
-    <div className="z-9999">
+    <div>
       {isSmallView ? (
         <SmallToolBar displayTool={displayTool} />
       ) : isCompactView ? (

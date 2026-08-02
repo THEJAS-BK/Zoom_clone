@@ -40,7 +40,7 @@ export function ToolGroupDropdown({
       </button>
 
       {open && (
-        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black rounded-2xl border border-gray-800 shadow-lg px-2 py-1 z-9990099">
+       <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black rounded-2xl border border-gray-800 shadow-lg px-2 py-1 z-[9990099]">
           {tools.map((t) => (
             <button
               key={t.name}

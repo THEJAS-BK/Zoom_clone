@@ -169,7 +169,7 @@ function RoomContent({ roomId }: { roomId: string }) {
           </div>
         )}
         {openCursor && isViewMode && (
-          <div className="absolute bottom-2 left-1/12 md:left-1/2 md:-translate-x-1/2 md:top-10 md:bottom-auto md:-translate-y-1/2 rounded text-white shadow-lg z-20">
+         <div className="absolute bottom-2 sm:left-1/12 sm:left-1/2 sm:-translate-x-1/2 sm:top-10 sm:bottom-auto sm:-translate-y-1/2 rounded text-white shadow-lg z-20">
             <Tools
               setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen}
             />

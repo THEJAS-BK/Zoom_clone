@@ -29,7 +29,7 @@ export default function Tools({
     <>
       <div className="toolbar-compact flex items-center gap-0.5 bg-black rounded-xl border border-gray-800 px-1.5 py-1.5 shadow-lg">
         {/* Selection / navigation */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 z-[999]">
           <button
             title="Select (V)"
             onClick={() => setActiveTool("mouse")}
@@ -102,7 +102,7 @@ export default function Tools({
             ]}
           />
         ) : (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 z-999">
             <button
               title="Arrow (A)"
               onClick={() => selectTool("arrow")}
@@ -145,7 +145,7 @@ export default function Tools({
             ]}
           />
         ) : (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 z-999">
             <button
               title="Rectangle (R)"
               onClick={() => selectTool("square")}
