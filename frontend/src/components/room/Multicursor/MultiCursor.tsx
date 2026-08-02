@@ -553,7 +553,7 @@ useEffect(() => {
             top: cursor.y * camera.current.scale + camera.current.y,
             pointerEvents: "none", // critical — don't let it block real clicks
             transition: "left 0.05s linear, top 0.05s linear", // smooths jitter between updates
-            zIndex: 1000,
+            zIndex: 10,
           }}
         >
           {/* cursor arrow shape */}

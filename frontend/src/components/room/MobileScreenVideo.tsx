@@ -28,7 +28,7 @@ export default function MobileScreenVideo({
   } = useWebRtcContext();
 
   return (
-    <div className="w-64">
+    <div className="w-64 z-999">
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-sm font-semibold">Members</h2>
         <button
