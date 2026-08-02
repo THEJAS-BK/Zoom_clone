@@ -20,7 +20,7 @@ export default function Tools({
 }) {
   const { activeTool, setActiveTool, selectedEle, setSelectedEle } =
     useToolSettings();
-  const isNarrow = useMediaQuery("(min-width: 350px) and (max-width: 550px)");
+  const isNarrow = useMediaQuery("(max-width: 550px)");
   function selectTool(tool: string) {
     if (selectedEle) setSelectedEle(null);
     setActiveTool(tool);
@@ -37,16 +37,16 @@ export default function Tools({
         >
           <MousePointer size={18} />
         </button>
-        <button
-          title="Hand / pan (H)"
-          onClick={() => {
-            if (selectedEle) setSelectedEle(null);
-            setActiveTool("hand");
-          }}
-          className={activeTool === "hand" ? "tool-btn-active" : "tool-btn"}
-        >
-          <Hand size={18} />
-        </button>
+<button
+  title="Hand / pan (H)"
+  onClick={() => {
+    if (selectedEle) setSelectedEle(null);
+    setActiveTool("hand");
+  }}
+  className={`!hidden min-[451px]:!inline-flex ${activeTool === "hand" ? "tool-btn-active" : "tool-btn"}`}
+>
+  <Hand size={18} />
+</button>
       </div>
 
       <div className="w-px h-6 bg-gray-700 mx-0.5" />
