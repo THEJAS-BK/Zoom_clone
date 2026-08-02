@@ -3,7 +3,6 @@ import Register from "../components/auth/Register";
 import Login from "../components/auth/Login";
 import Dashboard from "../pages/Dashboard";
 import RoomPage from "../pages/RoomPage";
-import ProtectedRoute from "../components/ProtectedRoute";
 import Offlineboard from "../pages/Offlineboard";
 export default function AllRoutes() {
   return (
@@ -15,9 +14,7 @@ export default function AllRoutes() {
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute>
             <Dashboard />
-          </ProtectedRoute>
         }
       />
       <Route path="/room/:roomId" element={<RoomPage />} />

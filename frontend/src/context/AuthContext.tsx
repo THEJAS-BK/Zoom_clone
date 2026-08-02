@@ -16,10 +16,11 @@ export const AuthProvider=({children}:{children:ReactNode})=>{
   const login = (accessToken:string,refreshToken:string)=>{
     localStorage.setItem("accessToken",accessToken)
     localStorage.setItem("refreshToken",refreshToken)
+    setaccessToken(accessToken)
   }
   const logout=()=>{
-    localStorage.remove("accessToken","")
-    localStorage.remove("refreshToken","")
+    localStorage.removeItem("accessToken")
+    localStorage.removeItem("refreshToken")
     setaccessToken(null);
   }
   return (

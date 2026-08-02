@@ -66,10 +66,11 @@ api.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
+        
         processQueue(refreshError, null);
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
-        window.location.href = "/login";
+          // window.location.href = "/login"; 
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

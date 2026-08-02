@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../utils/axios";
+import { useAuth } from "../../context/AuthContext";
+
 
 export default function NavBar({setMyImageInterfaceOpen,scrollToBoards}:{setMyImageInterfaceOpen: (open: boolean) => void, scrollToBoards: () => void}) {
   const [visible, setVisible] = useState(true);
@@ -9,6 +11,7 @@ export default function NavBar({setMyImageInterfaceOpen,scrollToBoards}:{setMyIm
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const {logout} = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,8 +48,7 @@ export default function NavBar({setMyImageInterfaceOpen,scrollToBoards}:{setMyIm
   }, []);
 
   const handleLogout = async () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
+    logout()
     navigate("/login");
   }
 

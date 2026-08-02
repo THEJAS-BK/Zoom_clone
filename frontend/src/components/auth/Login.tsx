@@ -2,6 +2,7 @@ import React, { useState, type JSX } from "react";
 import type { LoginFormData } from "../../types/Auth";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../utils/axios";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Login(): JSX.Element {
   const [formData, setFormData] = useState<LoginFormData>({
@@ -10,6 +11,8 @@ export default function Login(): JSX.Element {
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const {login} = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const fieldName = e.target.name as keyof LoginFormData;
@@ -27,8 +30,7 @@ export default function Login(): JSX.Element {
     try {
       const res = await api.post(`/auth/login`, formData);
       if (res.status === 200) {
-        localStorage.setItem("accessToken", res.data.accessToken);
-        localStorage.setItem("refreshToken", res.data.refreshToken);
+         login(res.data.accessToken, res.data.refreshToken);
         navigate("/dashboard");
       }
     } catch (err) {

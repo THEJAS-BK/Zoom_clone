@@ -2,6 +2,7 @@ import React, { useState, type JSX } from "react";
 import type { Formdata } from "../../types/Auth";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../utils/axios";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Register(): JSX.Element {
   const [formData, setFormData] = useState<Formdata>({
@@ -11,6 +12,7 @@ export default function Register(): JSX.Element {
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const {login} = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const fieldName = e.target.name as keyof Formdata;
@@ -27,9 +29,8 @@ export default function Register(): JSX.Element {
     setLoading(true);
     try {
       const res = await api.post("/auth/register", formData);
-      if (res.status === 200) {
-        localStorage.setItem("accessToken", res.data.accessToken);
-        localStorage.setItem("refreshToken", res.data.refreshToken);
+      if (res.status === 200 || res.status === 201) {
+       login(res.data.accessToken,res.data.refreshToken)
         navigate("/dashboard");
       }
     } catch (err) {
