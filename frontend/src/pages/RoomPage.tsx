@@ -139,42 +139,42 @@ function RoomContent({ roomId }: { roomId: string }) {
           />
         )}
 
-       {openCursor && isMobileScreen && (
-  <div
-    onClick={() => setIsMobileScreenTabOpen(!isMobileScreenTabOpen)}
-    className="fixed text-white z-[60] right-5 top-5 bg-slate-800 p-2 rounded cursor-pointer"
-  >
-    <SquarePlay />
-  </div>
-)}
+        {openCursor && isMobileScreen && (
+          <div
+            onClick={() => setIsMobileScreenTabOpen(!isMobileScreenTabOpen)}
+            className="fixed text-white z-[60] right-5 top-5 bg-slate-800 p-2 rounded cursor-pointer"
+          >
+            <SquarePlay />
+          </div>
+        )}
 
-{openCursor && (
-  <>
-    {/* Backdrop */}
-    <div
-      onClick={() => setIsMobileScreenTabOpen(false)}
-      className={`fixed inset-0 bg-black/40 z-[55] transition-opacity duration-300 ${
-        isMobileScreenTabOpen
-          ? "opacity-100 pointer-events-auto"
-          : "opacity-0 pointer-events-none"
-      }`}
-    />
+        {openCursor && (
+          <>
+            {/* Backdrop */}
+            <div
+              onClick={() => setIsMobileScreenTabOpen(false)}
+              className={`fixed inset-0 bg-black/40 z-[55] transition-opacity duration-300 ${
+                isMobileScreenTabOpen
+                  ? "opacity-100 pointer-events-auto"
+                  : "opacity-0 pointer-events-none"
+              }`}
+            />
 
-    {/* Slide-in panel */}
-    <div
-  className={`fixed top-0 right-0 h-full w-64 bg-[#1e1e2e] border-l border-white/10 text-white p-4 shadow-2xl z-[60] transform transition-transform duration-300 ease-out ${
-    isMobileScreenTabOpen ? "translate-x-0" : "translate-x-full"
-  }`}
->
-      <MobileScreenVideo
-        setIsMobileScreenTabOpen={setIsMobileScreenTabOpen}
-        roomId={roomId}
-        openCursor={openCursor}
-        setOpenCursor={setOpenCursor}
-      />
-    </div>
-  </>
-)}
+            {/* Slide-in panel */}
+            <div
+              className={`fixed top-0 right-0 h-full w-64 bg-[#1e1e2e] border-l border-white/10 text-white p-4 shadow-2xl z-[60] transform transition-transform duration-300 ease-out ${
+                isMobileScreenTabOpen ? "translate-x-0" : "translate-x-full"
+              }`}
+            >
+              <MobileScreenVideo
+                setIsMobileScreenTabOpen={setIsMobileScreenTabOpen}
+                roomId={roomId}
+                openCursor={openCursor}
+                setOpenCursor={setOpenCursor}
+              />
+            </div>
+          </>
+        )}
 
         {boardSwitching && (
           <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
@@ -186,7 +186,7 @@ function RoomContent({ roomId }: { roomId: string }) {
           </div>
         )}
         {openCursor && isViewMode && (
-      <div className="absolute bottom-2 left-1/12 md:left-1/2 md:-translate-x-1/2 md:top-10 md:bottom-auto md:-translate-y-1/2 rounded text-white shadow-lg z-20">
+          <div className="absolute bottom-2 left-1/12 max-[419px]:left-2 max-[419px]:right-auto max-[419px]:translate-x-0 md:left-1/2 md:-translate-x-1/2 md:top-10 md:bottom-auto md:-translate-y-1/2 rounded text-white shadow-lg z-20">
             <Tools
               setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen}
             />

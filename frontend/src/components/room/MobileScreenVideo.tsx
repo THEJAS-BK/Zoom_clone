@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import OptionsFooter from "./OptionsFooter"; // adjust path as needed
-import VideoTab from "./VideoTab"; // adjust path as needed
+import VideoCard from "./VideoCard";
 import { useWebRtcContext } from "../../context/WebRtcContext"; // adjust path as needed
+import { socket } from "../../services/socket";
 
 interface MobileScreenVideoProps {
   setIsMobileScreenTabOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -25,10 +26,21 @@ export default function MobileScreenVideo({
     isAudioMuted,
     audioToggle,
     videoToggle,
+    remoteVideoMuted,
+    remoteAudioMuted,
+    users,
   } = useWebRtcContext();
 
+  const [curUserName, setCurUserName] = useState("");
+
+  useEffect(() => {
+    socket.emit("my-info", (cb: { userId: string; name: string }) => {
+      setCurUserName(cb.name);
+    });
+  }, [users]);
+
   return (
-    <div className="w-64 z-999">
+    <div className="w-64">
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-sm font-semibold">Members</h2>
         <button
@@ -48,15 +60,33 @@ export default function MobileScreenVideo({
         openCursor={openCursor}
         setOpenCursor={setOpenCursor}
       />
-      <VideoTab
-        roomId={roomId}
-        localStream={localStream}
-        remoteStreams={remoteStreams}
-        isReady={isReady}
-        isVideoMuted={isVideoMuted}
-        openCursor={true}
-      />
 
+      {openCursor && (
+        <div className="p-2 flex flex-wrap gap-2 w-full overflow-y-auto max-h-[calc(4*12rem+1.5rem)] content-start">
+          {isReady && localStream.current && (
+            <div className="w-[calc(50%-0.25rem)]">
+              <VideoCard
+                stream={localStream.current}
+                isVideoMuted={isVideoMuted}
+                isAudioMuted={isAudioMuted}
+                openCursor={openCursor}
+                user={curUserName}
+              />
+            </div>
+          )}
+          {Object.entries(remoteStreams).map(([id, stream]) => (
+            <div key={id} className="w-[calc(50%-0.25rem)]">
+              <VideoCard
+                stream={stream}
+                isVideoMuted={remoteVideoMuted[id] ?? true}
+                isAudioMuted={remoteAudioMuted[id] ?? true}
+                openCursor={openCursor}
+                user={users[id]}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
