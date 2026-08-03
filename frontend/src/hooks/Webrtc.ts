@@ -154,24 +154,32 @@ export const useWebRTC = (roomId: string) => {
       },
     );
 
-    socket.on("receive-offer", async ({ from, offer }) => {
-      let pc = peerConnections.current[from];
-
-      if (!pc) {
-        pc = createPC(from);
+    const flushPending = async (id: string, pc: RTCPeerConnection) => {
+      const queued = pendingCandidates.current[id];
+      if (!queued) return;
+      for (const candidate of queued) {
+        await pc.addIceCandidate(new RTCIceCandidate(candidate));
       }
+      delete pendingCandidates.current[id];
+    };
+
+    socket.on("receive-offer", async ({ from, offer }) => {
+      await localStreamReady.current;      
+      let pc = peerConnections.current[from];
+      if (!pc) pc = createPC(from);
 
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
+      await flushPending(from, pc);
 
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
-
       socket.emit("answer", { to: from, answer });
     });
 
     socket.on("receive-answer", async ({ from, answer }: any) => {
       await localStreamReady.current;
       await peerConnections.current[from].setRemoteDescription(answer);
+      await flushPending(from, peerConnections.current[from]); // <-- add
     });
 
     socket.on("receive-ice-candidates", async ({ from, candidate }) => {

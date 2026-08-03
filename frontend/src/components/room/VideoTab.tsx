@@ -18,34 +18,31 @@ export default function VideoTab({
   isVideoMuted,
   openCursor,
 }: VideoTabProps) {
-
   const participantCount =
     (isReady && localStream.current ? 1 : 0) +
     Object.keys(remoteStreams).length;
 
   const { remoteVideoMuted, remoteAudioMuted, isAudioMuted, users } =
     useWebRtcContext();
-  
-    const [curUserName,setCurUserName]=useState("");
 
-    useEffect(()=>{
-      socket.emit("my-info", (cb: { userId: string; name: string }) => {
-            setCurUserName(cb.name);
-          
-          });
-    },[users])
+  const [curUserName, setCurUserName] = useState("");
 
+  useEffect(() => {
+    socket.emit("my-info", (cb: { userId: string; name: string }) => {
+      setCurUserName(cb.name);
+    });
+  }, [users]);
 
-const getTileSize = (count: number) => {
-  if (count <= 1) return "w-full h-[90%] max-w-4xl";
-  if (count === 2)
-    return "max-[639px]:w-full max-[639px]:h-[45%] w-[calc(50%-0.25rem)] h-[90%] min-[1000px]:max-w-[520px]";
-  if (count === 3)
-    return "w-[calc(50%-0.25rem)] h-[calc(50%-0.25rem)] min-[1000px]:w-[calc(33.333%-0.34rem)] min-[1000px]:h-[90%] min-[1000px]:max-w-[440px]";
-  if (count === 4)
-    return "w-[calc(50%-0.25rem)] h-[calc(50%-0.25rem)] min-[1000px]:max-w-[440px]";
-  return "w-[calc(33.333%-0.34rem)] h-[calc(50%-0.25rem)] min-[1000px]:max-w-[380px]";
-};
+  const getTileSize = (count: number) => {
+    if (count <= 1) return "w-full h-[90%] max-w-4xl";
+    if (count === 2)
+      return "max-[639px]:w-full max-[639px]:h-[45%] w-[calc(50%-0.25rem)] h-[90%] min-[1000px]:max-w-[520px]";
+    if (count === 3)
+      return "w-[calc(50%-0.25rem)] h-[calc(50%-0.25rem)] min-[1000px]:w-[calc(33.333%-0.34rem)] min-[1000px]:h-[90%] min-[1000px]:max-w-[440px]";
+    if (count === 4)
+      return "w-[calc(50%-0.25rem)] h-[calc(50%-0.25rem)] min-[1000px]:max-w-[440px]";
+    return "w-[calc(33.333%-0.34rem)] h-[calc(50%-0.25rem)] min-[1000px]:max-w-[380px]";
+  };
   return (
     <>
       {!openCursor && (
@@ -60,7 +57,7 @@ const getTileSize = (count: number) => {
                 isAudioMuted={isAudioMuted}
                 openCursor={openCursor}
                 user={curUserName}
-
+                muted  
               />
             </div>
           )}
@@ -79,9 +76,7 @@ const getTileSize = (count: number) => {
       )}
 
       {openCursor && (
-        <div
-        className="p-2 flex flex-col gap-2 w-full overflow-y-auto max-h-[calc(4*12rem+1.5rem)]"
-        >
+        <div className="p-2 flex flex-col gap-2 w-full overflow-y-auto max-h-[calc(4*12rem+1.5rem)]">
           {isReady && localStream.current && (
             <div>
               <VideoCard
@@ -89,7 +84,7 @@ const getTileSize = (count: number) => {
                 isVideoMuted={isVideoMuted}
                 isAudioMuted={isAudioMuted}
                 openCursor={openCursor}
-                 user={curUserName}
+                user={curUserName}
               />
             </div>
           )}

@@ -26,7 +26,7 @@ export default function HamberMenu({
 }: HamberMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const navigate=useNavigate();
+  const navigate = useNavigate();
 
   const [members, setMembers] = useState<Participants[]>([]);
 
@@ -94,10 +94,10 @@ export default function HamberMenu({
     };
   }, []);
 
-  const handleExitRoom=()=>{
-   socket.disconnect();
-   navigate("/dashboard")
-  }
+  const handleExitRoom = () => {
+    socket.disconnect();
+    navigate("/dashboard");
+  };
 
   const {
     viewMode,
@@ -113,7 +113,8 @@ export default function HamberMenu({
     setBoardColor,
     activeSavedBoardId,
     activeBoardName,
-    boardName,setBoardName
+    boardName,
+    setBoardName,
   } = useToolSettings();
 
   useEffect(() => {
@@ -140,7 +141,7 @@ export default function HamberMenu({
   return (
     <div
       ref={menuRef}
-   className="absolute top-16 left-5 max-[650px]:right-5 bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl min-w-[220px] max-[650px]:min-w-0 max-[650px]:w-[calc(100vw-2.5rem)] z-[50]"
+      className="absolute top-16 left-5 max-[650px]:right-5 bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl min-w-[220px] max-[650px]:min-w-0 max-[650px]:w-[calc(100vw-2.5rem)] z-[50]"
     >
       <ul className="py-1">
         {/* Room ID row */}
@@ -163,7 +164,7 @@ export default function HamberMenu({
         </li>
 
         {/* Video settings */}
-        <li className="relative border-b border-white/10">
+        <li className="max-[650px]:hidden relative border-b border-white/10">
           <button
             className="w-full flex items-center gap-2 px-4 py-2 text-sm text-left text-gray-200 hover:bg-white/10 transition-colors"
             onClick={(e) => {
@@ -280,7 +281,7 @@ export default function HamberMenu({
             Board colors
           </button>
           {openSubmenu === "boardColor" && (
-            <div className="absolute top-0 left-full ml-1 flex p-1 justify-between bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl min-w-[140px] z-40">
+            <div className="absolute top-0 left-full ml-1 max-[650px]:top-full max-[650px]:left-0 flex p-1 justify-between bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl min-w-[140px] z-40">
               {boardColors.map((color) => (
                 <>
                   <div
@@ -314,59 +315,59 @@ export default function HamberMenu({
             Save Board
           </button>
           {openSubmenu === "saveBoard" && (
-          <div className="absolute top-0 left-full ml-1 max-[650px]:top-full max-[650px]:left-0 max-[650px]:ml-0 max-[650px]:mt-1 flex flex-col bg-[#1e1e2e] border border-white/10 rounded-2xl shadow-xl w-72 max-[650px]:w-full p-6 max-[650px]:p-4 z-40">
-  {/* Header */}
-  <div className="flex items-center justify-between mb-6">
-    <h2 className="text-lg font-semibold text-gray-100">
-      Save Board?
-    </h2>
-    <button
-      onClick={() => toggleSubmenu("saveBoard")}
-      className="p-1.5 rounded-full hover:bg-white/10 transition-colors"
-    >
-      <X className="w-5 h-5 text-gray-400" />
-    </button>
-  </div>
+            <div className="absolute top-0 left-full ml-1 max-[650px]:top-full max-[650px]:left-0 max-[650px]:ml-0 max-[650px]:mt-1 flex flex-col bg-[#1e1e2e] border border-white/10 rounded-2xl shadow-xl w-72 max-[650px]:w-full p-6 max-[650px]:p-4 z-40">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold text-gray-100">
+                  Save Board?
+                </h2>
+                <button
+                  onClick={() => toggleSubmenu("saveBoard")}
+                  className="p-1.5 rounded-full hover:bg-white/10 transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
 
-  {/* Board name input */}
-  <label className="block mb-4">
-    <span className="text-sm text-gray-400 mb-1.5 block">
-      Board Name?
-    </span>
-    <input
-      type="text"
-      value={boardName}
-      onChange={(e) => setBoardName(e.target.value)}
-      placeholder="Untitled board"
-      className="w-full px-3 py-2 rounded-lg bg-[#2a2a3d] border border-white/10 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6FF0]"
-    />
-  </label>
+              {/* Board name input */}
+              <label className="block mb-4">
+                <span className="text-sm text-gray-400 mb-1.5 block">
+                  Board Name?
+                </span>
+                <input
+                  type="text"
+                  value={boardName}
+                  onChange={(e) => setBoardName(e.target.value)}
+                  placeholder="Untitled board"
+                  className="w-full px-3 py-2 rounded-lg bg-[#2a2a3d] border border-white/10 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7C6FF0]"
+                />
+              </label>
 
-  {/* Save button */}
-  <button
-    onClick={handleSaveBoard}
-    disabled={isSavingBoard}
-    className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-full font-medium transition-colors ${
-      isSavingBoard
-        ? "bg-[#7C6FF0]/60 cursor-not-allowed"
-        : "bg-[#7C6FF0] cursor-pointer hover:bg-[#6a5de0]"
-    } text-white`}
-  >
-    {isSavingBoard ? (
-      <>
-        <Loader2 className="w-4 h-4 animate-spin" />
-        Saving...
-      </>
-    ) : isSaved ? (
-      <>
-        <Check className="w-4 h-4" />
-        Saved!
-      </>
-    ) : (
-      "Save"
-    )}
-  </button>
-</div>
+              {/* Save button */}
+              <button
+                onClick={handleSaveBoard}
+                disabled={isSavingBoard}
+                className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-full font-medium transition-colors ${
+                  isSavingBoard
+                    ? "bg-[#7C6FF0]/60 cursor-not-allowed"
+                    : "bg-[#7C6FF0] cursor-pointer hover:bg-[#6a5de0]"
+                } text-white`}
+              >
+                {isSavingBoard ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : isSaved ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Saved!
+                  </>
+                ) : (
+                  "Save"
+                )}
+              </button>
+            </div>
           )}
         </li>
         <li
@@ -380,8 +381,9 @@ export default function HamberMenu({
         </li>
 
         <li
-        onClick={handleExitRoom}
-        className="px-4 py-2 text-sm text-red-400 hover:bg-white/10 cursor-pointer transition-colors">
+          onClick={handleExitRoom}
+          className="px-4 py-2 text-sm text-red-400 hover:bg-white/10 cursor-pointer transition-colors"
+        >
           Exit room
         </li>
       </ul>
