@@ -10,10 +10,12 @@ export function useCompactToolDelete() {
     textBoxesRef,
     roomId,
     doRedrawRef,
+    images,
   } = useToolSettings();
 
   const handleDelete = () => {
     const id = selectedEle?.id;
+    console.log("here", selectedEle?.id);
     if (!id) return;
 
     if (shapesRef.current.some((s) => s.id === id)) {
@@ -22,6 +24,8 @@ export function useCompactToolDelete() {
       linesRef.current = linesRef.current.filter((l) => l.id !== id);
     } else if (textBoxesRef.current.some((t) => t.id === id)) {
       textBoxesRef.current = textBoxesRef.current.filter((t) => t.id !== id);
+    } else if (images.current.some((i) => i.id === id)) {
+      images.current = images.current.filter((i) => i.id !== id);
     } else {
       return;
     }

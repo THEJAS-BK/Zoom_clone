@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useToolSettings } from "../../../../context/ToolBarLeftContext";
 
 import { colorShades, transparentPattern } from "../tools/colors";
@@ -26,6 +26,17 @@ export default function ColorGrid({
 
   const [hexCode, setHexcode] = useState<string>("");
   const [isHexInputActive, setIsHexInputActive] = useState(false);
+
+  const menu=useRef<HTMLDivElement>(null)
+  useEffect(()=>{
+    const handleClickOutsideForTouch=(e:TouchEvent)=>{
+      
+    }
+    window.addEventListener("touchstart",handleClickOutsideForTouch)
+    return()=>{
+      window.removeEventListener("touchstart",handleClickOutsideForTouch)
+    }
+  })
 
   const isValidHex = (hex: string): boolean =>
     /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{8})$/.test(
@@ -116,6 +127,7 @@ export default function ColorGrid({
 
   return (
     <div
+    ref={menu}
       className={`absolute text-white bottom-15 md:left-[110%] w-[210px] md:top-5 flex flex-col justify-center rounded-2xl bg-[#1f1f2b] shadow-xl p-5 z-20`}
       style={{height:"fit-content"}}
     >

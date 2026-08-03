@@ -119,8 +119,7 @@ export default function HamberMenu({
 
   useEffect(() => {
     setBoardName(activeBoardName.current ?? "");
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {      const target = e.target as HTMLElement;
 
       // Ignore clicks on the trigger — let its own onClick toggle handle it
       if (target.closest("[data-hamburger-trigger]")) {
@@ -133,8 +132,10 @@ export default function HamberMenu({
     };
 
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [setIsHambergerMenuOpen]);
 
@@ -232,7 +233,7 @@ export default function HamberMenu({
             </div>
 
             {openSubmenu === "follow" && (
-              <div className="absolute top-0 left-full ml-1 flex flex-col bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl min-w-[160px] z-40">
+              <div className="absolute top-0 max-[650px]:top-0 max-[650px]:left-0 left-full ml-1 flex flex-col bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl min-w-[160px] z-40">
                 {isOtherMembers && (
                   <>
                     {members
