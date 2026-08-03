@@ -8,11 +8,13 @@ const getCursorStyle = (tool: string | null) => {
       return "text";
     case "pan":
       return "grab";
-    case "hand":
-      return "hand";
+    case "drag":
+      return "grabbing";
+    case "select":
+      return "default";
     default:
       return "default";
   }
 };
 
-export { getCursorStyle };
+export {getCursorStyle}

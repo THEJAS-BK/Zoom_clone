@@ -4,6 +4,7 @@ import { generateRoomId } from "../../utils/RoomId";
 import { useNavigate } from "react-router-dom";
 import { socket } from "../../services/socket";
 import { useToolSettings } from "../../context/ToolBarLeftContext";
+import { connectSocket } from "./tools/connectSocket";
 
 export default function GoLiveInterface({
   setOpenGoLiveInterface,
@@ -18,7 +19,8 @@ export default function GoLiveInterface({
     setIsGoingLive(true);
     try {
       const newRoomId = await new Promise<string>((resolve) => {
-        const tryCreate = () => {
+        const tryCreate =async () => {
+          await connectSocket()
           const candidateId = generateRoomId();
           socket.emit(
             "switch-room",

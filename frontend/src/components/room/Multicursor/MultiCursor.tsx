@@ -14,7 +14,7 @@ import { redraw, resolveFontFamily } from "./canvas";
 
 import VideoTab from "../VideoTab";
 //types
-import type { BoardImage, TextBox, Stroke, Point, ActiveStroke } from "./types";
+import type { BoardImage, TextBox,  Point, ActiveStroke } from "./types";
 import { useSocketBoard } from "./hooks/useSocketBoard";
 import { useSocketDraw } from "./hooks/useSocketDraw";
 import { useCanvasZoom } from "./hooks/useCanvasZoom";
@@ -35,7 +35,6 @@ import { measureTextBox } from "./canvas";
 import { useToolSettings } from "../../../context/ToolBarLeftContext";
 import { useStrokeEraser } from "./hooks/useStrokesEraser";
 import { useWebRtcContext } from "../../../context/WebRtcContext";
-import ZoomControls from "./ZoomAndUndoRedo";
 import { useLayers } from "./hooks/useLayers";
 import OptionsFooter from "../OptionsFooter";
 import { useFollowUserCamera } from "./hooks/useFollowUserCamera";
@@ -43,7 +42,6 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 
 export default function MultiCursor({
   images,
-  imageUpdate,
   roomId,
   openCursor,
   setOpenCursor,
@@ -52,7 +50,7 @@ export default function MultiCursor({
   canvasRef,
 }: {
   images: React.RefObject<BoardImage[]>;
-  imageUpdate: number;
+
   roomId: string;
   openCursor: boolean;
   setOpenCursor: React.Dispatch<React.SetStateAction<boolean>>;
@@ -69,15 +67,11 @@ export default function MultiCursor({
   const color = useRef(COLORS[Math.floor(Math.random() * 5)]).current;
   const selectedImgIdx = useRef<number>(-1);
 
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
-  const [userName, setUserName] = useState("");
-  const [userId, setUserId] = useState("");
 
   const navigate = useNavigate();
 
-  const measureRef = useRef<HTMLSpanElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [panTick, setPanTick] = useState(0);
+  const [, setPanTick] = useState(0);
 
   const isSmallView=useMediaQuery("(max-width: 550px)")
 
@@ -243,7 +237,6 @@ export default function MultiCursor({
     strokes,
     userIdRef,
     isDrawing,
-    setCursorPos,
     selectedImgIdx,
     activeTool,
     strokeColor,
@@ -322,8 +315,6 @@ export default function MultiCursor({
     ctx.lineCap = "round";
 
     socket.emit("my-info", (cb: { userId: string; name: string }) => {
-      setUserName(cb.name);
-      setUserId(cb.userId);
       userIdRef.current = cb.userId;
     });
   }, []);

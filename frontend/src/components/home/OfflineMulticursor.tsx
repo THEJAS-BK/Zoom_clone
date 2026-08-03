@@ -13,7 +13,6 @@ import { redraw } from "../room/Multicursor/canvas";
 //types
 import type {
   BoardImage,
-  Stroke,
   Point,
   ActiveStroke,
   TextBox,
@@ -55,12 +54,8 @@ export default function OfflineMultiCursor({
   const color = useRef(COLORS[Math.floor(Math.random() * 5)]).current;
   const selectedImgIdx = useRef<number>(-1);
 
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
-  const [userName, setUserName] = useState("");
-  const [userId, setUserId] = useState("");
-  const measureRef = useRef<HTMLSpanElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [panTick, setPanTick] = useState(0);
+  const [, setPanTick] = useState(0);
 
   const editingExistingRef = useRef(false);
 
@@ -84,7 +79,6 @@ export default function OfflineMultiCursor({
     activeTool,
     selectedId,
     setIsOffline,
-    tabSize,
     boardColor,
     strokes,
     isDashedBorderNeeded,
@@ -196,7 +190,6 @@ export default function OfflineMultiCursor({
     strokes,
     userIdRef,
     isDrawing,
-    setCursorPos,
     selectedImgIdx,
     activeTool,
     strokeColor,
@@ -252,8 +245,6 @@ export default function OfflineMultiCursor({
     ctx.lineCap = "round";
 
     const id = crypto.randomUUID();
-    setUserName("You");
-    setUserId(id);
     userIdRef.current = id;
   }, []);
 

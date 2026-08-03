@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Hero from "../components/home/Hero";
 import NavBar from "../components/home/NavBar";
-import { socket } from "../services/socket";
 import MyImages from "../components/home/MyImages";
 
 

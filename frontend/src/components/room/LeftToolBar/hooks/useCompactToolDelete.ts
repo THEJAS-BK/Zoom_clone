@@ -15,7 +15,6 @@ export function useCompactToolDelete() {
 
   const handleDelete = () => {
     const id = selectedEle?.id;
-    console.log("here", selectedEle?.id);
     if (!id) return;
 
     if (shapesRef.current.some((s) => s.id === id)) {

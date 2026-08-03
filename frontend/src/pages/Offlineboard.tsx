@@ -8,7 +8,6 @@ import OfflineMultiCursor from "../components/home/OfflineMulticursor.tsx";
 import OfflineTools from "../components/home/OfflineTools.tsx";
 import ToolBarContainer from "../components/room/LeftToolBar/ToolBarContainer.tsx";
 import OfflineHamberMenu from "../components/home/OfflineHamberMenu.tsx";
-import type { BoardImage } from "../components/room/Multicursor/types.ts";
 import ImageUploadInterface from "../components/room/ImageUploadInterface.tsx";
 import { useParams } from "react-router-dom";
 import api from "../utils/axios.ts";
@@ -34,7 +33,7 @@ function OfflineboardContent() {
   const [openBoardNotSavedInterface, setOpenBoardNotSavedInterface] =
     useState(false);
   const [openGoLiveInterface, setOpenGoLiveInterface] = useState(false);
-   const camera = useRef({ x: 0, y: 0, scale: 1 });
+  const camera = useRef({ x: 0, y: 0, scale: 1 });
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const {
     linesRef,
@@ -45,7 +44,7 @@ function OfflineboardContent() {
     activeSavedBoardId,
     setBoardName,
     doRedrawRef,
-    images
+    images,
   } = useToolSettings();
   const { id } = useParams();
   useEffect(() => {
@@ -104,7 +103,7 @@ function OfflineboardContent() {
           <ImageUploadInterface
             images={images}
             setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen}
-               camera={camera}
+            camera={camera}
             canvasRef={canvasRef}
           />
         </div>
@@ -124,11 +123,15 @@ function OfflineboardContent() {
 
       <ToolBarContainer />
       <div className="absolute bottom-2 left-1/12 max-[419px]:left-2 max-[419px]:right-auto max-[419px]:translate-x-0 md:left-1/2 md:-translate-x-1/2 md:top-10 md:bottom-auto md:-translate-y-1/2 rounded text-white shadow-lg z-20">
-  <OfflineTools
-    setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen}
-  />
-</div>
-      <OfflineMultiCursor images={images} camera={camera} canvasRef={canvasRef} />
+        <OfflineTools
+          setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen}
+        />
+      </div>
+      <OfflineMultiCursor
+        images={images}
+        camera={camera}
+        canvasRef={canvasRef}
+      />
     </main>
   );
 }

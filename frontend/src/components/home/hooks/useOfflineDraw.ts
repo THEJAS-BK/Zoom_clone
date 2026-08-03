@@ -19,7 +19,6 @@ export function useOfflineDraw(
   strokes: React.RefObject<Stroke[]>,
   userIdRef: React.RefObject<string>,
   isDrawing: React.RefObject<boolean>,
-  setCursorPos: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>,
   selectedImgIdx: React.RefObject<number>,
   activeTool: string | null,
   strokeColor: string,
@@ -60,11 +59,6 @@ export function useOfflineDraw(
     };
 
     const draw = (e: MouseEvent) => {
-      setCursorPos({
-        x: e.clientX,
-        y: e.clientY,
-      });
-
       if (!isDrawing.current) return;
 
       const { x, y } = getCanvasPoint(e, canvas, camera);
@@ -150,7 +144,6 @@ export function useOfflineDraw(
     strokes,
     userIdRef,
     isDrawing,
-    setCursorPos,
     selectedImgIdx,
   ]);
 

@@ -5,7 +5,6 @@ import { useToolSettings } from "../../context/ToolBarLeftContext";
 import { useNavigate } from "react-router-dom";
 import { socket } from "../../services/socket";
 import { generateRoomId } from "../../utils/RoomId";
-import { useWebRTC } from "../../hooks/Webrtc";
 
 interface BoardDoc {
   _id: string;

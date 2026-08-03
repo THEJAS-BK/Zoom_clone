@@ -420,62 +420,6 @@ function drawTextBox(ctx: CanvasRenderingContext2D, tb: TextBox) {
 
 
 
-const isRotationHandlerClicked = (image: BoardImage, point: Point): boolean => {
-  const centerX = image.x + image.width / 2;
-  const centerY = image.y + image.height / 2;
-  const rotation = image.rotation || 0;
-
-  const dx = point.x - centerX;
-  const dy = point.y - centerY;
-
-  const localX = dx * Math.cos(-rotation) - dy * Math.sin(-rotation);
-  const localY = dx * Math.sin(-rotation) + dy * Math.cos(-rotation);
-
-  const handleLocalX = 0;
-  const handleLocalY = -image.height / 2 - 20;
-
-  const ddx = localX - handleLocalX;
-  const ddy = localY - handleLocalY;
-
-  return ddx * ddx + ddy * ddy <= 10 * 10;
-};
-
-const getClickedResizeHandle = (
-  image: BoardImage,
-  point: Point,
-): "top-left" | "top-right" | "bottom-left" | "bottom-right" | null => {
-  const centerX = image.x + image.width / 2;
-  const centerY = image.y + image.height / 2;
-  const rotation = image.rotation || 0;
-
-  const dx = point.x - centerX;
-  const dy = point.y - centerY;
-
-  // undo rotation -> click point in local coordinates
-  const localX = dx * Math.cos(-rotation) - dy * Math.sin(-rotation);
-  const localY = dx * Math.sin(-rotation) + dy * Math.cos(-rotation);
-
-  const corners: {
-    name: "top-left" | "top-right" | "bottom-left" | "bottom-right";
-    x: number;
-    y: number;
-  }[] = [
-    { name: "top-left", x: -image.width / 2, y: -image.height / 2 },
-    { name: "top-right", x: image.width / 2, y: -image.height / 2 },
-    { name: "bottom-left", x: -image.width / 2, y: image.height / 2 },
-    { name: "bottom-right", x: image.width / 2, y: image.height / 2 },
-  ];
-
-  for (const corner of corners) {
-    const ddx = localX - corner.x;
-    const ddy = localY - corner.y;
-    if (ddx * ddx + ddy * ddy <= 8 * 8) {
-      return corner.name;
-    }
-  }
-
-  return null;
-};
 
 const isPointNearStroke = (
   point: Point,
@@ -785,8 +729,6 @@ function measureTextBox(
 export {
   getCanvasPoint,
   redraw,
-  isRotationHandlerClicked,
-  getClickedResizeHandle,
   isPointNearStroke,
   drawShape,
   drawLine,

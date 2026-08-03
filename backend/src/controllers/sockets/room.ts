@@ -43,6 +43,7 @@ export function registerRoomHandler(
       callback?.({ success: false, message: "Room already exist" });
       return;
     }
+    
     socket.data.roomId = roomId;
     activeRooms[roomId] = new Set();
     activeRooms[roomId].add(socket.id);

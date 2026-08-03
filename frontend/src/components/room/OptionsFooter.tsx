@@ -1,5 +1,4 @@
 import {
-  Menu,
   MessagesSquare,
   Mic,
   MicOff,
@@ -9,7 +8,7 @@ import {
   Video,
   VideoOff,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import ChatInterface from "./ChatInterface";
 import ParticipantList from "./ParticipantList";
 import { socket } from "../../services/socket";

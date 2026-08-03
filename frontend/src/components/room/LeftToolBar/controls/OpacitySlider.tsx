@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useToolSettings } from "../../../../context/ToolBarLeftContext";
 export default function OpacitySlider() {
   const {opacity,setOpacity}=useToolSettings();

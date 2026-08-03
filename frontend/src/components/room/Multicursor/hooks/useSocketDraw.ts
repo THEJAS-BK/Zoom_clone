@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 
 import { socket } from "../../../../services/socket";
 import type { ActiveStroke, Point, Stroke } from "../types";
@@ -15,7 +15,6 @@ export function useSocketDraw(
   strokes: React.RefObject<Stroke[]>,
   userIdRef: React.RefObject<string>,
   isDrawing: React.RefObject<boolean>,
-  setCursorPos: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>,
   selectedImgIdx: React.RefObject<number>,
   activeTool: string | null,
   strokeColor: string,
@@ -53,16 +52,10 @@ export function useSocketDraw(
       doRedraw();
     };
 
-    const draw = (e: MouseEvent) => {
-      setCursorPos({
-        x: e.clientX,
-        y: e.clientY,
-      });
+    const draw = (e: MouseEvent) => { 
       if (!isDrawing.current || selectedEle) return;
-
       const { x, y } = getCanvasPoint(e, canvas, camera);
       currentStroke.current.push({ x, y });
-
       socket.emit("stroke-points", {
         userId: userIdRef.current,
         roomId,

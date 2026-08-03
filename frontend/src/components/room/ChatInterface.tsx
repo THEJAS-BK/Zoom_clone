@@ -1,6 +1,5 @@
 import { X } from "lucide-react";
 import ChatBox from "./ChatBox";
-import Button from "@mui/material/Button";
 import { socket } from "../../services/socket";
 import { useEffect, useState } from "react";
 import type { RecieveMessage } from "../../types/Chat";

@@ -4,7 +4,6 @@ import type { RefObject } from "react";
 import type { TextBox, CanvasElement,Shape,Line } from "../types";
 import { useToolSettings } from "../../../../context/ToolBarLeftContext";
 import { getNextZIndex } from "../tools/zIndex";
-import { measureTextBox } from "../canvas";
 export function useTextBox(
   roomId: string,
   camera: RefObject<{ x: number; y: number; scale: number }>,

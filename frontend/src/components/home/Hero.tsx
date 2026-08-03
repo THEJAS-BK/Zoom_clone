@@ -1,5 +1,3 @@
-import Button from "@mui/material/Button";
-import Stack from "@mui/material/Stack";
 import Footer from "./Footer";
 //type
 type CreateRoomResponse = {
@@ -7,7 +5,7 @@ type CreateRoomResponse = {
   message?: string;
 };
 //hooks
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 //services
@@ -16,6 +14,7 @@ import { socket } from "../../services/socket";
 //utils
 import { generateRoomId } from "../../utils/RoomId";
 import MyBoards from "./MyBoards";
+import { connectSocket } from "./tools/connectSocket";
 
 
 export default function Hero({ myBoardsRef }: { myBoardsRef: React.RefObject<HTMLDivElement | null>}) {
@@ -27,44 +26,6 @@ export default function Hero({ myBoardsRef }: { myBoardsRef: React.RefObject<HTM
   const [Toast, setToast] = useState({ open: false, message: "" });
   const [loading, setLoading] = useState<string | null>(null);
 
-  function connectSocket(maxAttempts = 5): Promise<void> {
-  return new Promise((resolve, reject) => {
-    let attempt = 0;
-
-    const tryConnect = () => {
-      attempt++;
-
-      const onConnect = () => {
-        cleanup();
-        resolve();
-      };
-      const onError = (err: Error) => {
-        cleanup();
-        if (attempt >= maxAttempts) {
-          reject(err);
-          return;
-        }
-        setTimeout(tryConnect, attempt * 1000);
-      };
-      const cleanup = () => {
-        socket.off("connect", onConnect);
-        socket.off("connect_error", onError);
-      };
-
-      socket.once("connect", onConnect);
-      socket.once("connect_error", onError);
-
-      if (!socket.connected) socket.connect();
-    };
-
-    if (socket.connected) {
-      resolve();
-      return;
-    }
-
-    tryConnect();
-  });
-}
 
   const handleCreateRoom = async () => {
     try {

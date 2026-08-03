@@ -44,7 +44,6 @@ import {
   syncToolSettingsToLine,
   computeTextBoxRotation,
 } from "../../room/Multicursor/tools/selectionTools";
-import type { getFormControlLabelUtilityClasses } from "@mui/material/FormControlLabel";
 export function useOfflineSelection(
   canvasRef: RefObject<HTMLCanvasElement | null>,
   camera: RefObject<{ x: number; y: number; scale: number }>,

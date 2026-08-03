@@ -2,7 +2,6 @@
 import {
   Circle,
   Diamond,
-  Menu,
   Minus,
   MoveRight,
   Pencil,

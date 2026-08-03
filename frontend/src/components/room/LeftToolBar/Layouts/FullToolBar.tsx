@@ -1,4 +1,3 @@
-import React, { useEffect } from "react";
 import ColorSwatches from "../controls/ColorSwatches";
 import StrokeWidth from "../controls/StrokeWidth";
 import OpacitySlider from "../controls/OpacitySlider";

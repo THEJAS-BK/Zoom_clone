@@ -39,7 +39,6 @@ export default function RoomPage() {
 
 function RoomContent({ roomId }: { roomId: string }) {
   const [openCursor, setOpenCursor] = useState(true);
-  const [redrawVersion, setRedrawVersion] = useState(0);
   const [isHambergerMenuOpen, setIsHambergerMenuOpen] = useState(false);
   const [isViewMode, setIsViewMode] = useState(false);
   const [isImageUploadInterfaceOpen, setIsImageUploadInterfaceOpen] =
@@ -142,7 +141,7 @@ function RoomContent({ roomId }: { roomId: string }) {
         {openCursor && isMobileScreen && (
           <div
             onClick={() => setIsMobileScreenTabOpen(!isMobileScreenTabOpen)}
-            className="fixed text-white z-[60] right-5 top-5 bg-slate-800 p-2 rounded cursor-pointer"
+            className="fixed  text-white z-[60] right-5 top-5 bg-slate-800 p-2 rounded cursor-pointer"
           >
             <SquarePlay />
           </div>
@@ -153,7 +152,7 @@ function RoomContent({ roomId }: { roomId: string }) {
             {/* Backdrop */}
             <div
               onClick={() => setIsMobileScreenTabOpen(false)}
-              className={`fixed inset-0 bg-black/40 z-[55] transition-opacity duration-300 ${
+              className={`fixed inset-0 min-[560px]:hidden bg-black/40 z-[55] transition-opacity duration-300 ${
                 isMobileScreenTabOpen
                   ? "opacity-100 pointer-events-auto"
                   : "opacity-0 pointer-events-none"
@@ -162,7 +161,7 @@ function RoomContent({ roomId }: { roomId: string }) {
 
             {/* Slide-in panel */}
             <div
-              className={`fixed top-0 right-0 h-full w-64 bg-[#1e1e2e] border-l border-white/10 text-white p-4 shadow-2xl z-[60] transform transition-transform duration-300 ease-out ${
+              className={`fixed top-0 min-[560px]:hidden right-0 h-full w-64 bg-[#1e1e2e] border-l border-white/10 text-white p-4 shadow-2xl z-[60] transform transition-transform duration-300 ease-out ${
                 isMobileScreenTabOpen ? "translate-x-0" : "translate-x-full"
               }`}
             >
@@ -220,7 +219,6 @@ function RoomContent({ roomId }: { roomId: string }) {
         {openCursor && (
           <MultiCursor
             roomId={roomId}
-            imageUpdate={redrawVersion}
             images={images}
             openCursor={openCursor}
             setOpenCursor={setOpenCursor}

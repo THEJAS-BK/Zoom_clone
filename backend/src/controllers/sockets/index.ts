@@ -40,7 +40,7 @@ const setSocketConnection = (server: any) => {
     }
   });
   io.on("connection", (socket) => {
-    registerSwitchBoards(socket, roomBoards, roomElements,roomBoardColors,activeRooms,roomMuteState);
+    registerSwitchBoards(socket, roomBoards, roomElements,roomBoardColors,activeRooms,roomMuteState,roomUserInfo);
     registerRoomHandler(socket,io, activeRooms,roomUserInfo,roomMuteState);
     registerWebRtcHandler(socket, io,roomMuteState);
     registerChatInterfaceHandler(socket, io);

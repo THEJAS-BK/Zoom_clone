@@ -1,7 +1,6 @@
 import {SquareDashedTopSolid,SquareDashed} from "lucide-react"
 import { useToolSettings } from "../../../../context/ToolBarLeftContext"
 import { useEditElements } from "../../Multicursor/hooks/useEditElements";
-import { useEffect } from "react";
 export default function EdgeSetting() {
   const { edgeStyle, setEdgeStyle,selectedEle } = useToolSettings();
   const {handleEdgeUpdatation}=useEditElements();

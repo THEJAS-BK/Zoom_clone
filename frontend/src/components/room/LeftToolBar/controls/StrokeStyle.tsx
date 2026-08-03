@@ -1,4 +1,3 @@
-
 import { useToolSettings } from "../../../../context/ToolBarLeftContext";
 import { Minus } from "lucide-react";
 import { DashedLine } from "../../../icons/DashedLine";

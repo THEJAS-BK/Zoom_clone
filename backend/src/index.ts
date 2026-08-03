@@ -33,7 +33,7 @@ import boardRoutes from "./routes/boards.routes"
 
 //sockets setup
 const server = createServer(app);
-const io = setSocketConnection(server);
+setSocketConnection(server);
 
 //all routes
 app.use("/users",userRoutes)
@@ -43,9 +43,6 @@ app.use(
   AuthRoutes,
 );
 app.use("/boards", boardRoutes);
-
-
-
 
 server.listen(8080, () => {
   console.log("server started on port 8080");

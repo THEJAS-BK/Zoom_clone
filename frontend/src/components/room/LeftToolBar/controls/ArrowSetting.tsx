@@ -1,8 +1,6 @@
 import {
   MoveUpRight,
   CornerUpRight,
-  TrendingUp,
-  ArrowRightFromLine,
   MoveRight,
   MoveHorizontal,
 } from "lucide-react";
