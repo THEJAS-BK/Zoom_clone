@@ -29,22 +29,17 @@ const setSocketConnection = (server: any) => {
 
   io.use((socket, next) => {
     const token = socket.handshake.auth.accesstoken;
-    if (!token) {
-      return next(new Error("NO token provided"));
-    }
+     if (!token) return next(new Error("unauthorized"));
     try {
       const decode = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as any;
       socket.data.userId = decode.userId;
       socket.data.name = decode.name;
-      console.log("User connected:", socket.data.name);
       next();
     } catch (error) {
-      return next(new Error("Invalid token"));
+      next(new Error("unauthorized"));
     }
   });
   io.on("connection", (socket) => {
-   
-    console.log("user joined    ", socket.id);
     registerSwitchBoards(socket, roomBoards, roomElements,roomBoardColors,activeRooms,roomMuteState);
     registerRoomHandler(socket,io, activeRooms,roomUserInfo,roomMuteState);
     registerWebRtcHandler(socket, io,roomMuteState);

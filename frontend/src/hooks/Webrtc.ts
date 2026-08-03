@@ -117,11 +117,10 @@ export const useWebRTC = (roomId: string) => {
             ? "Camera/mic access was blocked. You can still join and see/hear others, but they won't see or hear you."
             : "No camera or mic found. You can still join and see/hear others.",
         );
-        // localStream.current stays null — createPC falls back to recvonly transceivers
       }
 
       setIsReady(true);
-      resolveReady(); // always resolve — nothing else should hang waiting on this
+      resolveReady(); 
 
       const join = () => {
         setMySocketId(socket.id);
