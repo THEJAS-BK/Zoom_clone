@@ -24,6 +24,8 @@ export const useWebRTC = (roomId: string) => {
     [socketId: string]: boolean;
   }>({});
 
+  const [mediaError, setMediaError] = useState<string | null>(null);
+
   const localStreamReady = useRef<Promise<void>>(Promise.resolve());
 
   const [mySocketId, setMySocketId] = useState<string | undefined>(socket.id);
@@ -56,9 +58,16 @@ export const useWebRTC = (roomId: string) => {
 
     const pc = new RTCPeerConnection(ICE_CONFIG);
 
-    localStream.current
-      ?.getTracks()
-      .forEach((track) => pc.addTrack(track, localStream.current!));
+    if (localStream.current) {
+      localStream.current
+        .getTracks()
+        .forEach((track) => pc.addTrack(track, localStream.current!));
+    } else {
+      // no local media (blocked/denied/no device) — still negotiate
+      // audio/video so we can receive everyone else's stream
+      pc.addTransceiver("audio", { direction: "recvonly" });
+      pc.addTransceiver("video", { direction: "recvonly" });
+    }
 
     pc.onicecandidate = ({ candidate }) => {
       if (candidate) socket.emit("ice-candidates", { to: remoteId, candidate });
@@ -81,28 +90,39 @@ export const useWebRTC = (roomId: string) => {
     const init = async () => {
       if (localStream.current) return;
 
-      localStream.current = await navigator.mediaDevices.getUserMedia({
-        video: true,
+      try {
+        localStream.current = await navigator.mediaDevices.getUserMedia({
+          video: true,
           audio: {
-    echoCancellation: true,
-    noiseSuppression: true,
-    autoGainControl: true,
-  },
-      });
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
+        });
 
-      const audioTrack = localStream.current.getAudioTracks()[0];
+        const audioTrack = localStream.current.getAudioTracks()[0];
 
-      //disable audio at start
-      audioTrack.enabled = false;
-      setIsAudioMuted(true);
+        //disable audio at start
+        audioTrack.enabled = false;
+        setIsAudioMuted(true);
 
-      //disable video from start
-      const videoTrack = localStream.current.getVideoTracks()[0];
-      videoTrack.enabled = false;
-      setIsVideoMuted(true);
+        //disable video from start
+        const videoTrack = localStream.current.getVideoTracks()[0];
+        videoTrack.enabled = false;
+        setIsVideoMuted(true);
+      } catch (err: any) {
+        console.error("getUserMedia failed:", err);
+        setMediaError(
+          err?.name === "NotAllowedError"
+            ? "Camera/mic access was blocked. You can still join and see/hear others, but they won't see or hear you."
+            : "No camera or mic found. You can still join and see/hear others.",
+        );
+        // localStream.current stays null — createPC falls back to recvonly transceivers
+      }
 
       setIsReady(true);
-      resolveReady(); // trigger re-render so local video shows up
+      resolveReady(); // always resolve — nothing else should hang waiting on this
+
       const join = () => {
         setMySocketId(socket.id);
         socket.emit("join-room", roomId, (res: any) => {
@@ -183,11 +203,12 @@ export const useWebRTC = (roomId: string) => {
     socket.on("receive-answer", async ({ from, answer }: any) => {
       await localStreamReady.current;
       await peerConnections.current[from].setRemoteDescription(answer);
-      await flushPending(from, peerConnections.current[from]); // <-- add
+      await flushPending(from, peerConnections.current[from]);
     });
 
     socket.on("receive-ice-candidates", async ({ from, candidate }) => {
       const pc = peerConnections.current[from];
+      if (!pc) return;
 
       if (!pc.remoteDescription) {
         if (!pendingCandidates.current[from]) {
@@ -268,5 +289,6 @@ export const useWebRTC = (roomId: string) => {
     remoteAudioMuted,
     users,
     mySocketId,
+    mediaError,
   };
 };
