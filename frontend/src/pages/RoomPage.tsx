@@ -113,8 +113,8 @@ function RoomContent({ roomId }: { roomId: string }) {
   }, [roomId]);
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
-      <main className="flex-1 flex static">
+    <div className="h-dvh flex flex-col overflow-hidden">
+      <main className="flex-1 flex relative">
         {openCursor && (
           <>
             <button
