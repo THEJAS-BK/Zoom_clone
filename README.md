@@ -46,7 +46,7 @@ real time.
 ### Clone the repo
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/THEJAS-BK/syncvas.git
 cd syncvas
 ```
 
