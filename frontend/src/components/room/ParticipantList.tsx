@@ -26,9 +26,25 @@ export default function ParticipantList({ onClose }: { onClose: () => void }) {
 
   return (
      <div
-      onClick={(e) => e.stopPropagation()}
-      className="absolute bottom-full left-0 mb-2 flex flex-col h-[400px] w-[280px] bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl overflow-hidden"
-    >
+  onClick={(e) => e.stopPropagation()}
+  className="
+    absolute bottom-full left-0 mb-2
+    flex flex-col
+    h-[500px] w-[320px]
+    bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl overflow-hidden
+
+    max-[550px]:fixed
+    max-[550px]:left-1/2
+    max-[550px]:top-1/2
+    max-[550px]:bottom-auto
+    max-[550px]:-translate-x-1/2
+    max-[550px]:-translate-y-1/2
+    max-[550px]:w-[90vw]
+    max-[550px]:max-w-[280px]
+    max-[550px]:h-[380px]
+    max-[550px]:mb-0
+  "
+>
       <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-700">
         <span className="text-sm font-medium text-white">
           Participants ({participantNames.length})

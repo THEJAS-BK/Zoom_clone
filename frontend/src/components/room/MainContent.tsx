@@ -25,7 +25,7 @@ export default function MainContent({
   },[roomId])
 
   return (
-    <div className="h-[100dvh] w-full flex flex-col overflow-hidden bg-zinc-900">
+    <div className="h-full w-full flex flex-col overflow-hidden bg-zinc-900">
       <RoomNavbar roomId={roomId} />
 
       <div className="flex-1 min-h-0 w-full flex">
