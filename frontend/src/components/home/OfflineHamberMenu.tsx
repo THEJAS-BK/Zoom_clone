@@ -94,7 +94,7 @@ export default function OfflineHamberMenu({
   }
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
+    const handleClickOutside = (e: MouseEvent|TouchEvent) => {
       const target = e.target as HTMLElement;
 
       // Ignore clicks on the trigger — let its own onClick toggle handle it
@@ -108,15 +108,17 @@ export default function OfflineHamberMenu({
     };
 
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [setIsHambergerMenuOpen]);
 
   return (
     <div
       ref={menuRef}
-className="absolute top-25 left-5 max-[650px]:right-5 bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl min-w-[220px] max-[650px]:min-w-0 max-[650px]:w-[calc(100vw-2.5rem)] z-20"    >
+className="absolute top-25 left-5 max-[650px]:right-5 bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl min-w-[220px] max-[650px]:min-w-0 max-[650px]:w-[calc(100vw-2.5rem)] z-50"    >
       {/* Actions */}
       <ul>
         <li className="relative border-b border-white/10">
