@@ -6,7 +6,7 @@ import {
   useState,
 } from "react";
 import type { RefObject } from "react";
-const COLORS = ["#f87171", "#22c55e", "#3b82f6", "#d97706"];
+const COLORS = ["#22c55e", "#3b82f6", "#d97706"];
 //helper function
 import { redraw } from "../room/Multicursor/canvas";
 
@@ -257,6 +257,25 @@ export default function OfflineMultiCursor({
     userIdRef.current = id;
   }, []);
 
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (activeTool !== "text") return;
+      e.preventDefault(); // works now — real listener, not passive
+      const touch = e.touches[0];
+      placeTextBox(touch.clientX, touch.clientY);
+      triggerUpdate();
+    };
+
+    canvas.addEventListener("touchstart", handleTouchStart, { passive: false });
+
+    return () => {
+      canvas.removeEventListener("touchstart", handleTouchStart);
+    };
+  }, [activeTool]);
+
   function TextBoxEditor({
     box,
     camera,
@@ -376,11 +395,7 @@ export default function OfflineMultiCursor({
         height: "100%",
       }}
     >
-      <ZoomAndRedoUndo
-        canvasRef={canvasRef}
-        camera={camera}
-        doRedraw={doRedraw}
-      />
+      <ZoomAndRedoUndo canvasRef={canvasRef} camera={camera} />
 
       <canvas
         ref={canvasRef}

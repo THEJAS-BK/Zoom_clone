@@ -185,16 +185,62 @@ export function useOfflineLines(
       }
     };
 
+      //touch evetns
+        const handleTouchStart = (e: TouchEvent) => {
+          if (e.touches.length !== 1) return;
+          e.preventDefault();
+          onMouseDown(e.touches[0] as unknown as MouseEvent);
+        };
+        const handleTouchMove = (e: TouchEvent) => {
+          if (e.touches.length !== 1) return;
+          e.preventDefault();
+          if (isPlacing.current && activeLine.current) {
+            finalizeLine();
+            isPlacing.current = false;
+            return;
+          }
+          onMouseMove(e.touches[0] as unknown as MouseEvent);
+        };
+        const handleTouchEnd = () => {
+          if (!isDragging.current || !activeLine.current) return;
+          isDragging.current = false;
+    
+          const line = activeLine.current;
+          const dx = line.x2 - line.x1;
+          const dy = line.y2 - line.y1;
+    
+          if (dx * dx + dy * dy < 25) {
+            // too small a drag on touch — discard instead of entering placing mode
+            activeLine.current = null;
+            doRedraw();
+            return;
+          }
+    
+          activeLine.current = null;
+          linesRef.current = [...linesRef.current, line];
+          doRedraw();
+        };
+
     canvas.addEventListener("mousedown", onMouseDown);
     canvas.addEventListener("mousemove", onMouseMove);
     canvas.addEventListener("mouseup", onMouseUp);
     window.addEventListener("keydown", onKeyDown);
+       //touch events
+    canvas.addEventListener("touchstart", handleTouchStart);
+    canvas.addEventListener("touchmove", handleTouchMove);
+    canvas.addEventListener("touchend", handleTouchEnd);
+    canvas.addEventListener("touchcancel", handleTouchEnd);
 
     return () => {
       canvas.removeEventListener("mousedown", onMouseDown);
       canvas.removeEventListener("mousemove", onMouseMove);
       canvas.removeEventListener("mouseup", onMouseUp);
       window.removeEventListener("keydown", onKeyDown);
+           //touch events
+      canvas.removeEventListener("touchstart", handleTouchStart);
+      canvas.removeEventListener("touchmove", handleTouchMove);
+      canvas.removeEventListener("touchend", handleTouchEnd);
+      canvas.removeEventListener("touchcancel", handleTouchEnd);
     };
   }, [
     activeTool,

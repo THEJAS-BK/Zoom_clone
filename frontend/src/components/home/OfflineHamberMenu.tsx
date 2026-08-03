@@ -116,8 +116,7 @@ export default function OfflineHamberMenu({
   return (
     <div
       ref={menuRef}
-      className="absolute top-25 left-5 bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl  min-w-[220px] z-20"
-    >
+className="absolute top-25 left-5 max-[650px]:right-5 bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl min-w-[220px] max-[650px]:min-w-0 max-[650px]:w-[calc(100vw-2.5rem)] z-20"    >
       {/* Actions */}
       <ul>
         <li className="relative border-b border-white/10">
@@ -131,7 +130,7 @@ export default function OfflineHamberMenu({
             Save Board
           </button>
           {subMenu==="saveBoards" && (
-            <div className="absolute top-0 left-full ml-1 bg-[#1e1e2e] border border-white/10 rounded-2xl shadow-xl w-72 p-6 z-40">
+            <div className="absolute top-0 left-full ml-1 max-[650px]:top-full max-[650px]:left-0 max-[650px]:ml-0 max-[650px]:mt-1 bg-[#1e1e2e] border border-white/10 rounded-2xl shadow-xl w-72 max-[650px]:w-full p-6 max-[650px]:p-4 z-40">
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-gray-100">
@@ -204,7 +203,7 @@ export default function OfflineHamberMenu({
             Board colors
           </button>
           {subMenu==="boardColor" && (
-            <div className="absolute top-0 left-full ml-1 flex p-1 justify-between bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl min-w-[140px] z-40">
+            <div className="absolute top-0 left-full ml-1 max-[650px]:top-full max-[650px]:left-0 flex p-1 justify-between bg-[#1e1e2e] border border-white/10 rounded-lg shadow-xl min-w-[140px] z-40">
               {boardColors.map((color) => (
                 <div
                   key={color.name}

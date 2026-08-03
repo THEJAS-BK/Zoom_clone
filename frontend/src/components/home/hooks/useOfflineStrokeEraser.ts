@@ -74,14 +74,32 @@ export function useOfflineStrokeEraser(
       lastPoint.current = null;
     };
 
+      //touch events
+    const handleTouchMove=(e:TouchEvent)=>{
+      if(e.touches.length!==1) return;
+      e.preventDefault()
+      mouseMove(e.touches[0] as unknown as MouseEvent);
+    }
+
+
     canvas.addEventListener("mousedown", mouseDown);
     canvas.addEventListener("mousemove", mouseMove);
     window.addEventListener("mouseup", mouseUp);
+    //touch events
+    canvas.addEventListener("touchstart", mouseDown);
+    canvas.addEventListener("touchmove", handleTouchMove);
+    canvas.addEventListener("touchend", mouseUp);
+    canvas.addEventListener("touchcancel", mouseUp);
 
     return () => {
       canvas.removeEventListener("mousedown", mouseDown);
       canvas.removeEventListener("mousemove", mouseMove);
       window.removeEventListener("mouseup", mouseUp);
+        //touch event
+      canvas.removeEventListener("touchstart", mouseDown);
+      canvas.removeEventListener("touchmove", handleTouchMove);
+      canvas.removeEventListener("touchend", mouseUp);
+      canvas.removeEventListener("touchcancel", mouseUp);
     };
   }, [activeTool]);
 }

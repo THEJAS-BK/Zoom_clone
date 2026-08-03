@@ -123,11 +123,11 @@ function OfflineboardContent() {
       )}
 
       <ToolBarContainer />
-      <div className="absolute top-10 left-1/2 -translate-x-1/2 -translate-y-1/2  text-white shadow-lg z-20 ">
-        <OfflineTools
-          setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen}
-        />
-      </div>
+      <div className="absolute bottom-2 left-1/12 max-[419px]:left-2 max-[419px]:right-auto max-[419px]:translate-x-0 md:left-1/2 md:-translate-x-1/2 md:top-10 md:bottom-auto md:-translate-y-1/2 rounded text-white shadow-lg z-20">
+  <OfflineTools
+    setIsImageUploadInterfaceOpen={setIsImageUploadInterfaceOpen}
+  />
+</div>
       <OfflineMultiCursor images={images} camera={camera} canvasRef={canvasRef} />
     </main>
   );

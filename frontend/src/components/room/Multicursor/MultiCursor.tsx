@@ -193,16 +193,16 @@ export default function MultiCursor({
     doRedraw,
   );
   const { placeTextBox, finalizeTextBox, updateTextBoxContent } = useTextBox(
-    roomId ?? "",
-    camera,
-    userIdRef.current,
-    strokeColor,
-    textBoxesRef,
-    activeTextBox,
-    shapesRef,
-    linesRef,
-    doRedraw,
-  );
+  roomId ?? "",
+  camera,
+  userIdRef.current,
+  strokeColor,
+  textBoxesRef,
+  activeTextBox,
+  shapesRef,     
+  linesRef,
+  doRedraw,
+);
   const hasTextElements =
     activeTextBox !== null || textBoxesRef.current.length > 0;
 

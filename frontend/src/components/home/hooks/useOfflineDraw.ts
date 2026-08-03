@@ -1,7 +1,14 @@
 import React, { useEffect } from "react";
-import type { ActiveStroke, Point, Stroke } from "../../room/Multicursor/types.ts";
+import type {
+  ActiveStroke,
+  Point,
+  Stroke,
+} from "../../room/Multicursor/types.ts";
 
-import { getCanvasPoint, isPointNearStroke } from "../../room/Multicursor/canvas.ts";
+import {
+  getCanvasPoint,
+  isPointNearStroke,
+} from "../../room/Multicursor/canvas.ts";
 import { useToolSettings } from "../../../context/ToolBarLeftContext.tsx";
 
 export function useOfflineDraw(
@@ -96,14 +103,39 @@ export function useOfflineDraw(
       doRedraw();
     };
 
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      e.preventDefault();
+      startDrawing(e.touches[0] as unknown as MouseEvent);
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      e.preventDefault();
+      draw(e.touches[0] as unknown as MouseEvent);
+    };
+    const handleTouchEnd = () => {
+      stopDrawing();
+    };
+
     canvas.addEventListener("mousedown", startDrawing);
     canvas.addEventListener("mousemove", draw);
     window.addEventListener("mouseup", stopDrawing);
+    //touch
+    canvas.addEventListener("touchstart", handleTouchStart);
+    canvas.addEventListener("touchmove", handleTouchMove);
+    canvas.addEventListener("touchend", handleTouchEnd);
+    canvas.addEventListener("touchcancel", handleTouchEnd);
 
     return () => {
       canvas.removeEventListener("mousedown", startDrawing);
       canvas.removeEventListener("mousemove", draw);
       window.removeEventListener("mouseup", stopDrawing);
+      //touch
+      canvas.removeEventListener("touchstart", handleTouchStart);
+      canvas.removeEventListener("touchmove", handleTouchMove);
+      canvas.removeEventListener("touchend", handleTouchEnd);
+      canvas.removeEventListener("touchcancel", handleTouchEnd);
     };
   }, [
     activeTool,
