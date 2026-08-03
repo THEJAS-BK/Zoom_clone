@@ -141,7 +141,7 @@ function RoomContent({ roomId }: { roomId: string }) {
         {openCursor && isMobileScreen && (
           <div
             onClick={() => setIsMobileScreenTabOpen(!isMobileScreenTabOpen)}
-             className="fixed text-white z-20 left-5 top-5 bg-slate-800 p-2 rounded"
+             className="fixed text-white z-20 right-5 top-5 bg-slate-800 p-2 rounded"
           >
             <SquarePlay />
           </div>
