@@ -164,7 +164,7 @@ export const useWebRTC = (roomId: string) => {
     };
 
     socket.on("receive-offer", async ({ from, offer }) => {
-      await localStreamReady.current;      
+      await localStreamReady.current;
       let pc = peerConnections.current[from];
       if (!pc) pc = createPC(from);
 
