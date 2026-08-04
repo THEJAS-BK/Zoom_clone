@@ -17,7 +17,6 @@ export default function VideoCard({
   openCursor?: boolean;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
-  <Mic />;
 
   useEffect(() => {
     if (!ref.current || !stream) return;
@@ -42,19 +41,17 @@ export default function VideoCard({
   const initial = user?.trim()[0];
 
   return (
-    <div className="relative w-full h-[95%]">
+    <div className="relative w-full h-[95%] overflow-hidden rounded-lg">
       <video
         ref={ref}
         autoPlay
         playsInline
         muted={muted}
-        className={`w-full h-full object-cover rounded-lg ${
-          isVideoMuted ? "invisible" : ""
-        }`}
+        className="w-full h-full object-cover"
       />
 
       {isVideoMuted && (
-        <div className={`absolute inset-0 h-[95%] flex items-center justify-center rounded-lg bg-neutral-800`}>
+        <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-neutral-800">
           <span className="text-4xl font-semibold text-white">{initial}</span>
         </div>
       )}

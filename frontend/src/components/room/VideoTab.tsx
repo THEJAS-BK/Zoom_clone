@@ -38,10 +38,10 @@ export default function VideoTab({
     if (count === 2)
       return "max-[639px]:w-full max-[639px]:h-[45%] w-[calc(50%-0.25rem)] h-[90%] min-[1000px]:max-w-[520px]";
     if (count === 3)
-      return "w-[calc(50%-0.25rem)] h-[calc(50%-0.25rem)] min-[1000px]:w-[calc(33.333%-0.34rem)] min-[1000px]:h-[90%] min-[1000px]:max-w-[440px]";
+      return "max-[639px]:w-full max-[639px]:h-[30%] w-[calc(50%-0.25rem)] h-[calc(50%-0.25rem)] min-[1000px]:w-[calc(33.333%-0.34rem)] min-[1000px]:h-[90%] min-[1000px]:max-w-[440px]";
     if (count === 4)
-      return "w-[calc(50%-0.25rem)] h-[calc(50%-0.25rem)] min-[1000px]:max-w-[440px]";
-    return "w-[calc(33.333%-0.34rem)] h-[calc(50%-0.25rem)] min-[1000px]:max-w-[380px]";
+      return "max-[639px]:w-[calc(50%-0.25rem)] max-[639px]:h-[23%] w-[calc(50%-0.25rem)] h-[calc(50%-0.25rem)] min-[1000px]:max-w-[440px]";
+    return "max-[639px]:w-[calc(50%-0.25rem)] max-[639px]:h-[22%] w-[calc(33.333%-0.34rem)] h-[calc(50%-0.25rem)] min-[1000px]:max-w-[380px]";
   };
   return (
     <>
@@ -78,7 +78,7 @@ export default function VideoTab({
       {openCursor && (
         <div className="p-2 flex flex-col gap-2 w-full overflow-y-auto max-h-[calc(4*12rem+1.5rem)]">
           {isReady && localStream.current && (
-            <div>
+            <div className="w-full aspect-video shrink-0">
               <VideoCard
                 stream={localStream.current}
                 isVideoMuted={isVideoMuted}
@@ -90,7 +90,7 @@ export default function VideoTab({
             </div>
           )}
           {Object.entries(remoteStreams).map(([id, stream]) => (
-            <div key={id}>
+            <div key={id} className="w-full aspect-video shrink-0">
               <VideoCard
                 stream={stream}
                 isVideoMuted={remoteVideoMuted[id] ?? true}
@@ -101,7 +101,7 @@ export default function VideoTab({
             </div>
           ))}
           {participantCount > 4 && (
-            <div className="hidden  w-full h-30 shrink-0" >jook</div>
+            <div className="hidden  w-full h-30 shrink-0">jook</div>
           )}
         </div>
       )}

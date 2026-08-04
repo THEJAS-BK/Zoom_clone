@@ -116,7 +116,7 @@ const { isMediaPermissionGiven, setIsMediaPermissionGiven } = useWebRtcContext()
 
   return (
     <div className="h-dvh flex flex-col overflow-hidden">
-      <main className="flex-1 flex relative">
+      <main className="flex-1 flex relative min-h-0">
         {openCursor && (
           <>
             <button

@@ -99,6 +99,7 @@ export default function Hero({ myBoardsRef }: { myBoardsRef: React.RefObject<HTM
               type="text"
               value={roomId}
               placeholder="Room code"
+              maxLength={6}
               className="w-full border border-gray-300 text-[#101820] p-3 rounded-lg mt-5 tracking-widest text-center font-medium focus:outline-none focus:ring-2 focus:ring-[#101820]/20 focus:border-[#101820]"
             />
 
