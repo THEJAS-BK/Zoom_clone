@@ -7,7 +7,6 @@ import {
 } from "react";
 import type { RefObject } from "react";
 const COLORS = ["#adb5bd", "#f87171", "#22c55e", "#3b82f6", "#d97706"];
-
 //helper function
 import { redraw } from "../room/Multicursor/canvas";
 

@@ -34,6 +34,10 @@ import boardRoutes from "./routes/boards.routes"
 //sockets setup
 const server = createServer(app);
 setSocketConnection(server);
+//health check
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 //all routes
 app.use("/users",userRoutes)
