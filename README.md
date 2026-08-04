@@ -9,8 +9,8 @@ real time.
 
 https://github.com/user-attachments/assets/fd9fa51b-b843-4f0c-879c-d82470c8ee93
 
-### 📺 Watch complete video
-[Coming soon]
+### 📺 Watch complete Demo video
+https://www.linkedin.com/posts/thejas-bk-96a6b9330_webdevelopment-reactjs-typescript-ugcPost-7490407796664909825-tyTa/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFNlxSIBeQQNYmPDkyx9YCRLntipkvTeNKo
 
 ## Features
 
