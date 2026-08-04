@@ -29,12 +29,7 @@ export default function MediaPermissionTab({
       <p className="text-sm text-gray-600">
         Please give camera and microphone permissions and reload the page.
       </p>
-      <button
-        onClick={() => window.location.reload()}
-        className="bg-[#0a0e1a] text-white text-sm font-semibold rounded-full px-6 py-2 hover:bg-[#1a1f2e] transition"
-      >
-        Reload
-      </button>
+      
     </div>
   );
 }
