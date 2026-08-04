@@ -5,7 +5,7 @@ const ICE_CONFIG = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 };
 
-export const useWebRTC = (roomId: string|null) => {
+export const useWebRTC = (roomId: string) => {
   const pendingCandidates = useRef<Record<string, RTCIceCandidateInit[]>>({});
   const [remoteStreams, setRemoteStreams] = useState<{
     [socketId: string]: MediaStream;
@@ -93,7 +93,7 @@ export const useWebRTC = (roomId: string|null) => {
       if (localStream.current) return;
 
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
+        localStream.current= await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: {
             echoCancellation: true,
@@ -101,7 +101,6 @@ export const useWebRTC = (roomId: string|null) => {
             autoGainControl: true,
           },
         });
-        localStream.current=stream;
         setIsMediaPermissionGiven(true);
 
         const audioTrack = localStream.current.getAudioTracks()[0];
@@ -134,7 +133,8 @@ export const useWebRTC = (roomId: string|null) => {
             console.error(res.message);
             return;
           }
-          socket.emit("video-toggle", {});
+         socket.emit("video-toggle", { roomId, muted: true });
+socket.emit("audio-toggle", { roomId, muted: true });
         });
       };
 

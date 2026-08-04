@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import MainContent from "../components/room/MainContent";
 import { useEffect, useRef, useState } from "react";
-import { WebRtcProvider } from "../context/WebRtcContext";
+import { useWebRtcContext, WebRtcProvider } from "../context/WebRtcContext";
 import { ToolSettingsProvider } from "../context/ToolBarLeftContext.tsx";
 import MultiCursor from "../components/room/Multicursor/MultiCursor";
 
@@ -63,8 +63,7 @@ function RoomContent({ roomId }: { roomId: string }) {
     setBoardName,
     images,
   } = useToolSettings();
-  const { isMediaPermissionGiven,setIsMediaPermissionGiven } = useWebRTC(roomId);
-
+const { isMediaPermissionGiven, setIsMediaPermissionGiven } = useWebRtcContext();
   useEffect(() => {
     const saveOwnCopy = async () => {
       if (activeSavedBoardId.current) {
@@ -179,8 +178,7 @@ function RoomContent({ roomId }: { roomId: string }) {
           </>
         )}
         
-      
-
+    
          {!isMediaPermissionGiven && (
           <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
             <MediaPermissionTab setIsMediaPermissionGiven={setIsMediaPermissionGiven} />
