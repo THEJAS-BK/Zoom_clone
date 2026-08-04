@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { socket } from "../../../../services/socket";
 import type { RefObject } from "react";
-import type { TextBox, CanvasElement,Shape,Line } from "../types";
+import type { TextBox, CanvasElement, Shape, Line } from "../types";
 import { useToolSettings } from "../../../../context/ToolBarLeftContext";
 import { getNextZIndex } from "../tools/zIndex";
 export function useTextBox(
@@ -15,21 +15,26 @@ export function useTextBox(
   linesRef: React.RefObject<Line[]>,
   doRedraw: () => void,
 ) {
-  const { fontSize,opacity, activeTool, textAlign, fontFamily, selectedEle } =
+  const { fontSize, opacity, activeTool, textAlign, fontFamily, selectedEle } =
     useToolSettings();
 
   useEffect(() => {
-    if (activeTool !== "mouse" || !selectedEle|| selectedEle.type !=="textbox") return;
+    if (
+      activeTool !== "mouse" ||
+      !selectedEle ||
+      selectedEle.type !== "textbox"
+    )
+      return;
     const textbox = textBoxesRef.current.find((t) => t.id === selectedEle?.id);
     if (!textbox) return;
     textbox.fontFamily = fontFamily;
     textbox.fontSize = fontSize;
     textbox.textAlign = textAlign;
-    textbox.opacity=opacity;
+    textbox.opacity = opacity;
     socket.emit("element-update", {
       roomId,
       id: textbox.id,
-      changes: { fontFamily, fontSize, textAlign,opacity },
+      changes: { fontFamily, fontSize, textAlign, opacity },
     });
     doRedraw();
   }, [selectedEle, fontFamily, fontSize, textAlign, opacity]);
@@ -53,32 +58,36 @@ export function useTextBox(
       color,
       userId: userId,
       zIndex: getNextZIndex(shapesRef, linesRef, textBoxesRef),
-      opacity
+      opacity,
     };
     doRedraw();
   };
 
   const updateTextBoxContent = (text: string) => {
-  if (!activeTextBox.current) return;
-  const tb = activeTextBox.current;
-  tb.text = text;
+    if (!activeTextBox.current) return;
+    const tb = activeTextBox.current;
+    tb.text = text;
 
-  const id = tb.id;
-  const exists = textBoxesRef.current.some((b) => b.id === id);
+    const id = tb.id;
+    const exists = textBoxesRef.current.some((b) => b.id === id);
 
-  if (!exists) {
-    const box: TextBox = { ...tb };
-    textBoxesRef.current = [...textBoxesRef.current, box];
-    socket.emit("element-add", { roomId, element: box });
-  } else {
-    textBoxesRef.current = textBoxesRef.current.map((b) =>
-      b.id === id ? { ...b, text: tb.text, x: tb.x, y: tb.y } : b,
-    );
-    socket.emit("element-update", { roomId, id, changes: { text: tb.text, x: tb.x, y: tb.y } });
-  }
+    if (!exists) {
+      const box: TextBox = { ...tb };
+      textBoxesRef.current = [...textBoxesRef.current, box];
+      socket.emit("element-add", { roomId, element: box });
+    } else {
+      textBoxesRef.current = textBoxesRef.current.map((b) =>
+        b.id === id ? { ...b, text: tb.text, x: tb.x, y: tb.y } : b,
+      );
+      socket.emit("element-update", {
+        roomId,
+        id,
+        changes: { text: tb.text, x: tb.x, y: tb.y },
+      });
+    }
 
-  doRedraw();
-};
+    doRedraw();
+  };
 
   const finalizeTextBox = (text: string) => {
     if (!activeTextBox.current) return;

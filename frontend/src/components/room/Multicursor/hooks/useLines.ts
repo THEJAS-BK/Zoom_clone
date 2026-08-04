@@ -32,6 +32,7 @@ export function useLines(
     arrowType,
     arrowHead,
     selectedEle,
+    setIsSuggestionTab
   } = useToolSettings();
 
   useEffect(() => {
@@ -110,6 +111,7 @@ export function useLines(
         return;
       }
       if (isPlacing.current && activeLine.current) {
+        setIsSuggestionTab(true);
         const { x, y } = toCanvas(e.clientX, e.clientY);
 
         if (arrowType === "elbow") {
@@ -222,8 +224,10 @@ export function useLines(
         socket.emit("element-delete", { roomId, id: activeLine.current.id });
         isPlacing.current = false;
         activeLine.current = null;
+        setIsSuggestionTab(false)
         doRedraw();
       } else if (e.key === "Enter") {
+        setIsSuggestionTab(false)
         finalizeLine();
       }
     };

@@ -62,8 +62,10 @@ function RoomContent({ roomId }: { roomId: string }) {
     boardName,
     setBoardName,
     images,
+    isSuggestionTab,
   } = useToolSettings();
-const { isMediaPermissionGiven, setIsMediaPermissionGiven } = useWebRtcContext();
+  const { isMediaPermissionGiven, setIsMediaPermissionGiven } =
+    useWebRtcContext();
   useEffect(() => {
     const saveOwnCopy = async () => {
       if (activeSavedBoardId.current) {
@@ -117,6 +119,11 @@ const { isMediaPermissionGiven, setIsMediaPermissionGiven } = useWebRtcContext()
   return (
     <div className="h-dvh flex flex-col overflow-hidden">
       <main className="flex-1 flex relative min-h-0">
+        {isSuggestionTab && (
+          <div className="absolute top-1 left-1/2 -translate-x-1/2 md:top-20 rounded text-white shadow-lg z-20">
+            press enter to finalize
+          </div>
+        )}
         {openCursor && (
           <>
             <button
@@ -129,7 +136,6 @@ const { isMediaPermissionGiven, setIsMediaPermissionGiven } = useWebRtcContext()
             {isViewMode && <ToolBarContainer />}
           </>
         )}
-     
 
         {isHambergerMenuOpen && (
           <HamberMenu
@@ -144,7 +150,7 @@ const { isMediaPermissionGiven, setIsMediaPermissionGiven } = useWebRtcContext()
         {openCursor && isMobileScreen && (
           <div
             onClick={() => setIsMobileScreenTabOpen(!isMobileScreenTabOpen)}
-             className="fixed text-white z-20 right-5 top-5 bg-slate-800 p-2 rounded"
+            className="fixed text-white z-20 right-5 top-5 bg-slate-800 p-2 rounded"
           >
             <SquarePlay />
           </div>
@@ -177,11 +183,12 @@ const { isMediaPermissionGiven, setIsMediaPermissionGiven } = useWebRtcContext()
             </div>
           </>
         )}
-        
-    
-         {!isMediaPermissionGiven && (
+
+        {!isMediaPermissionGiven && (
           <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
-            <MediaPermissionTab setIsMediaPermissionGiven={setIsMediaPermissionGiven} />
+            <MediaPermissionTab
+              setIsMediaPermissionGiven={setIsMediaPermissionGiven}
+            />
           </div>
         )}
 
@@ -245,4 +252,3 @@ const { isMediaPermissionGiven, setIsMediaPermissionGiven } = useWebRtcContext()
     </div>
   );
 }
-       

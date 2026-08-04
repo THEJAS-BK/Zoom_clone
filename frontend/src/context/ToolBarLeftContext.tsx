@@ -124,6 +124,9 @@ type ToolSettings = {
 
     isDashedBorderNeeded:boolean;
     setIsDashedBorderNeeded:Dispatch<SetStateAction<boolean>>;
+
+    isSuggestionTab:boolean;
+     setIsSuggestionTab:Dispatch<SetStateAction<boolean>>
 };
 
 const ToolBarLeftContext = createContext<ToolSettings | null>(null);
@@ -188,7 +191,7 @@ export function ToolSettingsProvider({
 
   const [isDashedBorderNeeded, setIsDashedBorderNeeded] = useState(false);
 
-
+  const [isSuggestionTab, setIsSuggestionTab] = useState(false);
   return (
     <ToolBarLeftContext.Provider
       value={{
@@ -255,7 +258,8 @@ export function ToolSettingsProvider({
         strokes,
         images,
         isDashedBorderNeeded,
-        setIsDashedBorderNeeded
+        setIsDashedBorderNeeded,
+        isSuggestionTab, setIsSuggestionTab
       }}
     >
       {children}
