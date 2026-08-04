@@ -210,7 +210,6 @@ const redraw = (
     }
   }
 
-
   //selection
   // ---- selection indicators ----
   if (selectedId?.current) {
@@ -313,23 +312,25 @@ const redraw = (
       }
 
       // center handle — sits on the curve at t=0.5
-      const handleX =
-        selectedLine.cpx !== undefined
-          ? 0.25 * selectedLine.x1 +
-            0.5 * selectedLine.cpx +
-            0.25 * selectedLine.x2
-          : (selectedLine.x1 + selectedLine.x2) / 2;
-      const handleY =
-        selectedLine.cpy !== undefined
-          ? 0.25 * selectedLine.y1 +
-            0.5 * selectedLine.cpy +
-            0.25 * selectedLine.y2
-          : (selectedLine.y1 + selectedLine.y2) / 2;
-      ctx.beginPath();
-      ctx.arc(handleX, handleY, 5 / scale, 0, Math.PI * 2);
-      ctx.strokeStyle = "#7C6FF0";
-      ctx.fill();
-      ctx.stroke();
+      if (selectedLine.arrowType !== "elbow") {
+        const handleX =
+          selectedLine.cpx !== undefined
+            ? 0.25 * selectedLine.x1 +
+              0.5 * selectedLine.cpx +
+              0.25 * selectedLine.x2
+            : (selectedLine.x1 + selectedLine.x2) / 2;
+        const handleY =
+          selectedLine.cpy !== undefined
+            ? 0.25 * selectedLine.y1 +
+              0.5 * selectedLine.cpy +
+              0.25 * selectedLine.y2
+            : (selectedLine.y1 + selectedLine.y2) / 2;
+        ctx.beginPath();
+        ctx.arc(handleX, handleY, 5 / scale, 0, Math.PI * 2);
+        ctx.strokeStyle = "#7C6FF0";
+        ctx.fill();
+        ctx.stroke();
+      }
 
       ctx.restore();
     }
@@ -417,9 +418,6 @@ function drawTextBox(ctx: CanvasRenderingContext2D, tb: TextBox) {
 
   ctx.restore();
 }
-
-
-
 
 const isPointNearStroke = (
   point: Point,
@@ -621,10 +619,16 @@ function drawLine(ctx: CanvasRenderingContext2D, line: Line) {
         ctx.lineTo(pts[i].x, pts[i].y);
       }
     }
-  } else {
+ } else {
     ctx.moveTo(line.x1, line.y1);
     if (line.cpx !== undefined && line.cpy !== undefined) {
       ctx.quadraticCurveTo(line.cpx, line.cpy, line.x2, line.y2);
+    } else if (line.lineType === "arrow") {
+      const headLength = Math.max(12, line.strokeWidth * 4);
+      const angle = Math.atan2(dy, dx);
+      const backX = line.x2 - headLength * Math.cos(angle);
+      const backY = line.y2 - headLength * Math.sin(angle);
+      ctx.lineTo(backX, backY);
     } else {
       ctx.lineTo(line.x2, line.y2);
     }
@@ -657,7 +661,7 @@ function drawLine(ctx: CanvasRenderingContext2D, line: Line) {
       startAngle = Math.atan2(line.y1 - line.y2, line.x1 - line.x2);
     }
 
-    const headLength = 12;
+    const headLength = Math.max(12, line.strokeWidth * 4);
     ctx.setLineDash([]);
 
     ctx.beginPath();
@@ -666,12 +670,13 @@ function drawLine(ctx: CanvasRenderingContext2D, line: Line) {
       line.x2 - headLength * Math.cos(angle - Math.PI / 6),
       line.y2 - headLength * Math.sin(angle - Math.PI / 6),
     );
-    ctx.moveTo(line.x2, line.y2);
     ctx.lineTo(
       line.x2 - headLength * Math.cos(angle + Math.PI / 6),
       line.y2 - headLength * Math.sin(angle + Math.PI / 6),
     );
-    ctx.stroke();
+    ctx.closePath();
+    ctx.fillStyle = line.color;
+    ctx.fill();
 
     if (line.arrowHead === "classic") {
       ctx.beginPath();
@@ -680,12 +685,13 @@ function drawLine(ctx: CanvasRenderingContext2D, line: Line) {
         line.x1 - headLength * Math.cos(startAngle - Math.PI / 6),
         line.y1 - headLength * Math.sin(startAngle - Math.PI / 6),
       );
-      ctx.moveTo(line.x1, line.y1);
       ctx.lineTo(
         line.x1 - headLength * Math.cos(startAngle + Math.PI / 6),
         line.y1 - headLength * Math.sin(startAngle + Math.PI / 6),
       );
-      ctx.stroke();
+      ctx.closePath();
+      ctx.fillStyle = line.color;
+      ctx.fill();
     }
 
     ctx.restore();

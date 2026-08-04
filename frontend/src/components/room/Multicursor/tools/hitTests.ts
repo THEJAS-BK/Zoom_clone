@@ -39,8 +39,55 @@ function hitTestShape(shape: Shape, x: number, y: number): boolean {
 function hitTestLine(line: Line, x: number, y: number, scale: number): boolean {
   const tolerance = 6 / scale;
 
+  const distToSegment = (px: number, py: number, ax: number, ay: number, bx: number, by: number) => {
+    const dx = bx - ax;
+    const dy = by - ay;
+    const lenSq = dx * dx + dy * dy;
+    if (lenSq === 0) return Math.hypot(px - ax, py - ay);
+    const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq));
+    const cx = ax + t * dx;
+    const cy = ay + t * dy;
+    return Math.hypot(px - cx, py - cy);
+  };
+
+  if (line.arrowType === "elbow") {
+    const dx = line.x2 - line.x1;
+    const dy = line.y2 - line.y1;
+    if (dx === 0 && dy === 0) return false;
+    const r = Math.min(20, Math.abs(dx) / 2 || 20, Math.abs(dy) / 2 || 20);
+    const sx = dx >= 0 ? 1 : -1;
+    const sy = dy >= 0 ? 1 : -1;
+
+    let segments: [number, number, number, number][];
+    if (Math.abs(dx) >= Math.abs(dy)) {
+      const midX = (line.x1 + line.x2) / 2;
+      segments = [
+        [line.x1, line.y1, midX - sx * r, line.y1],
+        [midX, line.y1 + sy * r, midX, line.y2 - sy * r],
+        [midX + sx * r, line.y2, line.x2, line.y2],
+      ];
+    } else {
+      const midY = (line.y1 + line.y2) / 2;
+      segments = [
+        [line.x1, line.y1, line.x1, midY - sy * r],
+        [line.x1 + sx * r, midY, line.x2 - sx * r, midY],
+        [line.x2, midY + sy * r, line.x2, line.y2],
+      ];
+    }
+    return segments.some(([ax, ay, bx, by]) => distToSegment(x, y, ax, ay, bx, by) < tolerance);
+  }
+
+  if (line.points && line.points.length > 2) {
+    const pts = line.points;
+    for (let i = 0; i < pts.length - 1; i++) {
+      if (distToSegment(x, y, pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y) < tolerance) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   if (line.cpx !== undefined && line.cpy !== undefined) {
-    // sample points along the quadratic bezier
     for (let t = 0; t <= 1; t += 0.05) {
       const bx = (1-t)*(1-t)*line.x1 + 2*(1-t)*t*line.cpx + t*t*line.x2;
       const by = (1-t)*(1-t)*line.y1 + 2*(1-t)*t*line.cpy + t*t*line.y2;
@@ -50,14 +97,7 @@ function hitTestLine(line: Line, x: number, y: number, scale: number): boolean {
   }
 
   // straight line — existing logic
-  const dx = line.x2 - line.x1;
-  const dy = line.y2 - line.y1;
-  const lenSq = dx * dx + dy * dy;
-  if (lenSq === 0) return false;
-  const t = Math.max(0, Math.min(1, ((x - line.x1) * dx + (y - line.y1) * dy) / lenSq));
-  const closestX = line.x1 + t * dx;
-  const closestY = line.y1 + t * dy;
-  return Math.hypot(x - closestX, y - closestY) < tolerance;
+  return distToSegment(x, y, line.x1, line.y1, line.x2, line.y2) < tolerance;
 }
 function hitTestImage(img: BoardImage, x: number, y: number): boolean {
   const centerX = img.x + img.width / 2;

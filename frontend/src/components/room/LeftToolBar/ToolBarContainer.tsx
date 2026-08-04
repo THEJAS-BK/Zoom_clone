@@ -27,7 +27,7 @@ export default function ToolBarContainer() {
   const isCompactView = useMediaQuery(
     "(min-width: 601px) and (max-width: 1024px)",
   );
-  const isSmallView = useMediaQuery("(max-width: 600px)");
+  const isSmallView = useMediaQuery("(max-width: 768px)");
 
   if (selectedEle?.type === "shape") {
     lastTool.current = selectedEle.shapeType;
