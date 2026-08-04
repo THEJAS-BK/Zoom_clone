@@ -7,6 +7,11 @@ real time.
 
 🔗 **Live demo:** [syncvas-eight.vercel.app](https://syncvas-eight.vercel.app/)
 
+https://github.com/user-attachments/assets/fd9fa51b-b843-4f0c-879c-d82470c8ee93
+
+### 📺 Watch complete video
+[Coming soon]
+
 ## Features
 
 - **Freeform canvas drawing** — shapes (rectangle, circle, diamond), lines/arrows,
