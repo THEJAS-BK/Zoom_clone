@@ -2,6 +2,7 @@ import { LayoutGrid, Plus, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../../utils/axios";
+import { formatRelativeTime } from "./tools/formatRelativeDate";
 
 interface BoardDoc {
   _id: string;
@@ -149,8 +150,8 @@ export default function MyBoards() {
                 </p>
               )}
               <p className="text-xs text-zinc-400">
-                {new Date(board.updatedAt).toLocaleDateString()}
-              </p>
+  {formatRelativeTime(board.updatedAt)}
+</p>
             </div>
           </div>
         ))}

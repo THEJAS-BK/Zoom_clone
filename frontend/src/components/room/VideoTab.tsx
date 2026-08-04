@@ -57,7 +57,7 @@ export default function VideoTab({
                 isAudioMuted={isAudioMuted}
                 openCursor={openCursor}
                 user={curUserName}
-                muted  
+                muted
               />
             </div>
           )}
@@ -85,6 +85,7 @@ export default function VideoTab({
                 isAudioMuted={isAudioMuted}
                 openCursor={openCursor}
                 user={curUserName}
+                muted
               />
             </div>
           )}
@@ -99,6 +100,9 @@ export default function VideoTab({
               />
             </div>
           ))}
+          {participantCount > 4 && (
+            <div className="hidden  w-full h-30 shrink-0" >jook</div>
+          )}
         </div>
       )}
     </>

@@ -5,7 +5,7 @@ const ICE_CONFIG = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 };
 
-export const useWebRTC = (roomId: string) => {
+export const useWebRTC = (roomId: string|null) => {
   const pendingCandidates = useRef<Record<string, RTCIceCandidateInit[]>>({});
   const [remoteStreams, setRemoteStreams] = useState<{
     [socketId: string]: MediaStream;
@@ -31,6 +31,8 @@ export const useWebRTC = (roomId: string) => {
   const [mySocketId, setMySocketId] = useState<string | undefined>(socket.id);
 
   const [users, setUsers] = useState<{ [socketId: string]: string }>({});
+
+  const[isMediaPermissionGiven,setIsMediaPermissionGiven]=useState(false);
 
   const audioToggle = () => {
     const track = localStream.current?.getAudioTracks()[0];
@@ -91,7 +93,7 @@ export const useWebRTC = (roomId: string) => {
       if (localStream.current) return;
 
       try {
-        localStream.current = await navigator.mediaDevices.getUserMedia({
+        const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: {
             echoCancellation: true,
@@ -99,6 +101,8 @@ export const useWebRTC = (roomId: string) => {
             autoGainControl: true,
           },
         });
+        localStream.current=stream;
+        setIsMediaPermissionGiven(true);
 
         const audioTrack = localStream.current.getAudioTracks()[0];
 
@@ -111,6 +115,7 @@ export const useWebRTC = (roomId: string) => {
         videoTrack.enabled = false;
         setIsVideoMuted(true);
       } catch (err: any) {
+        setIsMediaPermissionGiven(false)
         console.error("getUserMedia failed:", err);
         setMediaError(
           err?.name === "NotAllowedError"
@@ -289,5 +294,7 @@ export const useWebRTC = (roomId: string) => {
     users,
     mySocketId,
     mediaError,
+    isMediaPermissionGiven,
+    setIsMediaPermissionGiven
   };
 };

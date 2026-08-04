@@ -22,6 +22,8 @@ import { HistoryProvider } from "../context/LocalHistoryContext.tsx";
 import ZoomAndRedoUndo from "../components/room/Multicursor/ZoomAndUndoRedo.tsx";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import MobileScreenVideo from "../components/room/MobileScreenVideo.tsx";
+import MediaPermissionTab from "../components/room/MediaPermissionTab.tsx";
+import { useWebRTC } from "../hooks/Webrtc.ts";
 export default function RoomPage() {
   const { roomId } = useParams();
   if (!roomId) return <div>Not found</div>;
@@ -61,6 +63,7 @@ function RoomContent({ roomId }: { roomId: string }) {
     setBoardName,
     images,
   } = useToolSettings();
+  const { isMediaPermissionGiven,setIsMediaPermissionGiven } = useWebRTC(roomId);
 
   useEffect(() => {
     const saveOwnCopy = async () => {
@@ -127,6 +130,7 @@ function RoomContent({ roomId }: { roomId: string }) {
             {isViewMode && <ToolBarContainer />}
           </>
         )}
+     
 
         {isHambergerMenuOpen && (
           <HamberMenu
@@ -173,6 +177,12 @@ function RoomContent({ roomId }: { roomId: string }) {
               />
             </div>
           </>
+        )}
+
+         {!isMediaPermissionGiven && (
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center px-6">
+            <MediaPermissionTab setIsMediaPermissionGiven={setIsMediaPermissionGiven} />
+          </div>
         )}
 
         {boardSwitching && (
