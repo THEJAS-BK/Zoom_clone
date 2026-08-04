@@ -46,9 +46,8 @@ export default function VideoTab({
   return (
     <>
       {!openCursor && (
-        <div
-          className={`bg-zinc-900 flex flex-wrap h-full w-full  items-center justify-center content-center gap-2 `}
-        >
+        
+<div className="bg-zinc-900 flex flex-wrap h-full w-full min-h-0 items-center justify-center content-center gap-2">        
           {isReady && localStream.current && (
             <div className={getTileSize(participantCount)}>
               <VideoCard
