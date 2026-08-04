@@ -80,7 +80,7 @@ export function useOfflineSelection(
   } | null>(null);
 
   //resize code for lines
-  const lineEndpoint = useRef<"p1" | "p2" | "mid" | null>(null);
+  const lineEndpoint = useRef<"p1" | "p2" | "mid" |number | null>(null);
 
   //isRotation
   const isRotating = useRef(false);

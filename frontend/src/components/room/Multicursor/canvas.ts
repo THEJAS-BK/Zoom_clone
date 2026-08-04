@@ -299,11 +299,18 @@ const redraw = (
       ctx.lineWidth = 2 / scale;
       ctx.setLineDash([]);
 
-      // endpoint handles
-      for (const pt of [
-        { x: selectedLine.x1, y: selectedLine.y1 },
-        { x: selectedLine.x2, y: selectedLine.y2 },
-      ]) {
+      const hasMultiplePoints =
+        selectedLine.points && selectedLine.points.length > 2;
+
+      // endpoint / point handles
+      const handlePoints = hasMultiplePoints
+        ? selectedLine.points!
+        : [
+            { x: selectedLine.x1, y: selectedLine.y1 },
+            { x: selectedLine.x2, y: selectedLine.y2 },
+          ];
+
+      for (const pt of handlePoints) {
         ctx.beginPath();
         ctx.arc(pt.x, pt.y, 5 / scale, 0, Math.PI * 2);
         ctx.fillStyle = "#7C6FF0";
@@ -312,7 +319,7 @@ const redraw = (
       }
 
       // center handle — sits on the curve at t=0.5
-      if (selectedLine.arrowType !== "elbow") {
+      if (selectedLine.arrowType !== "elbow" && !hasMultiplePoints) {
         const handleX =
           selectedLine.cpx !== undefined
             ? 0.25 * selectedLine.x1 +
@@ -571,6 +578,7 @@ function drawLine(ctx: CanvasRenderingContext2D, line: Line) {
   const pts = line.points;
   const dx = line.x2 - line.x1;
   const dy = line.y2 - line.y1;
+  const headLength = Math.max(12, line.strokeWidth * 4);
 
   ctx.beginPath();
 
@@ -619,12 +627,11 @@ function drawLine(ctx: CanvasRenderingContext2D, line: Line) {
         ctx.lineTo(pts[i].x, pts[i].y);
       }
     }
- } else {
+  } else {
     ctx.moveTo(line.x1, line.y1);
     if (line.cpx !== undefined && line.cpy !== undefined) {
       ctx.quadraticCurveTo(line.cpx, line.cpy, line.x2, line.y2);
     } else if (line.lineType === "arrow") {
-      const headLength = Math.max(12, line.strokeWidth * 4);
       const angle = Math.atan2(dy, dx);
       const backX = line.x2 - headLength * Math.cos(angle);
       const backY = line.y2 - headLength * Math.sin(angle);
@@ -661,7 +668,6 @@ function drawLine(ctx: CanvasRenderingContext2D, line: Line) {
       startAngle = Math.atan2(line.y1 - line.y2, line.x1 - line.x2);
     }
 
-    const headLength = Math.max(12, line.strokeWidth * 4);
     ctx.setLineDash([]);
 
     ctx.beginPath();

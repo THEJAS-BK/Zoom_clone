@@ -60,7 +60,7 @@ interface InteractionRefs {
   }>;
   resizeCorner: React.RefObject<string | null>;
   resizeOrigin: React.RefObject<{ x: number; y: number } | null>;
-  lineEndpoint: React.RefObject<"p1" | "p2" | "mid" | null>;
+  lineEndpoint: React.RefObject<"p1" | "p2" | "mid" |number | null>;
 }
 interface Positionable {
   x: number;
@@ -215,6 +215,19 @@ function tryStartLineHandleInteraction(
   refs: InteractionRefs,
 ): boolean {
   const tolerance = 8 / scale;
+
+  if (line.points && line.points.length > 2) {
+    for (let i = 0; i < line.points.length; i++) {
+      const pt = line.points[i];
+      if (Math.hypot(x - pt.x, y - pt.y) <= tolerance) {
+        refs.lineEndpoint.current = i;
+        refs.isResizing.current = true;
+        return true;
+      }
+    }
+    return false;
+  }
+
   const distP1 = Math.hypot(x - line.x1, y - line.y1);
   const distP2 = Math.hypot(x - line.x2, y - line.y2);
 
@@ -418,7 +431,7 @@ function computeShapeRotation(
 }
 
 // ---- line endpoint / midpoint drag math ----
-type LineEndpoint = "p1" | "p2" | "mid";
+type LineEndpoint = "p1" | "p2" | "mid"|number;
 
 function computeLineEndpointChanges(
   line: Line,
@@ -426,6 +439,11 @@ function computeLineEndpointChanges(
   x: number,
   y: number,
 ): Partial<Line> {
+  if (typeof endpoint === "number") {
+    const points = line.points ? [...line.points] : [];
+    points[endpoint] = { x, y };
+    return { points };
+  }
   if (endpoint === "p1") return { x1: x, y1: y };
   if (endpoint === "p2") return { x2: x, y2: y };
   // mid
